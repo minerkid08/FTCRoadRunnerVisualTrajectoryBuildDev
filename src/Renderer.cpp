@@ -60,6 +60,15 @@ Renderer::~Renderer(){
 	glDeleteVertexArrays(1, &va);
 }
 
+void Renderer::draw(glm::vec2 pos, float size, Texture* tex, glm::vec4 tint){
+	glm::vec2 verts[4];
+	verts[0] = glm::vec2(size, size) + pos;
+	verts[1] = glm::vec2(size, -size) + pos;
+	verts[2] = glm::vec2(-size, size) + pos;
+	verts[3] = glm::vec2(-size, -size) + pos;
+	draw(verts, tex, tint);
+}
+
 void Renderer::draw(glm::vec2 verts[4], Texture* tex, glm::vec4 tint){
 	Vertex vertices[4];
 	for(int i = 0; i < 4; i++){
@@ -70,7 +79,6 @@ void Renderer::draw(glm::vec2 verts[4], Texture* tex, glm::vec4 tint){
 	}
 
 	tex->bind(0);
-	glErrorCheck();
 
 	glBindVertexArray(va);
 	glBindBuffer(GL_ARRAY_BUFFER, vb);
@@ -79,4 +87,5 @@ void Renderer::draw(glm::vec2 verts[4], Texture* tex, glm::vec4 tint){
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, vertices);
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+	glErrorCheck();
 }

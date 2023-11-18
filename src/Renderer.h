@@ -15,7 +15,7 @@ class Renderer{
 	Renderer();
 	~Renderer();
 
-	//void draw(glm::vec2 pos, Texture* tex, glm::vec4 tint);
+	void draw(glm::vec2 pos, float size, Texture* tex, glm::vec4 tint);
 	void draw(glm::vec2 verts[4], Texture* tex, glm::vec4 tint);
 
 	private:

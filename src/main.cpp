@@ -4,16 +4,23 @@
 
 #include <Shader.h>
 #include <Renderer.h>
+#include <ImGui.h>
+
+#include <NodeGrid.h>
 
 struct WindowData{
 	bool running = true;
 };
+GLFWwindow* window;
 
+GLFWwindow* getWindow(){
+	return window;
+}
 
 int main(){
 	WindowData windowData;
 	glfwInit();
-	GLFWwindow* window = glfwCreateWindow(2000, 2000, "window", nullptr, nullptr);
+	window = glfwCreateWindow(2000, 2000, "window", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 	glfwSetWindowUserPointer(window, &windowData);
 
@@ -60,32 +67,6 @@ int main(){
 
 	Renderer renderer;
 
-	//float verts[8] = {
-	//	0.5f, 0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, -0.5f
-	//};
-//
-	//GLuint va;
-	//glCreateVertexArrays(1, &va);
-	//glBindVertexArray(va);
-//
-	//GLuint vb;
-	//glCreateBuffers(1, &vb);
-	//glBindBuffer(GL_ARRAY_BUFFER, vb);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
-//
-	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-	//glEnableVertexAttribArray(0);
-//
-	//int inds[6] = {
-	//	0, 1, 2, 1, 2, 3
-	//};
-//
-	//GLuint ib;
-	//glCreateBuffers(1, &ib);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(inds), inds, GL_STATIC_DRAW);
-
-
 	glm::vec2 verts[]{
 		{1, 1},
 		{1, -1},
@@ -95,11 +76,24 @@ int main(){
 
 	Texture tex("field-2023-juice-dark.png");
 
+	ImGuiClass imGui;
+
+	NodeGrid nodeGrid;
+	nodeGrid.addNode({0.5, 0.5});
+
 	while(windowData.running){
 		glClearColor(0.1, 0.1, 0.1, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
+		
 		shader.use();
 		renderer.draw(verts, &tex, glm::vec4(1, 1, 1, 1));
+
+		nodeGrid.update(renderer);
+
+		//imGui.begin();
+		//ImGui::ShowDemoWindow();
+		//imGui.end();
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
