@@ -1,6 +1,5 @@
 #include <Renderer.h>
-
-void glErrorCheck(){
+void errorCheck(int num){
 	int err = glGetError();
 	while(err != GL_NO_ERROR){
 		std::string error;
@@ -13,13 +12,13 @@ void glErrorCheck(){
 	        case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
 	        case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
 		}
-		std::cout << error << "\n";
+		std::cout << num << " error " << err << ": " << error << "\n";
 		err = glGetError();
 	}
 }
 
 static int inds[] = {
-	0, 1, 2, 1, 2, 3
+	0, 1, 2, 2, 1, 3
 };
 
 static glm::vec2 uv[4] = {
@@ -30,28 +29,37 @@ static glm::vec2 uv[4] = {
 };
 
 Renderer::Renderer(){
+	//va
 	glCreateVertexArrays(1, &va);
 	glBindVertexArray(va);
 
+	//vb
 	glCreateBuffers(1, &vb);
+	glErrorCheck();
 	glBindBuffer(GL_ARRAY_BUFFER, vb);
+	glErrorCheck();
+	
 	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 	
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+	glErrorCheck();
 	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 1, GL_INT, GL_FALSE, 9 * sizeof(float), (void*)(sizeof(float) * 2));
+	glErrorCheck();
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glErrorCheck();
+	
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 2));
+	glErrorCheck();
 	
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(sizeof(float) * 3));
 	glEnableVertexAttribArray(2);
-	
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(sizeof(float) * 7));
-	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 4));
+	glErrorCheck();
 
+	//ib
 	glCreateBuffers(1, &ib);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(inds), inds, GL_STATIC_DRAW);
+	glErrorCheck();
 }
 
 Renderer::~Renderer(){
@@ -60,32 +68,25 @@ Renderer::~Renderer(){
 	glDeleteVertexArrays(1, &va);
 }
 
-void Renderer::draw(glm::vec2 pos, float size, Texture* tex, glm::vec4 tint){
-	glm::vec2 verts[4];
-	verts[0] = glm::vec2(size, size) + pos;
-	verts[1] = glm::vec2(size, -size) + pos;
-	verts[2] = glm::vec2(-size, size) + pos;
-	verts[3] = glm::vec2(-size, -size) + pos;
-	draw(verts, tex, tint);
-}
-
-void Renderer::draw(glm::vec2 verts[4], Texture* tex, glm::vec4 tint){
+void Renderer::draw(glm::vec4 verts[4], Texture* tex, Shader* shader, glm::vec4 tint){
 	Vertex vertices[4];
 	for(int i = 0; i < 4; i++){
-		vertices[i].pos = verts[i];
-		vertices[i].texInd = 0;
-		vertices[i].tint = tint;
+		vertices[i].pos = {verts[i].x, verts[i].y};
 		vertices[i].texUV = uv[i];
+		vertices[i].tint = tint;
 	}
+	
+	tex->bind();
+	glErrorCheck();
 
-	tex->bind(0);
-
-	glBindVertexArray(va);
-	glBindBuffer(GL_ARRAY_BUFFER, vb);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+	glErrorCheck();
 
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, vertices);
+	glBindBuffer(GL_ARRAY_BUFFER, vb);
+	glErrorCheck();
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 	glErrorCheck();
 }

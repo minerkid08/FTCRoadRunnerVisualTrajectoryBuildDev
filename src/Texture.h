@@ -10,7 +10,7 @@ class Texture{
 	int getWidth(){return width;}
 	int getHeight(){return height;}
 
-	void bind(int i = 0);
+	void bind();
 	int getId(){return id;}
 
 	bool operator==(const Texture& other){

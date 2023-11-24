@@ -1,13 +1,13 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <Texture.h>
+#include <Shader.h>
 #include <array>
 
 struct Vertex{
 	glm::vec2 pos;
-	int texInd;
-	glm::vec4 tint;
 	glm::vec2 texUV;
+	glm::vec4 tint;
 };
 
 class Renderer{
@@ -15,8 +15,7 @@ class Renderer{
 	Renderer();
 	~Renderer();
 
-	void draw(glm::vec2 pos, float size, Texture* tex, glm::vec4 tint);
-	void draw(glm::vec2 verts[4], Texture* tex, glm::vec4 tint);
+	void draw(glm::vec4 verts[4], Texture* tex, Shader* shader, glm::vec4 tint);
 
 	private:
 	GLuint va;

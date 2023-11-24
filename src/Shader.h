@@ -1,15 +1,18 @@
 #pragma once
 #include <glad/glad.h>
 #include <iostream>
+#include <glm/glm.hpp>
 
 class Shader{
 	public:
-	Shader(const std::string& vert, const std::string& frag);
+	Shader(const char* vert, const char* frag);
 	~Shader();
 	void use();
 	void setUniform(const std::string& name, int val);
 	void setUniform(const std::string& name, float val);
+	void setUniform(const std::string& name, glm::vec2 val);
+	void setUniform(const std::string& name, glm::vec4 val);
 	private:
 	int prgmId;
-	int makeShader(GLenum type, const std::string& src);
+	int makeShader(GLenum type, const char* src);
 };

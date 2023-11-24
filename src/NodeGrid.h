@@ -6,9 +6,16 @@
 
 class NodeGrid{
 	public:
-	NodeGrid();
+	PathNode* nodes;
+	int nodeCount;
+	int selected = 0;
+	int clickMode = 0;
+	const int maxNodes = 20;
+	
+	NodeGrid(Shader* shader);
 	~NodeGrid();
-	void update(Renderer renderer);
+	void update(Renderer& renderer);
+	void mouseClick(int mouseX, int mouseY, int windowSize);
 
 	void addNode(glm::vec2 pos);
 	void removeNode(int ind);
@@ -18,9 +25,7 @@ class NodeGrid{
 	void moveDown(int ind);
 
 	private:
-	PathNode* nodes;
-	int nodeCount;
-	const int maxNodes = 20;
 	Texture circleTex;
-	Texture colorTex;
+	Texture arrowTex;
+	Shader* shader;
 };
