@@ -4,7 +4,7 @@
 #include <string>
 #include <Save.h>
 
-ImGuiClass::ImGuiClass(){
+ImGuiClass::ImGuiClass(int windowSize){
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
@@ -17,8 +17,8 @@ ImGuiClass::ImGuiClass(){
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.WindowRounding = 0.0f;
 	style.Colors[ImGuiCol_WindowBg].x -1.0f;
-	io.FontGlobalScale = 1.5f;//2 for 4k
-	style.ScaleAllSizes(1.5); //2 for 4k
+	io.FontGlobalScale = windowSize == 1700 ? 2 : 1.5f;//2 for 4k
+	style.ScaleAllSizes(windowSize == 1700 ? 2 : 1.5); //2 for 4k
 	ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 

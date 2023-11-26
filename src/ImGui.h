@@ -8,7 +8,7 @@ GLFWwindow* getWindow();
 
 class ImGuiClass{
 	public:
-	ImGuiClass();
+	ImGuiClass(int windowSize);
 	~ImGuiClass();
 	void begin();
 	void end();

@@ -22,12 +22,18 @@ GLFWwindow* getWindow(){
 	return window;
 }
 
-const int windowSize = 800;
+int windowSize = 800;
 
 int mouseX = 0;
 int mouseY = 0;
 
 int main(int argc, char* argv[]){
+
+	if(argc > 2){
+		if(strcmp(argv[2], "4k") == 0){
+			windowSize = 1700;
+		}
+	}
 
 	WindowData windowData;
 	glfwInit();
@@ -51,7 +57,7 @@ int main(int argc, char* argv[]){
 
 	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int btn, int action, int mods){
 		if(btn == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
-			if(mouseX <= 800 && mouseY <= 800)
+			if(mouseX <= windowSize && mouseY <= windowSize)
 				grid->mouseClick(mouseX, mouseY, windowSize);
 		}
 	});
@@ -106,12 +112,14 @@ int main(int argc, char* argv[]){
 
 	Texture tex("field-2023-juice-dark.png");
 
-	ImGuiClass imGui;
+	ImGuiClass imGui(windowSize);
 
 	grid = new NodeGrid(&shader);
 
 	if(argc > 1){
-		Save::load(grid, argv[1]);
+		if(strcmp(argv[1], "new")){
+			Save::load(grid, argv[1]);
+		}
 	}
 
 	if(argc > 2){

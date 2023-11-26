@@ -11,6 +11,9 @@ NodeGrid::~NodeGrid(){
 	delete nodes;
 }
 void NodeGrid::update(Renderer& renderer){
+	if(selected >= nodeCount){
+		selected = nodeCount - 1;
+	}
 	if(layer < -1){
 		layer = -1;
 	}
@@ -36,7 +39,7 @@ void NodeGrid::update(Renderer& renderer){
 			break;
 		}
 		for(int i = 0; i < nodeCount + 1; i++){
-			if(i == selected){
+			if(i == selected || selected >= nodeCount){
 				continue;
 			}
 			PathNode* node;
