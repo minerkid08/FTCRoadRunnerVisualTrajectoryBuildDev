@@ -25,6 +25,9 @@ class NodeGrid{
 	void moveUp(int ind);
 	void moveDown(int ind);
 
+	void flipVert();
+	void flipHoriz();
+
 	private:
 	Texture circleTex;
 	Texture arrowTex;

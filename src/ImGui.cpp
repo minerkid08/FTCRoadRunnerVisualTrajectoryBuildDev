@@ -82,6 +82,13 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 	ImGui::SameLine();
 	ImGui::Text(grid->clickMode == 0 ? "add" : "select");
 	ImGui::InputInt("layer", &(grid->layer), 1, 1, 0);
+	if(ImGui::Button("flipHoriz")){
+		grid->flipHoriz();
+	}
+	ImGui::SameLine();
+	if(ImGui::Button("flipVert")){
+		grid->flipVert();
+	}
 	if(ImGui::Button("^")){
 		grid->moveUp(grid->selected);
 	}

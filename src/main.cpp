@@ -28,6 +28,7 @@ int mouseX = 0;
 int mouseY = 0;
 
 int main(int argc, char* argv[]){
+
 	WindowData windowData;
 	glfwInit();
 
@@ -111,6 +112,13 @@ int main(int argc, char* argv[]){
 
 	if(argc > 1){
 		Save::load(grid, argv[1]);
+	}
+
+	if(argc > 2){
+		if(strcmp(argv[2], "export") == 0){
+			Save::exp(grid);
+			windowData.running = false;
+		}
 	}
 
 	while(windowData.running){

@@ -127,6 +127,7 @@ void NodeGrid::addNode(glm::vec2 pos){
 	(nodes + nodeCount)->turnAfterMove = false;
 	(nodes + nodeCount)->marker = false;
 	(nodes + nodeCount)->layer = (layer == -1) ? 0 : layer;
+	selected = nodeCount;
 	nodeCount++;
 }
 
@@ -164,5 +165,17 @@ void NodeGrid::moveDown(int ind){
 
 		*(nodes + ind) = node;
 		selected--;
+	}
+}
+
+void NodeGrid::flipVert(){
+	for(int i = 0; i < nodeCount; i++){
+		(nodes + i)->pos.y *= -1;
+	}
+}
+
+void NodeGrid::flipHoriz(){
+	for(int i = 0; i < nodeCount; i++){
+		(nodes + i)->pos.x *= -1;
 	}
 }
