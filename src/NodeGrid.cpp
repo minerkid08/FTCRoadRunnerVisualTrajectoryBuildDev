@@ -10,8 +10,10 @@ NodeGrid::NodeGrid(Shader* _shader) : circleTex("circle.png"), arrowTex("arrow.p
 NodeGrid::~NodeGrid(){
 	delete nodes;
 }
-//next make line
 void NodeGrid::update(Renderer& renderer){
+	if(layer < -1){
+		layer = -1;
+	}
 	if(nodeCount > 1){
 		for(int i = 0; i < nodeCount - 1; i++){
 			PathNode* node1 = (nodes + i);
@@ -29,50 +31,65 @@ void NodeGrid::update(Renderer& renderer){
 			renderer.draw(verts, &arrowTex, shader, {0.5f, 0.5f, 0.5f, 1});
 		}
 	}
-	int selectedInd;
-	for(int i = 0; i < nodeCount + 1; i++){
-		if(i == selected){
-			selectedInd = i;
-			continue;
+	for(int h = 0; h < 2; h++){
+		if(layer == -1 && h == 1){
+			break;
 		}
-		PathNode* node;
-		if(i < nodeCount){
-			node = (nodes + i);
-		}else{
-			node = (nodes + selected);
+		for(int i = 0; i < nodeCount + 1; i++){
+			if(i == selected){
+				continue;
+			}
+			PathNode* node;
+			if(i < nodeCount){
+				node = (nodes + i);
+			}else{
+				node = (nodes + selected);
+			}
+			if(node->layer < 0){
+				node->layer = 0;
+			}
+			if(!(node->layer == layer || layer < 0) && h == 1){
+				continue;
+			}
+			if(node->layer == layer && h == 0){
+				continue;
+			}
+			glm::mat4 mat = glm::rotate(
+				glm::mat4(1), 
+				glm::radians(node->rot), glm::vec3(0, 0, 1)
+			);
+			glm::vec4 verts[4] = {
+				glm::vec4(+0.04, +0.04, 0, 1) * mat,
+				glm::vec4(+0.04, -0.04, 0, 1) * mat,
+				glm::vec4(-0.04, +0.04, 0, 1) * mat,
+				glm::vec4(-0.04, -0.04, 0, 1) * mat,
+			};
+			for(int j = 0; j < 4; j++){
+				verts[j] = {node->pos.x / 72 + verts[j].x, node->pos.y / 72 + verts[j].y, 0, 1};
+			}
+			glm::vec4 tint(0,0,0,1);
+			bool a = false;
+			if((selected == 0 && i == nodeCount) || i == 0){
+				tint.g = 1;
+			}
+			if(i == nodeCount){
+				tint.r = 1;
+			}
+			if(node->turnAfterMove){
+				tint.b = 1;
+				a = true;
+			}
+			if(tint == glm::vec4(0, 0, 0, 1)){
+				tint = {1, 1, 1, 1};
+			}
+			if(tint == glm::vec4(1, 1, 1, 1) && a){
+				tint = {-1, -1, -1, 1};
+			}
+			if(h == 0 && layer != -1){
+				tint.a = 0.5;
+			}
+			renderer.draw(verts, &circleTex, shader, tint);
 		}
-		glm::mat4 mat = glm::rotate(
-			glm::mat4(1), 
-			glm::radians(node->rot), glm::vec3(0, 0, 1)
-		);
-		glm::vec4 verts[4] = {
-			glm::vec4(+0.04, +0.04, 0, 1) * mat,
-			glm::vec4(+0.04, -0.04, 0, 1) * mat,
-			glm::vec4(-0.04, +0.04, 0, 1) * mat,
-			glm::vec4(-0.04, -0.04, 0, 1) * mat,
-		};
-		for(int j = 0; j < 4; j++){
-			verts[j] = {node->pos.x / 72 + verts[j].x, node->pos.y / 72 + verts[j].y, 0, 1};
-		}
-		glm::vec4 tint(0,0,0,1);
-		bool a = false;
-		if((selectedInd == 0 && i == nodeCount) || i == 0){
-			tint.g = 1;
-		}
-		if(i == nodeCount){
-			tint.r = 1;
-		}
-		if(node->turnAfterMove){
-			tint.b = 1;
-			a = true;
-		}
-		if(tint == glm::vec4(0, 0, 0, 1)){
-			tint = {1, 1, 1, 1};
-		}
-		if(tint == glm::vec4(1, 1, 1, 1) && a){
-			tint = {-1, -1, -1, 1};
-		}
-		renderer.draw(verts, &circleTex, shader, tint);
 	}
 }
 
@@ -88,10 +105,12 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize){
 		int closestInd = -1;
 		for(int i = 0; i < nodeCount; i++){
 			PathNode* node = (nodes + i);
-			float dist = glm::distance(glm::vec2(x, y), glm::vec2(node->pos.x, node->pos.y));
-			if(dist < closestDist){
-				closestDist = dist;
-				closestInd = i;
+			if(node->layer == layer || layer == -1){
+				float dist = glm::distance(glm::vec2(x, y), glm::vec2(node->pos.x, node->pos.y));
+				if(dist < closestDist){
+					closestDist = dist;
+					closestInd = i;
+				}
 			}
 		}
 		if(closestDist < 12){
@@ -107,6 +126,7 @@ void NodeGrid::addNode(glm::vec2 pos){
 	(nodes + nodeCount)->rot = 0;
 	(nodes + nodeCount)->turnAfterMove = false;
 	(nodes + nodeCount)->marker = false;
+	(nodes + nodeCount)->layer = (layer == -1) ? 0 : layer;
 	nodeCount++;
 }
 
@@ -125,6 +145,8 @@ void NodeGrid::moveUp(int ind){
 		(nodes + ind + 1)->pos = (nodes + ind)->pos;
 		(nodes + ind + 1)->rot = (nodes + ind)->rot;
 		(nodes + ind + 1)->turnAfterMove = (nodes + ind)->turnAfterMove;
+		(nodes + ind + 1)->marker = (nodes + ind)->marker;
+		(nodes + ind + 1)->layer = (nodes + ind)->layer;
 
 		*(nodes + ind) = node;
 		selected++;
@@ -137,6 +159,8 @@ void NodeGrid::moveDown(int ind){
 		(nodes + ind - 1)->pos = (nodes + ind)->pos;
 		(nodes + ind - 1)->rot = (nodes + ind)->rot;
 		(nodes + ind - 1)->turnAfterMove = (nodes + ind)->turnAfterMove;
+		(nodes + ind - 1)->marker = (nodes + ind)->marker;
+		(nodes + ind - 1)->layer = (nodes + ind)->layer;
 
 		*(nodes + ind) = node;
 		selected--;

@@ -70,7 +70,8 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 		Save::exp(grid);
 	}
 	ImGui::EndMenuBar();
-	ImGui::InputText("load location", path, 256);
+	ImGui::InputText("path name", path, 256);
+	ImGui::Text(("current path: " + Save::getPath()).c_str());
 	if(ImGui::Button("add")){
 		grid->clickMode = 0;
 	}
@@ -80,6 +81,7 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 	}
 	ImGui::SameLine();
 	ImGui::Text(grid->clickMode == 0 ? "add" : "select");
+	ImGui::InputInt("layer", &(grid->layer), 1, 1, 0);
 	if(ImGui::Button("^")){
 		grid->moveUp(grid->selected);
 	}
@@ -113,6 +115,7 @@ void ImGuiClass::nodeProperties(NodeGrid* grid){
 		ImGui::InputFloat2("pos", glm::value_ptr(node->pos));
 		ImGui::InputFloat("rot", &(node->rot));
 		ImGui::Checkbox("turn after move", &(node->turnAfterMove));
+		ImGui::InputInt("layer", &(node->layer), 1, 1, 0);
 		ImGui::Checkbox("marker", &(node->marker));
 		if(ImGui::Button("remove")){
 			grid->removeNode(grid->selected);

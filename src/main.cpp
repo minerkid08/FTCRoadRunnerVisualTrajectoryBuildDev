@@ -27,7 +27,7 @@ const int windowSize = 800;
 int mouseX = 0;
 int mouseY = 0;
 
-int main(){
+int main(int argc, char* argv[]){
 	WindowData windowData;
 	glfwInit();
 
@@ -108,6 +108,11 @@ int main(){
 	ImGuiClass imGui;
 
 	grid = new NodeGrid(&shader);
+
+	if(argc > 1){
+		Save::load(grid, argv[1]);
+	}
+
 	while(windowData.running){
 		glClearColor(0.1, 0.1, 0.1, 1);
 		glClear(GL_COLOR_BUFFER_BIT);

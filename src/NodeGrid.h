@@ -10,7 +10,8 @@ class NodeGrid{
 	int nodeCount;
 	int selected = 0;
 	int clickMode = 0;
-	const int maxNodes = 20;
+	const int maxNodes = 32;
+	int layer = -1;
 	
 	NodeGrid(Shader* shader);
 	~NodeGrid();

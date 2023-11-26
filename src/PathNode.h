@@ -7,4 +7,5 @@ struct PathNode{
 	float rot = 0;
 	bool turnAfterMove = false;
 	bool marker = false;
+	int layer;
 };

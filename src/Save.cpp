@@ -9,6 +9,9 @@ void Save::saveAs(NodeGrid* grid, const std::string& _path){
 	path = _path;
 	save(grid);
 }
+std::string& Save::getPath(){
+	return path;
+}
 
 void Save::save(NodeGrid* grid){
 	nlohmann::json json;
@@ -22,7 +25,8 @@ void Save::save(NodeGrid* grid){
 				}},
 			{"rot", node->rot},
 			{"turnAfterMove", node->turnAfterMove},
-			{"marker", node->marker}
+			{"marker", node->marker},
+			{"layer", node->layer}
 		};
 	}
 	std::ofstream fout("save/" + path + ".path");
@@ -32,6 +36,10 @@ void Save::save(NodeGrid* grid){
 void Save::load(NodeGrid* grid, const std::string& _path){
 	path = _path;
 	std::ifstream stream("save/" + path + ".path");
+	if(!stream.good()){
+		std::cout << "file " << path << " doesnt exist\n";
+		return;
+	}
 	std::stringstream sstream;
 	sstream << stream.rdbuf();
 	nlohmann::json json = nlohmann::json::parse(sstream);
@@ -43,6 +51,7 @@ void Save::load(NodeGrid* grid, const std::string& _path){
 			jNode["pos"]["x"],
 			jNode["pos"]["y"]
 		};
+		node->layer = jNode["layer"];
 		node->rot = jNode["rot"];
 		node->turnAfterMove = jNode["turnAfterMove"];
 		node->marker = jNode["marker"];
