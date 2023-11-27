@@ -8,7 +8,7 @@ class NodeGrid{
 	public:
 	PathNode* nodes;
 	int nodeCount;
-	int selected = 0;
+	int selected = -1;
 	int clickMode = 0;
 	const int maxNodes = 32;
 	int layer = -1;

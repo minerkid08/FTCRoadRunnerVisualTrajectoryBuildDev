@@ -56,6 +56,8 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 	ImGui::BeginMenuBar();
 	if(ImGui::MenuItem("new")){
 		grid->nodeCount = 0;
+		grid->selected = -1;
+		Save::clearPath();
 	}
 	if(ImGui::MenuItem("save")){
 		Save::save(grid);
@@ -65,6 +67,7 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 	}
 	if(ImGui::MenuItem("load")){
 		Save::load(grid, path);
+		grid->selected = -1;
 	}
 	if(ImGui::MenuItem("export")){
 		Save::exp(grid);

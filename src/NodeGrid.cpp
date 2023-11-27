@@ -36,7 +36,7 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 			}
 		}
 		for(int h = 0; h < 2; h++){
-			if(layer == -1 && h == 1){
+			if((layer == -1 || selected == -1) && h == 1){
 				break;
 			}
 			for(int i = 0; i < nodeCount + 1; i++){

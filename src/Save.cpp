@@ -13,6 +13,10 @@ std::string& Save::getPath(){
 	return path;
 }
 
+void Save::clearPath(){
+	path = "";
+}
+
 void Save::save(NodeGrid* grid){
 	nlohmann::json json;
 	json = {};
