@@ -22,7 +22,7 @@ GLFWwindow* getWindow(){
 	return window;
 }
 
-int windowSize = 800;
+int windowSize = 1000;
 
 int mouseX = 0;
 int mouseY = 0;
@@ -137,7 +137,7 @@ int main(int argc, char* argv[]){
 
 		renderer.draw(verts, &tex, &shader, glm::vec4(1, 1, 1, 1));
 
-		grid->update(renderer);
+		grid->update(renderer, mouseX, mouseY, windowSize);
 
 		imGui.begin();
 		imGui.nodeList(grid);

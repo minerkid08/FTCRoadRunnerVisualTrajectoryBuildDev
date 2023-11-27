@@ -10,89 +10,112 @@ NodeGrid::NodeGrid(Shader* _shader) : circleTex("circle.png"), arrowTex("arrow.p
 NodeGrid::~NodeGrid(){
 	delete nodes;
 }
-void NodeGrid::update(Renderer& renderer){
+void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize){
 	if(selected >= nodeCount){
 		selected = nodeCount - 1;
 	}
 	if(layer < -1){
 		layer = -1;
 	}
-	if(nodeCount > 1){
-		for(int i = 0; i < nodeCount - 1; i++){
-			PathNode* node1 = (nodes + i);
-			PathNode* node2 = (nodes + i + 1);
-			glm::vec2 pos1 = {node1->pos.x / 72, node1->pos.y / 72};
-			glm::vec2 pos2 = {node2->pos.x / 72, node2->pos.y / 72};
-			glm::vec2 dif = pos2 - pos1;
-			glm::vec2 dif2 = glm::normalize(dif);
-			dif2 = {dif2.x / 40, dif2.y / 40};
-			glm::vec4 verts[4];
-			verts[0] = {dif2.y + pos1.x, -dif2.x + pos1.y, 0, 1};
-			verts[1] = {-dif2.y + pos1.x, dif2.x + pos1.y, 0, 1};
-			verts[2] = {dif2.y + pos1.x + dif.x, -dif2.x + dif.y + pos1.y, 0, 1};
-			verts[3] = {-dif2.y + pos1.x + dif.x, dif2.x + dif.y + pos1.y, 0, 1};
-			renderer.draw(verts, &arrowTex, shader, {0.5f, 0.5f, 0.5f, 1});
+	if(nodeCount > 0){
+		if(nodeCount > 1){
+			for(int i = 0; i < nodeCount - 1; i++){
+				PathNode* node1 = (nodes + i);
+				PathNode* node2 = (nodes + i + 1);
+				glm::vec2 pos1 = {node1->pos.x / 72, node1->pos.y / 72};
+				glm::vec2 pos2 = {node2->pos.x / 72, node2->pos.y / 72};
+				glm::vec2 dif = pos2 - pos1;
+				glm::vec2 dif2 = glm::normalize(dif);
+				dif2 = {dif2.x / 40, dif2.y / 40};
+				glm::vec4 verts[4];
+				verts[0] = {dif2.y + pos1.x, -dif2.x + pos1.y, 0, 1};
+				verts[1] = {-dif2.y + pos1.x, dif2.x + pos1.y, 0, 1};
+				verts[2] = {dif2.y + pos1.x + dif.x, -dif2.x + dif.y + pos1.y, 0, 1};
+				verts[3] = {-dif2.y + pos1.x + dif.x, dif2.x + dif.y + pos1.y, 0, 1};
+				renderer.draw(verts, &arrowTex, shader, {0.5f, 0.5f, 0.5f, 1});
+			}
+		}
+		for(int h = 0; h < 2; h++){
+			if(layer == -1 && h == 1){
+				break;
+			}
+			for(int i = 0; i < nodeCount + 1; i++){
+				if(i == selected || selected >= nodeCount){
+					continue;
+				}
+				PathNode* node;
+				if(i < nodeCount){
+					node = (nodes + i);
+				}else{
+					node = (nodes + selected);
+				}
+				if(node->layer < 0){
+					node->layer = 0;
+				}
+				if(!(node->layer == layer || layer < 0) && h == 1){
+					continue;
+				}
+				if(node->layer == layer && h == 0){
+					continue;
+				}
+				glm::mat4 mat = glm::rotate(
+					glm::mat4(1), 
+					glm::radians(node->rot), glm::vec3(0, 0, 1)
+				);
+				glm::vec4 verts[4] = {
+					glm::vec4(+0.04, +0.04, 0, 1) * mat,
+					glm::vec4(+0.04, -0.04, 0, 1) * mat,
+					glm::vec4(-0.04, +0.04, 0, 1) * mat,
+					glm::vec4(-0.04, -0.04, 0, 1) * mat,
+				};
+				for(int j = 0; j < 4; j++){
+					verts[j] = {node->pos.x / 72 + verts[j].x, node->pos.y / 72 + verts[j].y, 0, 1};
+				}
+				glm::vec4 tint(0,0,0,1);
+				bool a = false;
+				if((selected == 0 && i == nodeCount) || i == 0){
+					tint.g = 1;
+				}
+				if(i == nodeCount){
+					tint.r = 1;
+				}
+				if(node->turnAfterMove){
+					tint.b = 1;
+					a = true;
+				}
+				if(tint == glm::vec4(0, 0, 0, 1)){
+					tint = {1, 1, 1, 1};
+				}
+				if(tint == glm::vec4(1, 1, 1, 1) && a){
+					tint = {-1, -1, -1, 1};
+				}
+				if(h == 0 && layer != -1){
+					tint.a = 0.5;
+				}
+				renderer.draw(verts, &circleTex, shader, tint);
+			}
 		}
 	}
-	for(int h = 0; h < 2; h++){
-		if(layer == -1 && h == 1){
-			break;
+	if(clickMode == 0){
+		float x = (mouseX - (float)(windowSize/2)) / (windowSize/2) * 72;
+		float y = (mouseY - (float)(windowSize/2)) / (windowSize/2) * 72;
+
+		x = round(x / 6.0f) * 6;
+		y = round(y / 6.0f) * -6;
+
+		x /= 72;
+		y /= 72;
+
+		glm::vec4 verts[4] = {
+			glm::vec4(+0.04, +0.04, 0, 1),
+			glm::vec4(+0.04, -0.04, 0, 1),
+			glm::vec4(-0.04, +0.04, 0, 1),
+			glm::vec4(-0.04, -0.04, 0, 1)
+		};
+		for(int j = 0; j < 4; j++){
+			verts[j] = {x + verts[j].x, y + verts[j].y, 0, 1};
 		}
-		for(int i = 0; i < nodeCount + 1; i++){
-			if(i == selected || selected >= nodeCount){
-				continue;
-			}
-			PathNode* node;
-			if(i < nodeCount){
-				node = (nodes + i);
-			}else{
-				node = (nodes + selected);
-			}
-			if(node->layer < 0){
-				node->layer = 0;
-			}
-			if(!(node->layer == layer || layer < 0) && h == 1){
-				continue;
-			}
-			if(node->layer == layer && h == 0){
-				continue;
-			}
-			glm::mat4 mat = glm::rotate(
-				glm::mat4(1), 
-				glm::radians(node->rot), glm::vec3(0, 0, 1)
-			);
-			glm::vec4 verts[4] = {
-				glm::vec4(+0.04, +0.04, 0, 1) * mat,
-				glm::vec4(+0.04, -0.04, 0, 1) * mat,
-				glm::vec4(-0.04, +0.04, 0, 1) * mat,
-				glm::vec4(-0.04, -0.04, 0, 1) * mat,
-			};
-			for(int j = 0; j < 4; j++){
-				verts[j] = {node->pos.x / 72 + verts[j].x, node->pos.y / 72 + verts[j].y, 0, 1};
-			}
-			glm::vec4 tint(0,0,0,1);
-			bool a = false;
-			if((selected == 0 && i == nodeCount) || i == 0){
-				tint.g = 1;
-			}
-			if(i == nodeCount){
-				tint.r = 1;
-			}
-			if(node->turnAfterMove){
-				tint.b = 1;
-				a = true;
-			}
-			if(tint == glm::vec4(0, 0, 0, 1)){
-				tint = {1, 1, 1, 1};
-			}
-			if(tint == glm::vec4(1, 1, 1, 1) && a){
-				tint = {-1, -1, -1, 1};
-			}
-			if(h == 0 && layer != -1){
-				tint.a = 0.5;
-			}
-			renderer.draw(verts, &circleTex, shader, tint);
-		}
+		renderer.draw(verts, &circleTex, shader, {1, 1, 1, 0.25});
 	}
 }
 

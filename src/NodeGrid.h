@@ -15,7 +15,7 @@ class NodeGrid{
 	
 	NodeGrid(Shader* shader);
 	~NodeGrid();
-	void update(Renderer& renderer);
+	void update(Renderer& renderer, int mouseX, int mouseY, int windowSize);
 	void mouseClick(int mouseX, int mouseY, int windowSize);
 
 	void addNode(glm::vec2 pos);
