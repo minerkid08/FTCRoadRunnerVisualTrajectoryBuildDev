@@ -122,14 +122,68 @@ void ImGuiClass::nodeProperties(NodeGrid* grid){
 	if(grid->selected > -1 && grid->selected < grid->nodeCount){
 		PathNode* node = (grid->nodes + grid->selected);
 		ImGui::Text((std::string("node: ") + std::to_string(grid->selected)).c_str());
-		ImGui::InputFloat2("pos", glm::value_ptr(node->pos));
-		ImGui::InputFloat("rot", &(node->rot));
-		ImGui::Checkbox("turn after move", &(node->turnAfterMove));
-		ImGui::InputInt("layer", &(node->layer), 1, 1, 0);
-		ImGui::Checkbox("marker", &(node->marker));
 		if(ImGui::Button("remove")){
 			grid->removeNode(grid->selected);
 		}
+		ImGui::InputFloat2("pos", glm::value_ptr(node->pos));
+		ImGui::InputFloat("rot", &(node->rot));
+
+		const char* headingModes[] = {"none", "linear", "constant", "spline"};
+
+		if(ImGui::BeginCombo("heading mode", headingModes[node->headingMode])){
+			for(int i = 0; i < 4; i++){
+				if(ImGui::Selectable(headingModes[i])){
+					node->headingMode = i;
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		ImGui::Checkbox("turn after move", &(node->turnAfterMove));
+		ImGui::InputInt("layer", &(node->layer), 1, 1, 0);
+		ImGui::Checkbox("marker", &(node->marker));
+		ImGui::Checkbox("line", &(node->line));
+		ImGui::Text("speed overides");
+
+		ImGui::PushID(1);
+		ImGui::Checkbox("", &(node->overides.vel));
+		ImGui::PopID();
+		ImGui::SameLine();
+		ImGui::PushID(2);
+		ImGui::InputFloat("", &(node->overides.velV));
+		ImGui::PopID();
+		ImGui::SameLine();
+		ImGui::Text("vel");
+
+		ImGui::PushID(3);
+		ImGui::Checkbox("", &(node->overides.accel));
+		ImGui::PopID();
+		ImGui::SameLine();
+		ImGui::PushID(4);
+		ImGui::InputFloat("", &(node->overides.accelV));
+		ImGui::PopID();
+		ImGui::SameLine();
+		ImGui::Text("accel");
+
+		ImGui::PushID(5);
+		ImGui::Checkbox("", &(node->overides.angVel));
+		ImGui::PopID();
+		ImGui::SameLine();
+		ImGui::PushID(6);
+		ImGui::InputFloat("", &(node->overides.angVelV));
+		ImGui::PopID();
+		ImGui::SameLine();
+		ImGui::Text("ang vel");
+
+		ImGui::PushID(7);
+		ImGui::Checkbox("", &(node->overides.angAccel));
+		ImGui::PopID();
+		ImGui::SameLine();
+		ImGui::PushID(8);
+		ImGui::InputFloat("", &(node->overides.angAccelV));
+		ImGui::PopID();
+		ImGui::SameLine();
+		ImGui::Text("ang accel");
 	}
 	ImGui::End();
 }

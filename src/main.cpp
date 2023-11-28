@@ -10,6 +10,7 @@
 #include <math.h>
 #include <Save.h>
 
+#include <filesystem>
 
 struct WindowData{
 	bool running = true;
@@ -28,6 +29,14 @@ int mouseX = 0;
 int mouseY = 0;
 
 int main(int argc, char* argv[]){
+
+	if(!std::filesystem::exists("save")){
+		std::filesystem::create_directory("save");
+	}
+	
+	if(!std::filesystem::exists("export")){
+		std::filesystem::create_directory("export");
+	}
 
 	if(argc > 2){
 		if(strcmp(argv[2], "4k") == 0){

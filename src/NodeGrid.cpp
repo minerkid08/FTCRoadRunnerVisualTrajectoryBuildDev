@@ -148,11 +148,15 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize){
 void NodeGrid::addNode(glm::vec2 pos){
 	if(nodeCount >= maxNodes)
 		return;
-	(nodes + nodeCount)->pos = pos;
-	(nodes + nodeCount)->rot = 0;
-	(nodes + nodeCount)->turnAfterMove = false;
-	(nodes + nodeCount)->marker = false;
-	(nodes + nodeCount)->layer = (layer == -1) ? 0 : layer;
+	PathNode* node = nodes + nodeCount;
+	node->pos = pos;
+	node->rot = 0;
+	node->turnAfterMove = false;
+	node->marker = false;
+	node->line = false;
+	node->headingMode = 0;
+	node->layer = (layer == -1) ? 0 : layer;
+	node->overides.reset();
 	selected = nodeCount;
 	nodeCount++;
 }
@@ -169,12 +173,7 @@ void NodeGrid::removeNode(int ind){
 void NodeGrid::moveUp(int ind){
 	if(ind + 1 < nodeCount){
 		PathNode node = *(nodes + ind + 1);
-		(nodes + ind + 1)->pos = (nodes + ind)->pos;
-		(nodes + ind + 1)->rot = (nodes + ind)->rot;
-		(nodes + ind + 1)->turnAfterMove = (nodes + ind)->turnAfterMove;
-		(nodes + ind + 1)->marker = (nodes + ind)->marker;
-		(nodes + ind + 1)->layer = (nodes + ind)->layer;
-
+		*(nodes + ind + 1) = *(nodes + ind);
 		*(nodes + ind) = node;
 		selected++;
 	}
@@ -183,12 +182,7 @@ void NodeGrid::moveUp(int ind){
 void NodeGrid::moveDown(int ind){
 	if(ind - 1 > -1){
 		PathNode node = *(nodes + ind - 1);
-		(nodes + ind - 1)->pos = (nodes + ind)->pos;
-		(nodes + ind - 1)->rot = (nodes + ind)->rot;
-		(nodes + ind - 1)->turnAfterMove = (nodes + ind)->turnAfterMove;
-		(nodes + ind - 1)->marker = (nodes + ind)->marker;
-		(nodes + ind - 1)->layer = (nodes + ind)->layer;
-
+		*(nodes + ind - 1) = *(nodes + ind);
 		*(nodes + ind) = node;
 		selected--;
 	}
@@ -197,11 +191,15 @@ void NodeGrid::moveDown(int ind){
 void NodeGrid::flipVert(){
 	for(int i = 0; i < nodeCount; i++){
 		(nodes + i)->pos.y *= -1;
+		(nodes + i)->rot += 90;
+		(nodes + i)->rot *= -1;
+		(nodes + i)->rot -= 90;
 	}
 }
 
 void NodeGrid::flipHoriz(){
 	for(int i = 0; i < nodeCount; i++){
 		(nodes + i)->pos.x *= -1;
+		(nodes + i)->rot *= -1;
 	}
 }

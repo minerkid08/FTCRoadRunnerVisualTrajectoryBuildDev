@@ -28,11 +28,26 @@ void Save::save(NodeGrid* grid){
 				{"y", node->pos.y}
 				}},
 			{"rot", node->rot},
+			{"headingMode", node->headingMode},
 			{"turnAfterMove", node->turnAfterMove},
 			{"marker", node->marker},
-			{"layer", node->layer}
+			{"layer", node->layer},
+			{"line", node->line},
+			{"overides", {
+				{"vel", {node->overides.vel, node->overides.velV}},
+				{"accel", {node->overides.accel, node->overides.accelV}},
+				{"angVel", {node->overides.angVel, node->overides.angVelV}},
+				{"angAccel", {node->overides.angAccel, node->overides.angAccelV}},
+			}}
 		};
 	}
+	if(path.find("/") != std::string::npos){
+		std::string folder = path.substr(0, path.find("/"));
+		if(!std::filesystem::exists("save/" + folder)){
+			std::filesystem::create_directory("save/" + folder);
+		}
+	}
+
 	std::ofstream fout("save/" + path + ".path");
 	fout << json.dump(4);
 }
@@ -57,8 +72,19 @@ void Save::load(NodeGrid* grid, const std::string& _path){
 		};
 		node->layer = jNode["layer"];
 		node->rot = jNode["rot"];
+		node->headingMode = jNode["headingMode"];
 		node->turnAfterMove = jNode["turnAfterMove"];
 		node->marker = jNode["marker"];
+		node->line = jNode["line"];
+		nlohmann::json overides = jNode["overides"];
+		node->overides.vel = overides["vel"][0];
+		node->overides.velV = overides["vel"][1];
+		node->overides.accel = overides["accel"][0];
+		node->overides.accelV = overides["accel"][1];
+		node->overides.angVel = overides["angVel"][0];
+		node->overides.angVelV = overides["angVel"][1];
+		node->overides.angAccel = overides["angAccel"][0];
+		node->overides.angAccelV = overides["angAccel"][1];
 		i++;
 	}
 	grid->nodeCount = i;
@@ -70,11 +96,37 @@ void Save::exp(NodeGrid* grid){
 	glm::vec2 prevPos;
 	for(int i = 0; i < grid->nodeCount; i++){
 		PathNode* node = (grid->nodes + i);
+		std::string func;
+		bool ins = false;
+		switch(node->headingMode){
+			case 0:
+				func = "lineTo(new Vector2d";
+				ins = true;
+				break;
+			case 1:
+				func = "lineToLinearHeading(new Pose2d";
+				break;
+			case 2:
+				func = "lineToConstantHeading(new Vector2d";
+				ins = true;
+				break;
+			case 3:
+				func = "lineToSplineHeading(new Pose2d";
+				break;
+		}
+		if(!node->line){
+			func = "sp" + func;
+			ins = true;
+		}
 		if(i == 0){
 			sstream << "drive.trajectorySequenceBuilder(new Pose2d(" << node->pos.x << ", " << node->pos.y << ", Math.toRadians(" << -(node->rot - 90) << ")))\n";
 		}else if(node->turnAfterMove){
 			if(node->pos != prevPos){
-				sstream << "	.splineTo(new Vector2d(" << node->pos.x << ", " << node->pos.y << "), Math.toRadians(" << -(prevHeading - 90) << "))\n";
+				if(ins && node->line){
+					sstream << "	." << func << "(" << node->pos.x << ", " << node->pos.y << "))\n";
+				}else{
+					sstream << "	." << func << "(" << node->pos.x << ", " << node->pos.y << (ins ? "), Math.toRadians(" : ", ") << -(prevHeading - 90) << "))\n";
+				}
 			}
 			float angle = -(node->rot - prevHeading);
 			if(abs(angle) > 180){
@@ -82,7 +134,11 @@ void Save::exp(NodeGrid* grid){
 			}
 			sstream << "	.turn(Math.toRadians(" << angle << "))\n"; 
 		}else{
-			sstream << "	.splineTo(new Vector2d(" << node->pos.x << ", " << node->pos.y << "), Math.toRadians(" << -(node->rot - 90) << "))\n";
+			if(ins && node->line){
+				sstream << "	." << func << "(" << node->pos.x << ", " << node->pos.y << "))\n";
+			}else{
+				sstream << "	." << func << "(" << node->pos.x << ", " << node->pos.y << (ins ? "), Math.toRadians(" : ", ") << -(node->rot - 90) << "))\n";
+			}
 		}
 		prevPos = node->pos;
 		prevHeading = node->rot;
@@ -93,6 +149,12 @@ void Save::exp(NodeGrid* grid){
 		}
 	}
 	sstream << "	.build();";
+	if(path.find("/") != std::string::npos){
+		std::string folder = path.substr(0, path.find("/"));
+		if(!std::filesystem::exists("export/" + folder)){
+			std::filesystem::create_directory("export/" + folder);
+		}
+	}
 	std::ofstream fout("export/" + path + ".java");
 	fout << sstream.str();
 }
