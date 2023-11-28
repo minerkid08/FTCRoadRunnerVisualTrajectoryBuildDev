@@ -1,0 +1,170 @@
+[
+    {
+        "layer": 0,
+        "marker": false,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": -36.0,
+            "y": -66.0
+        },
+        "rot": 0.0,
+        "turnAfterMove": false
+    },
+    {
+        "layer": 0,
+        "marker": false,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": -36.0,
+            "y": -36.0
+        },
+        "rot": -90.0,
+        "turnAfterMove": true
+    },
+    {
+        "layer": 0,
+        "marker": false,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": -60.0,
+            "y": -36.0
+        },
+        "rot": 90.0,
+        "turnAfterMove": true
+    },
+    {
+        "layer": 0,
+        "marker": false,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": -36.0,
+            "y": -12.0
+        },
+        "rot": 90.0,
+        "turnAfterMove": false
+    },
+    {
+        "layer": 0,
+        "marker": false,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": 18.0,
+            "y": -12.0
+        },
+        "rot": 90.0,
+        "turnAfterMove": false
+    },
+    {
+        "layer": 0,
+        "marker": false,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": 48.0,
+            "y": -36.0
+        },
+        "rot": 90.0,
+        "turnAfterMove": false
+    }
+]
