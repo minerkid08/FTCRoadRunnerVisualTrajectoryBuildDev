@@ -30,7 +30,6 @@ void Save::save(NodeGrid* grid){
 			{"rot", node->rot},
 			{"headingMode", node->headingMode},
 			{"turnAfterMove", node->turnAfterMove},
-			{"marker", node->marker},
 			{"layer", node->layer},
 			{"line", node->line},
 			{"overides", {
@@ -40,21 +39,24 @@ void Save::save(NodeGrid* grid){
 				{"angAccel", {node->overides.angAccel, node->overides.angAccelV}},
 			}}
 		};
+		if(node->marker.hasMarker){
+			json[i]["marker"] = node->marker.text;
+		}
 	}
-	if(path.find("/") != std::string::npos){
-		std::string folder = path.substr(0, path.find("/"));
-		if(!std::filesystem::exists("save/" + folder)){
-			std::filesystem::create_directory("save/" + folder);
+	if(path.find("\\") != std::string::npos){
+		std::string folder = path.substr(0, path.find("\\") + 1);
+		if(!std::filesystem::exists(folder)){
+			std::filesystem::create_directory(folder);
 		}
 	}
 
-	std::ofstream fout("save/" + path + ".path");
+	std::ofstream fout(path);
 	fout << json.dump(4);
 }
 
 void Save::load(NodeGrid* grid, const std::string& _path){
 	path = _path;
-	std::ifstream stream("save/" + path + ".path");
+	std::ifstream stream(path);
 	if(!stream.good()){
 		std::cout << "file " << path << " doesnt exist\n";
 		return;
@@ -74,7 +76,11 @@ void Save::load(NodeGrid* grid, const std::string& _path){
 		node->rot = jNode["rot"];
 		node->headingMode = jNode["headingMode"];
 		node->turnAfterMove = jNode["turnAfterMove"];
-		node->marker = jNode["marker"];
+		if(jNode.contains("marker")){
+			node->marker.hasMarker = true;
+			std::string text = jNode["marker"];
+			strcpy(node->marker.text, text.c_str());
+		}
 		node->line = jNode["line"];
 		nlohmann::json overides = jNode["overides"];
 		node->overides.vel = overides["vel"][0];
@@ -142,19 +148,27 @@ void Save::exp(NodeGrid* grid){
 		}
 		prevPos = node->pos;
 		prevHeading = node->rot;
-		if(node->marker){
+		if(node->marker.hasMarker){
 			sstream << "	.addDisplacementMarker(() -> {\n";
-			sstream << "		System.out.println(" << i <<");\n";
+			sstream << "		System.out.println(" << node->marker.text <<");\n";
 			sstream << "	})\n";
 		}
 	}
 	sstream << "	.build();";
-	if(path.find("/") != std::string::npos){
-		std::string folder = path.substr(0, path.find("/"));
+	
+	if(path.find("\\") != std::string::npos){
+		path = path.substr(path.find("\\"));
+	}
+	std::cout << path << '\n';
+	if(path.find("\\") != std::string::npos){
+		std::string folder = path.substr(0, path.find("\\") + 1);
 		if(!std::filesystem::exists("export/" + folder)){
 			std::filesystem::create_directory("export/" + folder);
 		}
 	}
-	std::ofstream fout("export/" + path + ".java");
+	if(path.find(".") != std::string::npos){
+		path = path.substr(0, path.find("."));
+	}
+	std::ofstream fout("export" + path + ".java");
 	fout << sstream.str();
 }

@@ -4,6 +4,7 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <NodeGrid.h>
 #include <string>
+#include <FileExplorer.h>
 GLFWwindow* getWindow();
 
 class ImGuiClass{
@@ -15,5 +16,7 @@ class ImGuiClass{
 	void nodeList(NodeGrid* grid);
 	void nodeProperties(NodeGrid* grid);
 	private:
+	FileExplorer explorer;
+	int explorerMode = 0;
 	char* path;
 };

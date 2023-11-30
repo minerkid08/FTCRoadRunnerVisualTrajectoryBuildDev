@@ -12,10 +12,6 @@
 
 #include <filesystem>
 
-struct WindowData{
-	bool running = true;
-};
-
 GLFWwindow* window;
 NodeGrid* grid;
 
@@ -33,7 +29,7 @@ int main(int argc, char* argv[]){
 	if(!std::filesystem::exists("save")){
 		std::filesystem::create_directory("save");
 	}
-	
+
 	if(!std::filesystem::exists("export")){
 		std::filesystem::create_directory("export");
 	}
@@ -44,12 +40,12 @@ int main(int argc, char* argv[]){
 		}
 	}
 
-	WindowData windowData;
+	bool running = true;
 	glfwInit();
 
 	window = glfwCreateWindow(windowSize, windowSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
-	glfwSetWindowUserPointer(window, &windowData);
+	glfwSetWindowUserPointer(window, &running);
 	glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
 
 	int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -60,8 +56,8 @@ int main(int argc, char* argv[]){
 	}
 
 	glfwSetWindowCloseCallback(window, [](GLFWwindow* window){
-		WindowData* windowData = (WindowData*)glfwGetWindowUserPointer(window);
-		windowData->running = false;
+		bool* running = (bool*)glfwGetWindowUserPointer(window);
+		*running = false;
 	});
 
 	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int btn, int action, int mods){
@@ -134,11 +130,11 @@ int main(int argc, char* argv[]){
 	if(argc > 2){
 		if(strcmp(argv[2], "export") == 0){
 			Save::exp(grid);
-			windowData.running = false;
+			running = false;
 		}
 	}
 
-	while(windowData.running){
+	while(running){
 		glClearColor(0.1, 0.1, 0.1, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
 

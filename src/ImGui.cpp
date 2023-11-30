@@ -24,6 +24,7 @@ ImGuiClass::ImGuiClass(int windowSize){
 
 	path = new char[256];
 	memset(path, 0, 256);
+	explorer.setMainPath("save");
 }
 
 ImGuiClass::~ImGuiClass(){
@@ -63,17 +64,19 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 		Save::save(grid);
 	}
 	if(ImGui::MenuItem("save as")){
-		Save::saveAs(grid, path);
+		memset(path, 0, 256);
+		explorerMode = 1;
+		explorer.reset(FileExplorerFlags_MakeFile);
 	}
 	if(ImGui::MenuItem("load")){
-		Save::load(grid, path);
-		grid->selected = -1;
+		memset(path, 0, 256);
+		explorerMode = 2;
+		explorer.reset();
 	}
 	if(ImGui::MenuItem("export")){
 		Save::exp(grid);
 	}
 	ImGui::EndMenuBar();
-	ImGui::InputText("path name", path, 256);
 	ImGui::Text(("current path: " + Save::getPath()).c_str());
 	if(ImGui::Button("add")){
 		grid->clickMode = 0;
@@ -115,6 +118,21 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 		}
 	}
 	ImGui::End();
+	if(explorerMode){
+		if(int i = explorer.render(".path")){
+			if(i == 1){
+				strcpy(path, explorer.outPath.string().c_str());
+				if(explorerMode == 1){
+					Save::saveAs(grid, path);
+				}
+				if(explorerMode == 2){
+					Save::load(grid, path);
+					grid->selected = -1;
+				}
+				explorerMode = 0;
+			}
+		}
+	}
 }
 
 void ImGuiClass::nodeProperties(NodeGrid* grid){
@@ -125,65 +143,79 @@ void ImGuiClass::nodeProperties(NodeGrid* grid){
 		if(ImGui::Button("remove")){
 			grid->removeNode(grid->selected);
 		}
-		ImGui::InputFloat2("pos", glm::value_ptr(node->pos));
-		ImGui::InputFloat("rot", &(node->rot));
-
-		const char* headingModes[] = {"none", "linear", "constant", "spline"};
-
-		if(ImGui::BeginCombo("heading mode", headingModes[node->headingMode])){
-			for(int i = 0; i < 4; i++){
-				if(ImGui::Selectable(headingModes[i])){
-					node->headingMode = i;
+		ImGui::SameLine();
+		if(ImGui::Button("+")){
+			ImGui::OpenPopup("add");
+		}
+		if(ImGui::BeginPopup("add")){
+			if(!node->marker.hasMarker){
+				if(ImGui::MenuItem("marker")){
+					node->marker.reset();
+					node->marker.hasMarker = true;
 				}
 			}
-			ImGui::EndCombo();
+			ImGui::EndPopup();
 		}
 
-		ImGui::Checkbox("turn after move", &(node->turnAfterMove));
-		ImGui::InputInt("layer", &(node->layer), 1, 1, 0);
-		ImGui::Checkbox("marker", &(node->marker));
-		ImGui::Checkbox("line", &(node->line));
-		ImGui::Text("speed overides");
+		if(ImGui::TreeNode("transform")){
+			ImGui::InputFloat2("pos", glm::value_ptr(node->pos));
+			ImGui::InputFloat("rot", &(node->rot));
+			ImGui::InputInt("layer", &(node->layer), 1, 1, 0);
+			ImGui::TreePop();
+		}
 
-		ImGui::PushID(1);
-		ImGui::Checkbox("", &(node->overides.vel));
-		ImGui::PopID();
-		ImGui::SameLine();
-		ImGui::PushID(2);
-		ImGui::InputFloat("", &(node->overides.velV));
-		ImGui::PopID();
-		ImGui::SameLine();
-		ImGui::Text("vel");
+		if(ImGui::TreeNode("path")){
+			const char* headingModes[] = {"none", "linear", "constant", "spline"};
 
-		ImGui::PushID(3);
-		ImGui::Checkbox("", &(node->overides.accel));
-		ImGui::PopID();
-		ImGui::SameLine();
-		ImGui::PushID(4);
-		ImGui::InputFloat("", &(node->overides.accelV));
-		ImGui::PopID();
-		ImGui::SameLine();
-		ImGui::Text("accel");
+			if(ImGui::BeginCombo("heading mode", headingModes[node->headingMode])){
+				for(int i = 0; i < 4; i++){
+					if(ImGui::Selectable(headingModes[i])){
+						node->headingMode = i;
+					}
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::Checkbox("turn after move", &(node->turnAfterMove));
+			ImGui::Checkbox("line", &(node->line));
+			ImGui::TreePop();
+		}
 
-		ImGui::PushID(5);
-		ImGui::Checkbox("", &(node->overides.angVel));
-		ImGui::PopID();
-		ImGui::SameLine();
-		ImGui::PushID(6);
-		ImGui::InputFloat("", &(node->overides.angVelV));
-		ImGui::PopID();
-		ImGui::SameLine();
-		ImGui::Text("ang vel");
+		if(ImGui::TreeNode("speed overides")){
+			ImGui::PushID(1);
+			ImGui::Checkbox("", &(node->overides.vel));
+			ImGui::PopID();
+			ImGui::SameLine();
+			ImGui::InputFloat("vel", &(node->overides.velV));
 
-		ImGui::PushID(7);
-		ImGui::Checkbox("", &(node->overides.angAccel));
-		ImGui::PopID();
-		ImGui::SameLine();
-		ImGui::PushID(8);
-		ImGui::InputFloat("", &(node->overides.angAccelV));
-		ImGui::PopID();
-		ImGui::SameLine();
-		ImGui::Text("ang accel");
+			ImGui::PushID(2);
+			ImGui::Checkbox("", &(node->overides.accel));
+			ImGui::PopID();
+			ImGui::SameLine();
+			ImGui::InputFloat("accel", &(node->overides.accelV));
+
+			ImGui::PushID(3);
+			ImGui::Checkbox("", &(node->overides.angVel));
+			ImGui::PopID();
+			ImGui::SameLine();
+			ImGui::InputFloat("ang vel", &(node->overides.angVelV));
+
+			ImGui::PushID(4);
+			ImGui::Checkbox("", &(node->overides.angAccel));
+			ImGui::PopID();
+			ImGui::SameLine();
+			ImGui::InputFloat("ang accel", &(node->overides.angAccelV));
+			ImGui::TreePop();
+		}
+
+		if(node->marker.hasMarker){
+			if(ImGui::TreeNode("marker")){
+				if(ImGui::Button("-")){
+					node->marker.hasMarker = false;
+				}
+				ImGui::InputText("label", node->marker.text, 255);
+				ImGui::TreePop();
+			}
+		}
 	}
 	ImGui::End();
 }

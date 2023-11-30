@@ -152,11 +152,11 @@ void NodeGrid::addNode(glm::vec2 pos){
 	node->pos = pos;
 	node->rot = 0;
 	node->turnAfterMove = false;
-	node->marker = false;
 	node->line = false;
 	node->headingMode = 0;
 	node->layer = (layer == -1) ? 0 : layer;
 	node->overides.reset();
+	node->marker.reset();
 	selected = nodeCount;
 	nodeCount++;
 }

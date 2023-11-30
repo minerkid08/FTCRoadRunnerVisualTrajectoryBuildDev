@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <cstring>
 
 struct Overides{
 	bool vel = false;
@@ -22,14 +23,25 @@ struct Overides{
 		angAccelV = 0.0f;
 	}
 };
+struct Marker{
+	char* text;
+	bool hasMarker;
+	Marker(){
+		text = new char[255];
+	}
+	void reset(){
+		hasMarker = false;
+		memset(text, 0, 255);
+	}
+};
 
 struct PathNode{
 	glm::vec2 pos;
 	float rot = 0;
 	int headingMode = 0;
 	bool turnAfterMove = false;
-	bool marker = false;
 	bool line = false;
 	int layer;
 	Overides overides;
+	Marker marker;
 };
