@@ -40,7 +40,7 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 				break;
 			}
 			for(int i = 0; i < nodeCount + 1; i++){
-				if(i == selected || selected >= nodeCount){
+				if(i == selected || selected >= nodeCount || (selected == -1 && i == nodeCount)){
 					continue;
 				}
 				PathNode* node;
