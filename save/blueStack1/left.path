@@ -3,7 +3,6 @@
         "headingMode": 0,
         "layer": 0,
         "line": false,
-        "marker": false,
         "overides": {
             "accel": [
                 false,
@@ -30,100 +29,96 @@
         "turnAfterMove": false
     },
     {
-        "headingMode": 0,
+        "headingMode": 1,
+        "layer": 0,
+        "line": true,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": -30.0,
+            "y": 36.0
+        },
+        "rot": -270.0,
+        "turnAfterMove": false
+    },
+    {
+        "headingMode": 1,
+        "layer": 0,
+        "line": true,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": -60.0,
+            "y": 36.0
+        },
+        "rot": -90.0,
+        "turnAfterMove": false
+    },
+    {
+        "headingMode": 2,
+        "layer": 0,
+        "line": true,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": -36.0,
+            "y": 54.0
+        },
+        "rot": -270.0,
+        "turnAfterMove": false
+    },
+    {
+        "headingMode": 2,
         "layer": 0,
         "line": false,
-        "marker": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
-        "pos": {
-            "x": -56.0,
-            "y": 32.0
-        },
-        "rot": -90.0,
-        "turnAfterMove": false
-    },
-    {
-        "headingMode": 1,
-        "layer": 1,
-        "line": true,
-        "marker": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
-        "pos": {
-            "x": -60.0,
-            "y": 36.0
-        },
-        "rot": -270.0,
-        "turnAfterMove": false
-    },
-    {
-        "headingMode": 0,
-        "layer": 1,
-        "line": false,
-        "marker": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
-        "pos": {
-            "x": -24.0,
-            "y": 60.0
-        },
-        "rot": -270.0,
-        "turnAfterMove": false
-    },
-    {
-        "headingMode": 0,
-        "layer": 1,
-        "line": false,
-        "marker": false,
         "overides": {
             "accel": [
                 false,
@@ -150,10 +145,9 @@
         "turnAfterMove": false
     },
     {
-        "headingMode": 0,
-        "layer": 1,
+        "headingMode": 2,
+        "layer": 0,
         "line": false,
-        "marker": false,
         "overides": {
             "accel": [
                 false,
@@ -176,14 +170,13 @@
             "x": 48.0,
             "y": 36.0
         },
-        "rot": -360.0,
+        "rot": -270.0,
         "turnAfterMove": true
     },
     {
         "headingMode": 0,
-        "layer": 2,
+        "layer": 1,
         "line": false,
-        "marker": false,
         "overides": {
             "accel": [
                 false,
@@ -211,9 +204,8 @@
     },
     {
         "headingMode": 0,
-        "layer": 2,
+        "layer": 1,
         "line": false,
-        "marker": false,
         "overides": {
             "accel": [
                 false,
@@ -240,10 +232,9 @@
         "turnAfterMove": false
     },
     {
-        "headingMode": 1,
-        "layer": 2,
-        "line": true,
-        "marker": false,
+        "headingMode": 0,
+        "layer": 1,
+        "line": false,
         "overides": {
             "accel": [
                 false,
@@ -266,14 +257,13 @@
             "x": -60.0,
             "y": 36.0
         },
-        "rot": -270.0,
-        "turnAfterMove": false
+        "rot": -90.0,
+        "turnAfterMove": true
     },
     {
-        "headingMode": 0,
-        "layer": 3,
-        "line": false,
-        "marker": false,
+        "headingMode": 2,
+        "layer": 2,
+        "line": true,
         "overides": {
             "accel": [
                 false,
@@ -293,17 +283,16 @@
             ]
         },
         "pos": {
-            "x": -24.0,
-            "y": 60.0
+            "x": -36.0,
+            "y": 54.0
         },
         "rot": -270.0,
         "turnAfterMove": false
     },
     {
-        "headingMode": 0,
-        "layer": 3,
+        "headingMode": 2,
+        "layer": 2,
         "line": false,
-        "marker": false,
         "overides": {
             "accel": [
                 false,
@@ -330,10 +319,9 @@
         "turnAfterMove": false
     },
     {
-        "headingMode": 0,
-        "layer": 3,
+        "headingMode": 2,
+        "layer": 2,
         "line": false,
-        "marker": false,
         "overides": {
             "accel": [
                 false,
@@ -356,14 +344,13 @@
             "x": 48.0,
             "y": 36.0
         },
-        "rot": -360.0,
+        "rot": -270.0,
         "turnAfterMove": true
     },
     {
         "headingMode": 0,
-        "layer": 4,
+        "layer": 3,
         "line": false,
-        "marker": false,
         "overides": {
             "accel": [
                 false,
@@ -391,9 +378,8 @@
     },
     {
         "headingMode": 0,
-        "layer": 4,
+        "layer": 3,
         "line": false,
-        "marker": false,
         "overides": {
             "accel": [
                 false,
@@ -420,10 +406,9 @@
         "turnAfterMove": false
     },
     {
-        "headingMode": 1,
-        "layer": 4,
-        "line": true,
-        "marker": false,
+        "headingMode": 0,
+        "layer": 3,
+        "line": false,
         "overides": {
             "accel": [
                 false,
@@ -446,14 +431,13 @@
             "x": -60.0,
             "y": 36.0
         },
-        "rot": -270.0,
-        "turnAfterMove": false
+        "rot": -90.0,
+        "turnAfterMove": true
     },
     {
-        "headingMode": 0,
-        "layer": 5,
-        "line": false,
-        "marker": false,
+        "headingMode": 2,
+        "layer": 4,
+        "line": true,
         "overides": {
             "accel": [
                 false,
@@ -473,17 +457,16 @@
             ]
         },
         "pos": {
-            "x": -24.0,
-            "y": 60.0
+            "x": -36.0,
+            "y": 54.0
         },
         "rot": -270.0,
         "turnAfterMove": false
     },
     {
-        "headingMode": 0,
-        "layer": 5,
+        "headingMode": 2,
+        "layer": 4,
         "line": false,
-        "marker": false,
         "overides": {
             "accel": [
                 false,
@@ -511,9 +494,8 @@
     },
     {
         "headingMode": 0,
-        "layer": 5,
+        "layer": 4,
         "line": false,
-        "marker": false,
         "overides": {
             "accel": [
                 false,

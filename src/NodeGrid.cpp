@@ -157,6 +157,7 @@ void NodeGrid::addNode(glm::vec2 pos){
 	node->layer = (layer == -1) ? 0 : layer;
 	node->overides.reset();
 	node->marker.reset();
+	node->delay.reset();
 	selected = nodeCount;
 	nodeCount++;
 }

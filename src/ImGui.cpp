@@ -154,6 +154,12 @@ void ImGuiClass::nodeProperties(NodeGrid* grid){
 					node->marker.hasMarker = true;
 				}
 			}
+			if(!node->delay.hasDelay){
+				if(ImGui::MenuItem("delay")){
+					node->delay.reset();
+					node->delay.hasDelay = true;
+				}
+			}
 			ImGui::EndPopup();
 		}
 
@@ -213,6 +219,15 @@ void ImGuiClass::nodeProperties(NodeGrid* grid){
 					node->marker.hasMarker = false;
 				}
 				ImGui::InputText("label", node->marker.text, 255);
+				ImGui::TreePop();
+			}
+		}
+		if(node->delay.hasDelay){
+			if(ImGui::TreeNode("delay")){
+				if(ImGui::Button("-")){
+					node->marker.hasMarker = false;
+				}
+				ImGui::InputFloat("time", &(node->delay.time));
 				ImGui::TreePop();
 			}
 		}

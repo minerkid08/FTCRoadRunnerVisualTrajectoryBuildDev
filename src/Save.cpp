@@ -42,6 +42,9 @@ void Save::save(NodeGrid* grid){
 		if(node->marker.hasMarker){
 			json[i]["marker"] = node->marker.text;
 		}
+		if(node->delay.hasDelay){
+			json[i]["delay"] = node->delay.time;
+		}
 	}
 	if(path.find("\\") != std::string::npos){
 		std::string folder = path.substr(0, path.find("\\") + 1);
@@ -81,6 +84,10 @@ void Save::load(NodeGrid* grid, const std::string& _path){
 			std::string text = jNode["marker"];
 			strcpy(node->marker.text, text.c_str());
 		}
+		if(jNode.contains("delay")){
+			node->delay.hasDelay = true;
+			node->delay.time = jNode["marker"];
+		}
 		node->line = jNode["line"];
 		nlohmann::json overides = jNode["overides"];
 		node->overides.vel = overides["vel"][0];
@@ -102,37 +109,45 @@ void Save::exp(NodeGrid* grid){
 	glm::vec2 prevPos;
 	for(int i = 0; i < grid->nodeCount; i++){
 		PathNode* node = (grid->nodes + i);
-		std::string func;
+		std::stringstream func;
+		func << "	.";
+		if(!node->line){
+			func << "sp";
+		}
 		bool ins = false;
+		std::stringstream pose;
+		pose << "(" << node->pos.x << ", " << node->pos.y << ", Math.toRadians(" << -((node->turnAfterMove ? prevHeading : node->rot) - 90) << "))";
+		std::stringstream vec;
+		vec << "(" << node->pos.x << ", " << node->pos.y << ")";
+		std::stringstream ang;
+		ang << ", Math.toRadians(" << -((node->turnAfterMove ? prevHeading : node->rot) - 90) << ")";
 		switch(node->headingMode){
 			case 0:
-				func = "lineTo(new Vector2d";
-				ins = true;
+				func << "lineTo(new Vector2d" << vec.str();
+				if(!node->line){
+					func << ang.str();
+				}
+				func << ")\n";
 				break;
 			case 1:
-				func = "lineToLinearHeading(new Pose2d";
+				func << "lineToLinearHeading(new Pose2d" << pose.str() << ")\n";
 				break;
 			case 2:
-				func = "lineToConstantHeading(new Vector2d";
-				ins = true;
+				func << "lineToConstantHeading(new Vector2d" << vec.str();
+				if(!node->line){
+					func << ang.str();
+				}
+				func << ")\n";
 				break;
 			case 3:
-				func = "lineToSplineHeading(new Pose2d";
+				func << "lineToSplineHeading(new Pose2d" << vec.str() << ")\n";
 				break;
-		}
-		if(!node->line){
-			func = "sp" + func;
-			ins = true;
 		}
 		if(i == 0){
 			sstream << "drive.trajectorySequenceBuilder(new Pose2d(" << node->pos.x << ", " << node->pos.y << ", Math.toRadians(" << -(node->rot - 90) << ")))\n";
 		}else if(node->turnAfterMove){
 			if(node->pos != prevPos){
-				if(ins && node->line){
-					sstream << "	." << func << "(" << node->pos.x << ", " << node->pos.y << "))\n";
-				}else{
-					sstream << "	." << func << "(" << node->pos.x << ", " << node->pos.y << (ins ? "), Math.toRadians(" : ", ") << -(prevHeading - 90) << "))\n";
-				}
+				sstream << func.str();
 			}
 			float angle = -(node->rot - prevHeading);
 			if(abs(angle) > 180){
@@ -140,11 +155,7 @@ void Save::exp(NodeGrid* grid){
 			}
 			sstream << "	.turn(Math.toRadians(" << angle << "))\n"; 
 		}else{
-			if(ins && node->line){
-				sstream << "	." << func << "(" << node->pos.x << ", " << node->pos.y << "))\n";
-			}else{
-				sstream << "	." << func << "(" << node->pos.x << ", " << node->pos.y << (ins ? "), Math.toRadians(" : ", ") << -(node->rot - 90) << "))\n";
-			}
+			sstream << func.str();
 		}
 		prevPos = node->pos;
 		prevHeading = node->rot;
@@ -152,6 +163,9 @@ void Save::exp(NodeGrid* grid){
 			sstream << "	.addDisplacementMarker(() -> {\n";
 			sstream << "		System.out.println(" << node->marker.text <<");\n";
 			sstream << "	})\n";
+		}
+		if(node->delay.hasDelay){
+			sstream << "	.waitSeconds(" << node->delay.time << ")\n";
 		}
 	}
 	sstream << "	.build();";

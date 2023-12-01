@@ -35,6 +35,15 @@ struct Marker{
 	}
 };
 
+struct Delay{
+	bool hasDelay = false;
+	float time = 0;
+	void reset(){
+		time = 0;
+		hasDelay = false;
+	}
+};
+
 struct PathNode{
 	glm::vec2 pos;
 	float rot = 0;
@@ -44,4 +53,5 @@ struct PathNode{
 	int layer;
 	Overides overides;
 	Marker marker;
+	Delay delay;
 };
