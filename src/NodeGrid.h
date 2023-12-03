@@ -28,6 +28,10 @@ class NodeGrid{
 	void flipVert();
 	void flipHoriz();
 
+	PathNode* operator[](int i){
+		return nodes + i;
+	}
+
 	private:
 	Texture circleTex;
 	Texture arrowTex;

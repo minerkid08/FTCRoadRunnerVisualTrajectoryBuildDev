@@ -3,24 +3,6 @@
         "headingMode": 0,
         "layer": 0,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
             "x": -36.0,
             "y": -66.0
@@ -29,27 +11,10 @@
         "turnAfterMove": false
     },
     {
-        "headingMode": 0,
+        "delay": 0.5,
+        "headingMode": 1,
         "layer": 0,
-        "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
+        "line": true,
         "pos": {
             "x": -54.0,
             "y": -36.0
@@ -58,27 +23,10 @@
         "turnAfterMove": false
     },
     {
-        "headingMode": 0,
+        "delay": 0.5,
+        "headingMode": 2,
         "layer": 0,
-        "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
+        "line": true,
         "pos": {
             "x": -60.0,
             "y": -36.0
@@ -90,24 +38,6 @@
         "headingMode": 2,
         "layer": 0,
         "line": true,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
             "x": -36.0,
             "y": -54.0
@@ -116,87 +46,34 @@
         "turnAfterMove": false
     },
     {
-        "headingMode": 0,
+        "headingMode": 2,
         "layer": 0,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
-            "x": 24.0,
+            "x": 12.0,
             "y": -60.0
         },
         "rot": 90.0,
         "turnAfterMove": false
     },
     {
-        "headingMode": 0,
+        "delay": 0.5,
+        "headingMode": 2,
         "layer": 0,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
             "x": 48.0,
             "y": -36.0
         },
         "rot": 90.0,
-        "turnAfterMove": true
+        "turnAfterMove": false
     },
     {
         "headingMode": 0,
         "layer": 1,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
-            "x": 24.0,
+            "x": 12.0,
             "y": -60.0
         },
         "rot": -90.0,
@@ -206,24 +83,6 @@
         "headingMode": 0,
         "layer": 1,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
             "x": -24.0,
             "y": -60.0
@@ -232,88 +91,24 @@
         "turnAfterMove": false
     },
     {
+        "delay": 0.5,
         "headingMode": 0,
         "layer": 1,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
             "x": -60.0,
             "y": -36.0
         },
         "rot": -90.0,
-        "turnAfterMove": true
+        "turnAfterMove": false
     },
     {
         "headingMode": 2,
         "layer": 2,
-        "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
+        "line": true,
         "pos": {
             "x": -36.0,
             "y": -54.0
-        },
-        "rot": 90.0,
-        "turnAfterMove": true
-    },
-    {
-        "headingMode": 2,
-        "layer": 2,
-        "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
-        "pos": {
-            "x": 24.0,
-            "y": -60.0
         },
         "rot": 90.0,
         "turnAfterMove": false
@@ -322,55 +117,31 @@
         "headingMode": 2,
         "layer": 2,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
+        "pos": {
+            "x": 12.0,
+            "y": -60.0
         },
+        "rot": 90.0,
+        "turnAfterMove": false
+    },
+    {
+        "delay": 0.5,
+        "headingMode": 2,
+        "layer": 2,
+        "line": false,
         "pos": {
             "x": 48.0,
             "y": -36.0
         },
         "rot": 90.0,
-        "turnAfterMove": true
+        "turnAfterMove": false
     },
     {
         "headingMode": 0,
         "layer": 3,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
-            "x": 24.0,
+            "x": 12.0,
             "y": -60.0
         },
         "rot": -90.0,
@@ -380,24 +151,6 @@
         "headingMode": 0,
         "layer": 3,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
             "x": -24.0,
             "y": -60.0
@@ -406,27 +159,10 @@
         "turnAfterMove": false
     },
     {
+        "delay": 0.5,
         "headingMode": 0,
         "layer": 3,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
             "x": -60.0,
             "y": -36.0
@@ -437,25 +173,7 @@
     {
         "headingMode": 2,
         "layer": 4,
-        "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
+        "line": true,
         "pos": {
             "x": -36.0,
             "y": -54.0
@@ -467,58 +185,23 @@
         "headingMode": 2,
         "layer": 4,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
-            "x": 24.0,
+            "x": 12.0,
             "y": -60.0
         },
         "rot": 90.0,
         "turnAfterMove": false
     },
     {
+        "delay": 0.5,
         "headingMode": 2,
         "layer": 4,
         "line": false,
-        "overides": {
-            "accel": [
-                false,
-                0.0
-            ],
-            "angAccel": [
-                false,
-                0.0
-            ],
-            "angVel": [
-                false,
-                0.0
-            ],
-            "vel": [
-                false,
-                0.0
-            ]
-        },
         "pos": {
             "x": 48.0,
             "y": -36.0
         },
         "rot": 90.0,
-        "turnAfterMove": true
+        "turnAfterMove": false
     }
 ]

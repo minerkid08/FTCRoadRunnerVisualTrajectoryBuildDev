@@ -4,6 +4,7 @@
 #include <cstring>
 
 struct Overides{
+	bool hasOverides = false;
 	bool vel = false;
 	float velV = 0.0f;
 	bool accel = false;
@@ -13,6 +14,7 @@ struct Overides{
 	bool angAccel = false;
 	float angAccelV = 0.0f;
 	void reset(){
+		hasOverides = false;
 		vel = false;
 		velV = 0.0f;
 		accel = false;

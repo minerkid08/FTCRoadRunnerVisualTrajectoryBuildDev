@@ -31,14 +31,16 @@ void Save::save(NodeGrid* grid){
 			{"headingMode", node->headingMode},
 			{"turnAfterMove", node->turnAfterMove},
 			{"layer", node->layer},
-			{"line", node->line},
-			{"overides", {
+			{"line", node->line}
+		};
+		if(node->overides.hasOverides){
+			json[i]["overides"] = {
 				{"vel", {node->overides.vel, node->overides.velV}},
 				{"accel", {node->overides.accel, node->overides.accelV}},
 				{"angVel", {node->overides.angVel, node->overides.angVelV}},
 				{"angAccel", {node->overides.angAccel, node->overides.angAccelV}},
-			}}
-		};
+			};
+		}
 		if(node->marker.hasMarker){
 			json[i]["marker"] = node->marker.text;
 		}
@@ -46,13 +48,17 @@ void Save::save(NodeGrid* grid){
 			json[i]["delay"] = node->delay.time;
 		}
 	}
-	if(path.find("\\") != std::string::npos){
-		std::string folder = path.substr(0, path.find("\\") + 1);
-		if(!std::filesystem::exists(folder)){
-			std::filesystem::create_directory(folder);
+	std::string _path = path;
+	if(_path.find("\\") != std::string::npos){
+		_path = _path.substr(path.find("\\") + 1);
+	}
+	if(_path.find("\\") != std::string::npos){
+		std::string folder = _path.substr(0, _path.find("\\") + 1);
+		if(!std::filesystem::exists("save\\" + folder)){
+			std::filesystem::create_directory("save\\" + folder);
 		}
 	}
-
+	std::cout << "saved: " << path << "\n";
 	std::ofstream fout(path);
 	fout << json.dump(4);
 }
@@ -86,21 +92,25 @@ void Save::load(NodeGrid* grid, const std::string& _path){
 		}
 		if(jNode.contains("delay")){
 			node->delay.hasDelay = true;
-			node->delay.time = jNode["marker"];
+			node->delay.time = jNode["delay"];
 		}
 		node->line = jNode["line"];
-		nlohmann::json overides = jNode["overides"];
-		node->overides.vel = overides["vel"][0];
-		node->overides.velV = overides["vel"][1];
-		node->overides.accel = overides["accel"][0];
-		node->overides.accelV = overides["accel"][1];
-		node->overides.angVel = overides["angVel"][0];
-		node->overides.angVelV = overides["angVel"][1];
-		node->overides.angAccel = overides["angAccel"][0];
-		node->overides.angAccelV = overides["angAccel"][1];
+		if(jNode.contains("overides")){
+			nlohmann::json overides = jNode["overides"];
+			node->overides.hasOverides = true;
+			node->overides.vel = overides["vel"][0];
+			node->overides.velV = overides["vel"][1];
+			node->overides.accel = overides["accel"][0];
+			node->overides.accelV = overides["accel"][1];
+			node->overides.angVel = overides["angVel"][0];
+			node->overides.angVelV = overides["angVel"][1];
+			node->overides.angAccel = overides["angAccel"][0];
+			node->overides.angAccelV = overides["angAccel"][1];
+		}
 		i++;
 	}
 	grid->nodeCount = i;
+	std::cout << "loaded: " << path << "\n";
 }
 
 void Save::exp(NodeGrid* grid){
@@ -169,20 +179,20 @@ void Save::exp(NodeGrid* grid){
 		}
 	}
 	sstream << "	.build();";
-	
-	if(path.find("\\") != std::string::npos){
-		path = path.substr(path.find("\\"));
+	std::string _path = path;
+	if(_path.find("\\") != std::string::npos){
+		_path = _path.substr(path.find("\\") + 1);
 	}
-	std::cout << path << '\n';
-	if(path.find("\\") != std::string::npos){
-		std::string folder = path.substr(0, path.find("\\") + 1);
+	if(_path.find("\\") != std::string::npos){
+		std::string folder = _path.substr(0, _path.find("\\") + 1);
 		if(!std::filesystem::exists("export/" + folder)){
 			std::filesystem::create_directory("export/" + folder);
 		}
 	}
-	if(path.find(".") != std::string::npos){
-		path = path.substr(0, path.find("."));
+	if(_path.find(".") != std::string::npos){
+		_path = _path.substr(0, _path.find("."));
 	}
-	std::ofstream fout("export" + path + ".java");
+	std::cout << "exported: export\\" << _path << ".java\n";
+	std::ofstream fout("export\\" + _path + ".java");
 	fout << sstream.str();
 }

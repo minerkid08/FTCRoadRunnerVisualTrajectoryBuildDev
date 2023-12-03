@@ -29,6 +29,7 @@
         "turnAfterMove": false
     },
     {
+        "delay": 0.5,
         "headingMode": 1,
         "layer": 0,
         "line": true,
@@ -58,6 +59,7 @@
         "turnAfterMove": false
     },
     {
+        "delay": 0.5,
         "headingMode": 1,
         "layer": 0,
         "line": true,
@@ -145,6 +147,7 @@
         "turnAfterMove": false
     },
     {
+        "delay": 0.5,
         "headingMode": 2,
         "layer": 0,
         "line": false,
@@ -171,7 +174,7 @@
             "y": 36.0
         },
         "rot": -270.0,
-        "turnAfterMove": true
+        "turnAfterMove": false
     },
     {
         "headingMode": 0,
@@ -232,6 +235,7 @@
         "turnAfterMove": false
     },
     {
+        "delay": 0.5,
         "headingMode": 0,
         "layer": 1,
         "line": false,
@@ -258,7 +262,7 @@
             "y": 36.0
         },
         "rot": -90.0,
-        "turnAfterMove": true
+        "turnAfterMove": false
     },
     {
         "headingMode": 2,
@@ -319,6 +323,7 @@
         "turnAfterMove": false
     },
     {
+        "delay": 0.5,
         "headingMode": 2,
         "layer": 2,
         "line": false,
@@ -345,7 +350,7 @@
             "y": 36.0
         },
         "rot": -270.0,
-        "turnAfterMove": true
+        "turnAfterMove": false
     },
     {
         "headingMode": 0,
@@ -406,6 +411,7 @@
         "turnAfterMove": false
     },
     {
+        "delay": 0.5,
         "headingMode": 0,
         "layer": 3,
         "line": false,
@@ -432,7 +438,7 @@
             "y": 36.0
         },
         "rot": -90.0,
-        "turnAfterMove": true
+        "turnAfterMove": false
     },
     {
         "headingMode": 2,
@@ -493,7 +499,7 @@
         "turnAfterMove": false
     },
     {
-        "headingMode": 0,
+        "headingMode": 2,
         "layer": 4,
         "line": false,
         "overides": {

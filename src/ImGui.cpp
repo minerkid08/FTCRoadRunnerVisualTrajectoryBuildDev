@@ -106,9 +106,25 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 	int j = 0;
 	if(grid->nodeCount > 0){
 		for(int i = 0; i < grid->nodeCount; i++){
+			PathNode* node = (*grid)[i];
+
+			ImVec4 tint(0.25f, 0.25f, 0.25f, 1);
+			if(grid->selected == i){
+				tint.x = 0.75f;
+			}
+			if(i == 0){
+				tint.y = 0.75f;
+			}
+			if(node->turnAfterMove){
+				tint.z = 0.75f;
+			}
+
+			ImGui::PushStyleColor(ImGuiCol_Button, tint);
+
 			if(ImGui::Button(std::to_string(i).c_str())){
 				grid->selected = i;
 			}
+			ImGui::PopStyleColor();
 			if(j < 9){
 				ImGui::SameLine();
 				j++;
@@ -138,7 +154,7 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 void ImGuiClass::nodeProperties(NodeGrid* grid){
 	ImGui::Begin("Properties");
 	if(grid->selected > -1 && grid->selected < grid->nodeCount){
-		PathNode* node = (grid->nodes + grid->selected);
+		PathNode* node = (*grid)[grid->selected];
 		ImGui::Text((std::string("node: ") + std::to_string(grid->selected)).c_str());
 		if(ImGui::Button("remove")){
 			grid->removeNode(grid->selected);
@@ -148,6 +164,12 @@ void ImGuiClass::nodeProperties(NodeGrid* grid){
 			ImGui::OpenPopup("add");
 		}
 		if(ImGui::BeginPopup("add")){
+			if(!node->overides.hasOverides){
+				if(ImGui::MenuItem("overides")){
+					node->overides.reset();
+					node->overides.hasOverides = true;
+				}
+			}
 			if(!node->marker.hasMarker){
 				if(ImGui::MenuItem("marker")){
 					node->marker.reset();
@@ -184,33 +206,38 @@ void ImGuiClass::nodeProperties(NodeGrid* grid){
 			ImGui::Checkbox("turn after move", &(node->turnAfterMove));
 			ImGui::Checkbox("line", &(node->line));
 			ImGui::TreePop();
+		
 		}
+		if(node->overides.hasOverides){
+			if(ImGui::TreeNode("speed overides")){
+				if(ImGui::Button("-")){
+					node->overides.hasOverides = false;
+				}
+				ImGui::PushID(1);
+				ImGui::Checkbox("", &(node->overides.vel));
+				ImGui::PopID();
+				ImGui::SameLine();
+				ImGui::InputFloat("vel", &(node->overides.velV));
 
-		if(ImGui::TreeNode("speed overides")){
-			ImGui::PushID(1);
-			ImGui::Checkbox("", &(node->overides.vel));
-			ImGui::PopID();
-			ImGui::SameLine();
-			ImGui::InputFloat("vel", &(node->overides.velV));
+				ImGui::PushID(2);
+				ImGui::Checkbox("", &(node->overides.accel));
+				ImGui::PopID();
+				ImGui::SameLine();
+				ImGui::InputFloat("accel", &(node->overides.accelV));
 
-			ImGui::PushID(2);
-			ImGui::Checkbox("", &(node->overides.accel));
-			ImGui::PopID();
-			ImGui::SameLine();
-			ImGui::InputFloat("accel", &(node->overides.accelV));
+				ImGui::PushID(3);
+				ImGui::Checkbox("", &(node->overides.angVel));
+				ImGui::PopID();
+				ImGui::SameLine();
+				ImGui::InputFloat("ang vel", &(node->overides.angVelV));
 
-			ImGui::PushID(3);
-			ImGui::Checkbox("", &(node->overides.angVel));
-			ImGui::PopID();
-			ImGui::SameLine();
-			ImGui::InputFloat("ang vel", &(node->overides.angVelV));
-
-			ImGui::PushID(4);
-			ImGui::Checkbox("", &(node->overides.angAccel));
-			ImGui::PopID();
-			ImGui::SameLine();
-			ImGui::InputFloat("ang accel", &(node->overides.angAccelV));
-			ImGui::TreePop();
+				ImGui::PushID(4);
+				ImGui::Checkbox("", &(node->overides.angAccel));
+				ImGui::PopID();
+				ImGui::SameLine();
+				ImGui::InputFloat("ang accel", &(node->overides.angAccelV));
+				ImGui::TreePop();
+			}
 		}
 
 		if(node->marker.hasMarker){
