@@ -131,6 +131,7 @@ void Save::exp(NodeGrid* grid){
 		vec << "(" << node->pos.x << ", " << node->pos.y << ")";
 		std::stringstream ang;
 		ang << ", Math.toRadians(" << -((node->turnAfterMove ? prevHeading : node->rot) - 90) << ")";
+		bool constantHeading = false;
 		switch(node->headingMode){
 			case 0:
 				func << "lineTo(new Vector2d" << vec.str();
@@ -144,6 +145,7 @@ void Save::exp(NodeGrid* grid){
 				break;
 			case 2:
 				func << "lineToConstantHeading(new Vector2d" << vec.str();
+				constantHeading = true;
 				if(!node->line){
 					func << ang.str();
 				}
@@ -168,7 +170,9 @@ void Save::exp(NodeGrid* grid){
 			sstream << func.str();
 		}
 		prevPos = node->pos;
-		prevHeading = node->rot;
+		if(!constantHeading){
+			prevHeading = node->rot;
+		}
 		if(node->marker.hasMarker){
 			sstream << "	.addDisplacementMarker(() -> {\n";
 			sstream << "		System.out.println(" << node->marker.text <<");\n";

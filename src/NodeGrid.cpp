@@ -10,7 +10,7 @@ NodeGrid::NodeGrid(Shader* _shader) : circleTex("circle.png"), arrowTex("arrow.p
 NodeGrid::~NodeGrid(){
 	delete nodes;
 }
-void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize){
+void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, bool shiftDown){
 	if(selected >= nodeCount){
 		selected = nodeCount - 1;
 	}
@@ -24,9 +24,13 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 				PathNode* node2 = (nodes + i + 1);
 				glm::vec2 pos1 = {node1->pos.x / 72, node1->pos.y / 72};
 				glm::vec2 pos2 = {node2->pos.x / 72, node2->pos.y / 72};
+				pos1.x -= 1;
+				pos1.x *= 0.5f;
+				pos2.x -= 1;
+				pos2.x *= 0.5f;
 				glm::vec2 dif = pos2 - pos1;
 				glm::vec2 dif2 = glm::normalize(dif);
-				dif2 = {dif2.x / 40, dif2.y / 40};
+				dif2 = {dif2.x /40, dif2.y / 80};
 				glm::vec4 verts[4];
 				verts[0] = {dif2.y + pos1.x, -dif2.x + pos1.y, 0, 1};
 				verts[1] = {-dif2.y + pos1.x, dif2.x + pos1.y, 0, 1};
@@ -63,13 +67,18 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 					glm::radians(node->rot), glm::vec3(0, 0, 1)
 				);
 				glm::vec4 verts[4] = {
-					glm::vec4(+0.04, +0.04, 0, 1) * mat,
-					glm::vec4(+0.04, -0.04, 0, 1) * mat,
-					glm::vec4(-0.04, +0.04, 0, 1) * mat,
-					glm::vec4(-0.04, -0.04, 0, 1) * mat,
+					glm::vec4(+0.02, +0.04, 0, 1) * mat,
+					glm::vec4(+0.02, -0.04, 0, 1) * mat,
+					glm::vec4(-0.02, +0.04, 0, 1) * mat,
+					glm::vec4(-0.02, -0.04, 0, 1) * mat,
 				};
+				glm::vec2 pos = node->pos;
+				pos.x /= 72;
+				pos.y /= 72;
+				pos.x -= 1;
+				pos.x *= 0.5f;
 				for(int j = 0; j < 4; j++){
-					verts[j] = {node->pos.x / 72 + verts[j].x, node->pos.y / 72 + verts[j].y, 0, 1};
+					verts[j] = {pos.x + verts[j].x, pos.y + verts[j].y, 0, 1};
 				}
 				glm::vec4 tint(0,0,0,1);
 				bool a = false;
@@ -96,7 +105,7 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 			}
 		}
 	}
-	if(clickMode == 0){
+	if(shiftDown){
 		float x = (mouseX - (float)(windowSize/2)) / (windowSize/2) * 72;
 		float y = (mouseY - (float)(windowSize/2)) / (windowSize/2) * 72;
 
@@ -104,13 +113,15 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 		y = round(y / 6.0f) * -6;
 
 		x /= 72;
+		x -= 1;
+		x *= 0.5f;
 		y /= 72;
 
 		glm::vec4 verts[4] = {
-			glm::vec4(+0.04, +0.04, 0, 1),
-			glm::vec4(+0.04, -0.04, 0, 1),
-			glm::vec4(-0.04, +0.04, 0, 1),
-			glm::vec4(-0.04, -0.04, 0, 1)
+			glm::vec4(+0.02, +0.04, 0, 1),
+			glm::vec4(+0.02, -0.04, 0, 1),
+			glm::vec4(-0.02, +0.04, 0, 1),
+			glm::vec4(-0.02, -0.04, 0, 1)
 		};
 		for(int j = 0; j < 4; j++){
 			verts[j] = {x + verts[j].x, y + verts[j].y, 0, 1};
@@ -119,14 +130,14 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 	}
 }
 
-void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize){
+void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, bool shiftDown){
 	float x = (mouseX - (float)(windowSize/2)) / (windowSize/2) * 72;
 	float y = (mouseY - (float)(windowSize/2)) / (windowSize/2) * 72;
 	x = round(x / 6.0f) * 6;
 	y = round(y / 6.0f) * -6;
-	if(clickMode == 0){
+	if(shiftDown){
 		addNode({x, y});
-	}else if(clickMode == 1){
+	}else{
 		float closestDist = 100.0f;
 		int closestInd = -1;
 		for(int i = 0; i < nodeCount; i++){

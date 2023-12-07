@@ -1,0 +1,149 @@
+[
+    {
+        "headingMode": 0,
+        "layer": 0,
+        "line": false,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": -36.0,
+            "y": -66.0
+        },
+        "rot": 0.0,
+        "turnAfterMove": false
+    },
+    {
+        "delay": 1.0,
+        "headingMode": 2,
+        "layer": 0,
+        "line": false,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": -36.0,
+            "y": -37.0
+        },
+        "rot": 0.0,
+        "turnAfterMove": false
+    },
+    {
+        "delay": 0.0,
+        "headingMode": 2,
+        "layer": 0,
+        "line": false,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": -18.0,
+            "y": -66.0
+        },
+        "rot": 90.0,
+        "turnAfterMove": false
+    },
+    {
+        "headingMode": 2,
+        "layer": 0,
+        "line": false,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": 30.0,
+            "y": -60.0
+        },
+        "rot": 90.0,
+        "turnAfterMove": false
+    },
+    {
+        "headingMode": 0,
+        "layer": 0,
+        "line": false,
+        "overides": {
+            "accel": [
+                false,
+                0.0
+            ],
+            "angAccel": [
+                false,
+                0.0
+            ],
+            "angVel": [
+                false,
+                0.0
+            ],
+            "vel": [
+                false,
+                0.0
+            ]
+        },
+        "pos": {
+            "x": 50.0,
+            "y": -36.0
+        },
+        "rot": 180.0,
+        "turnAfterMove": true
+    }
+]

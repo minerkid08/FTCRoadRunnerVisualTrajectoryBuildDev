@@ -19,10 +19,12 @@ GLFWwindow* getWindow(){
 	return window;
 }
 
-int windowSize = 1000;
+int windowSize = 800;
 
 int mouseX = 0;
 int mouseY = 0;
+
+bool shiftDown = false;
 
 int main(int argc, char* argv[]){
 
@@ -43,7 +45,7 @@ int main(int argc, char* argv[]){
 	bool running = true;
 	glfwInit();
 
-	window = glfwCreateWindow(windowSize, windowSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
+	window = glfwCreateWindow(windowSize * 2, windowSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 	glfwSetWindowUserPointer(window, &running);
 	glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
@@ -62,14 +64,29 @@ int main(int argc, char* argv[]){
 
 	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int btn, int action, int mods){
 		if(btn == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
-			if(mouseX <= windowSize && mouseY <= windowSize)
-				grid->mouseClick(mouseX, mouseY, windowSize);
+			if(mouseX <= windowSize && mouseY <= windowSize){
+				ImGuiIO io = ImGui::GetIO();
+				if(!io.WantCaptureMouse){
+					grid->mouseClick(mouseX, mouseY, windowSize, shiftDown);
+				}
+			}
 		}
 	});
 
 	glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y){
 		mouseX = floor(x);
 		mouseY = floor(y);
+	});
+
+	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods){
+		if(key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT){
+			if(action == GLFW_PRESS){
+				shiftDown = true;
+			}
+			if(action == GLFW_RELEASE){
+				shiftDown = false;
+			}
+		}
 	});
 
 	glEnable(GL_BLEND);
@@ -109,8 +126,8 @@ int main(int argc, char* argv[]){
 	Renderer renderer;
 
 	glm::vec4 verts[]{
-		{1, 1, 0, 1},
-		{1, -1, 0, 1},
+		{0, 1, 0, 1},
+		{0, -1, 0, 1},
 		{-1, 1, 0, 1},
 		{-1, -1, 0, 1}
 	};
@@ -142,7 +159,7 @@ int main(int argc, char* argv[]){
 
 		renderer.draw(verts, &tex, &shader, glm::vec4(1, 1, 1, 1));
 
-		grid->update(renderer, mouseX, mouseY, windowSize);
+		grid->update(renderer, mouseX, mouseY, windowSize, shiftDown);
 
 		imGui.begin();
 		imGui.nodeList(grid);

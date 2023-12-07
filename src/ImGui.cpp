@@ -78,15 +78,6 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 	}
 	ImGui::EndMenuBar();
 	ImGui::Text(("current path: " + Save::getPath()).c_str());
-	if(ImGui::Button("add")){
-		grid->clickMode = 0;
-	}
-	ImGui::SameLine();
-	if(ImGui::Button("select")){
-		grid->clickMode = 1;
-	}
-	ImGui::SameLine();
-	ImGui::Text(grid->clickMode == 0 ? "add" : "select");
 	ImGui::InputInt("layer", &(grid->layer), 1, 1, 0);
 	if(ImGui::Button("flipHoriz")){
 		grid->flipHoriz();
@@ -147,6 +138,9 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 				}
 				explorerMode = 0;
 			}
+			if(i == 2){
+				explorerMode = 0;
+			}
 		}
 	}
 }
@@ -204,9 +198,18 @@ void ImGuiClass::nodeProperties(NodeGrid* grid){
 				ImGui::EndCombo();
 			}
 			ImGui::Checkbox("turn after move", &(node->turnAfterMove));
-			ImGui::Checkbox("line", &(node->line));
+
+			const char* lineMode[] = {"spline", "line"};
+
+			if(ImGui::BeginCombo("line", lineMode[node->line])){
+				for(int i = 0; i < 2; i++){
+					if(ImGui::Selectable(lineMode[i])){
+						node->line = i;
+					}
+				}
+				ImGui::EndCombo();
+			}
 			ImGui::TreePop();
-		
 		}
 		if(node->overides.hasOverides){
 			if(ImGui::TreeNode("speed overides")){
@@ -252,7 +255,7 @@ void ImGuiClass::nodeProperties(NodeGrid* grid){
 		if(node->delay.hasDelay){
 			if(ImGui::TreeNode("delay")){
 				if(ImGui::Button("-")){
-					node->marker.hasMarker = false;
+					node->delay.hasDelay = false;
 				}
 				ImGui::InputFloat("time", &(node->delay.time));
 				ImGui::TreePop();
