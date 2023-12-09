@@ -34,5 +34,6 @@ class NodeGrid{
 	private:
 	Texture circleTex;
 	Texture arrowTex;
+	Texture arrowSquareTex;
 	Shader* shader;
 };

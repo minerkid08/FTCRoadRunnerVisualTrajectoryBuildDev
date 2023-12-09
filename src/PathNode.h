@@ -2,9 +2,20 @@
 
 #include <glm/glm.hpp>
 #include <cstring>
+#include <vector>
 
-struct Overides{
-	bool hasOverides = false;
+#define NodePartOveride 1
+#define NodePartMarker 2
+#define NodePartDelay 3
+#define NodePartTurn 4
+
+struct NodePart{
+	virtual void reset(){}
+	virtual int getId(){return 0;}
+};
+
+struct Overides : public NodePart{
+	int getId(){return 1;}
 	bool vel = false;
 	float velV = 0.0f;
 	bool accel = false;
@@ -14,7 +25,6 @@ struct Overides{
 	bool angAccel = false;
 	float angAccelV = 0.0f;
 	void reset(){
-		hasOverides = false;
 		vel = false;
 		velV = 0.0f;
 		accel = false;
@@ -25,24 +35,35 @@ struct Overides{
 		angAccelV = 0.0f;
 	}
 };
-struct Marker{
+
+struct Marker : public NodePart{
+	int getId(){return 2;}
 	char* text;
-	bool hasMarker;
 	Marker(){
 		text = new char[255];
+		reset();
+	}
+	~Marker(){
+		delete text;
 	}
 	void reset(){
-		hasMarker = false;
 		memset(text, 0, 255);
 	}
 };
 
-struct Delay{
-	bool hasDelay = false;
+struct Delay : public NodePart{
+	int getId(){return 3;}
 	float time = 0;
 	void reset(){
 		time = 0;
-		hasDelay = false;
+	}
+};
+
+struct Turn : public NodePart{
+	int getId(){return 4;}
+	float angle;
+	void reset(){
+		angle = 0;
 	}
 };
 
@@ -50,10 +71,15 @@ struct PathNode{
 	glm::vec2 pos;
 	float rot = 0;
 	int headingMode = 0;
-	bool turnAfterMove = false;
 	bool line = false;
 	int layer;
-	Overides overides;
-	Marker marker;
-	Delay delay;
+	std::vector<NodePart*> parts;
+	bool hasPart(int id){
+		for(NodePart* part : parts){
+			if(part->getId() == id){
+				return true;
+			}
+		}
+		return false;
+	}
 };

@@ -29,23 +29,45 @@ void Save::save(NodeGrid* grid){
 				}},
 			{"rot", node->rot},
 			{"headingMode", node->headingMode},
-			{"turnAfterMove", node->turnAfterMove},
 			{"layer", node->layer},
 			{"line", node->line}
 		};
-		if(node->overides.hasOverides){
-			json[i]["overides"] = {
-				{"vel", {node->overides.vel, node->overides.velV}},
-				{"accel", {node->overides.accel, node->overides.accelV}},
-				{"angVel", {node->overides.angVel, node->overides.angVelV}},
-				{"angAccel", {node->overides.angAccel, node->overides.angAccelV}},
-			};
-		}
-		if(node->marker.hasMarker){
-			json[i]["marker"] = node->marker.text;
-		}
-		if(node->delay.hasDelay){
-			json[i]["delay"] = node->delay.time;
+		int j = 0;
+		for(NodePart* part : node->parts){
+			switch(part->getId()){
+				case 1:{
+					Overides* overides = (Overides*)part;
+					json[i]["other"][j] = {
+						{"vel", {overides->vel, overides->velV}},
+						{"accel", {overides->accel, overides->accelV}},
+						{"angVel", {overides->angVel, overides->angVelV}},
+						{"angAccel", {overides->angAccel, overides->angAccelV}}
+					};
+					break;
+				}
+				case 2:{
+					Marker* marker = (Marker*)part;
+					json[i]["other"][j] = {
+						{"text", marker->text}
+					};
+					break;
+				}
+				case 3:{
+					Delay* delay = (Delay*)part;
+					json[i]["other"][j] = {
+						{"time", delay->time}
+					};
+					break;
+				}
+				case 4:{
+					Turn* turn = (Turn*)part;
+					json[i]["other"][j] = {
+						{"angle", turn->angle}
+					};
+					break;
+				}
+			}
+			j++;
 		}
 	}
 	std::string _path = path;
@@ -84,28 +106,35 @@ void Save::load(NodeGrid* grid, const std::string& _path){
 		node->layer = jNode["layer"];
 		node->rot = jNode["rot"];
 		node->headingMode = jNode["headingMode"];
-		node->turnAfterMove = jNode["turnAfterMove"];
-		if(jNode.contains("marker")){
-			node->marker.hasMarker = true;
-			std::string text = jNode["marker"];
-			strcpy(node->marker.text, text.c_str());
-		}
-		if(jNode.contains("delay")){
-			node->delay.hasDelay = true;
-			node->delay.time = jNode["delay"];
-		}
-		node->line = jNode["line"];
-		if(jNode.contains("overides")){
-			nlohmann::json overides = jNode["overides"];
-			node->overides.hasOverides = true;
-			node->overides.vel = overides["vel"][0];
-			node->overides.velV = overides["vel"][1];
-			node->overides.accel = overides["accel"][0];
-			node->overides.accelV = overides["accel"][1];
-			node->overides.angVel = overides["angVel"][0];
-			node->overides.angVelV = overides["angVel"][1];
-			node->overides.angAccel = overides["angAccel"][0];
-			node->overides.angAccelV = overides["angAccel"][1];
+		for(auto jPart : jNode["other"]){
+			if(jPart.contains("vel")){;
+				Overides* overides = new Overides();
+				overides->vel = jPart["vel"][0];
+				overides->velV = jPart["vel"][1];
+				overides->accel = jPart["accel"][0];
+				overides->accelV = jPart["accel"][1];
+				overides->angVel = jPart["angVel"][0];
+				overides->angVelV = jPart["angVel"][1];
+				overides->angAccel = jPart["angAccel"][0];
+				overides->angAccelV = jPart["angAccel"][1];
+				node->parts.push_back(overides);
+			}
+			if(jPart.contains("text")){
+				Marker* marker = new Marker();
+				std::string text = jPart["text"];
+				strcpy(marker->text, text.c_str());
+				node->parts.push_back(marker);
+			}
+			if(jPart.contains("time")){
+				Delay* delay = new Delay();
+				delay->time = jPart["time"];
+				node->parts.push_back(delay);
+			}
+			if(jPart.contains("angle")){
+				Turn* turn = new Turn();
+				turn->angle = jPart["angle"];
+				node->parts.push_back(turn);
+			}
 		}
 		i++;
 	}
@@ -126,11 +155,11 @@ void Save::exp(NodeGrid* grid){
 		}
 		bool ins = false;
 		std::stringstream pose;
-		pose << "(" << node->pos.x << ", " << node->pos.y << ", Math.toRadians(" << -((node->turnAfterMove ? prevHeading : node->rot) - 90) << "))";
+		pose << "(" << node->pos.x << ", " << node->pos.y << ", Math.toRadians(" << -((node->rot) - 90) << "))";
 		std::stringstream vec;
 		vec << "(" << node->pos.x << ", " << node->pos.y << ")";
 		std::stringstream ang;
-		ang << ", Math.toRadians(" << -((node->turnAfterMove ? prevHeading : node->rot) - 90) << ")";
+		ang << ", Math.toRadians(" << -((node->rot) - 90) << ")";
 		bool constantHeading = false;
 		switch(node->headingMode){
 			case 0:
@@ -156,31 +185,41 @@ void Save::exp(NodeGrid* grid){
 				break;
 		}
 		if(i == 0){
-			sstream << "drive.trajectorySequenceBuilder(new Pose2d(" << node->pos.x << ", " << node->pos.y << ", Math.toRadians(" << -(node->rot - 90) << ")))\n";
-		}else if(node->turnAfterMove){
+			sstream << "drive.trajectorySequenceBuilder(new Pose2d(" << node->pos.x << ", " << node->pos.y << ang.str() << ")))\n";
+		}else{
 			if(node->pos != prevPos){
 				sstream << func.str();
+				if(!constantHeading){
+					prevHeading = node->rot;
+				}
+				for(NodePart* part : node->parts){
+					switch(part->getId()){
+						case NodePartTurn:{
+							Turn* turn = (Turn*)part;
+							float angle = -(node->rot - prevHeading);
+							if(abs(angle) > 180){
+								angle -= 360 * (angle > 0 ? 1 : -1);
+							}
+							sstream << "	.turn(Math.toRadians(" << angle << "))\n";
+							break;
+						}
+						case NodePartDelay:{
+							Delay* delay = (Delay*)part;
+							sstream << "	.waitSeconds(" << delay->time << ")\n";
+							break;
+						}
+						case NodePartMarker:{
+							Marker* marker = (Marker*)part;
+							sstream << "	.addDisplacementMarker(() -> {\n";
+							sstream << "		System.out.println(" << marker->text <<");\n";
+							sstream << "	})\n";
+							break;
+						}
+					}
+				}
 			}
-			float angle = -(node->rot - prevHeading);
-			if(abs(angle) > 180){
-				angle -= 360 * (angle > 0 ? 1 : -1);
-			}
-			sstream << "	.turn(Math.toRadians(" << angle << "))\n"; 
-		}else{
-			sstream << func.str();
 		}
 		prevPos = node->pos;
-		if(!constantHeading){
-			prevHeading = node->rot;
-		}
-		if(node->marker.hasMarker){
-			sstream << "	.addDisplacementMarker(() -> {\n";
-			sstream << "		System.out.println(" << node->marker.text <<");\n";
-			sstream << "	})\n";
-		}
-		if(node->delay.hasDelay){
-			sstream << "	.waitSeconds(" << node->delay.time << ")\n";
-		}
 	}
 	sstream << "	.build();";
 	std::string _path = path;

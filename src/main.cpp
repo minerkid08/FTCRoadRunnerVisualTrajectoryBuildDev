@@ -45,7 +45,7 @@ int main(int argc, char* argv[]){
 	bool running = true;
 	glfwInit();
 
-	window = glfwCreateWindow(windowSize * 2, windowSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
+	window = glfwCreateWindow(windowSize, windowSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 	glfwSetWindowUserPointer(window, &running);
 	glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
@@ -126,8 +126,8 @@ int main(int argc, char* argv[]){
 	Renderer renderer;
 
 	glm::vec4 verts[]{
-		{0, 1, 0, 1},
-		{0, -1, 0, 1},
+		{1, 1, 0, 1},
+		{1, -1, 0, 1},
 		{-1, 1, 0, 1},
 		{-1, -1, 0, 1}
 	};
