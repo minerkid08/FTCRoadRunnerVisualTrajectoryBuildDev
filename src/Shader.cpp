@@ -50,8 +50,7 @@ void Shader::setUniform(const std::string& name, glm::vec4 value){
 	glUniform4f(loc, value.x, value.y, value.z, value.w);
 }
 
-int Shader::makeShader(GLenum type, const char* src)
-{
+int Shader::makeShader(GLenum type, const char* src){
 	int id = glCreateShader(type);
 	const GLchar* glSrc = src;
 	glShaderSource(id, 1, &glSrc, 0);
@@ -59,8 +58,7 @@ int Shader::makeShader(GLenum type, const char* src)
 	int state;
 	glGetShaderiv(id, GL_COMPILE_STATUS, &state);
 	glErrorCheck();
-	if(state == GL_FALSE)
-	{
+	if(state == GL_FALSE){
 		int len = 256;
 		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &len);
 		char* err;

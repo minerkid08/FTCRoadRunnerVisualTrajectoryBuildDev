@@ -1,8 +1,9 @@
-#include <ImGui.h>
+#include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
 #include <Save.h>
+#include "ImGui.h"
 
 static void removePart(PathNode* node, int ind){
 	delete node->parts[ind];
@@ -94,7 +95,7 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 	ImGui::Begin("Node List", nullptr, ImGuiWindowFlags_MenuBar);
 	ImGui::BeginMenuBar();
 	if(ImGui::MenuItem("new")){
-		grid->nodeCount = 0;
+		grid->reset();
 		grid->selected = -1;
 		Save::clearPath();
 	}
@@ -165,7 +166,7 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 	ImGui::End();
 	if(explorerMode){
 		if(int i = explorer.render(".path")){
-			if(i == 1){
+			if(i == FileExplorerUpdate_PathSelected){
 				strcpy(path, explorer.outPath.string().c_str());
 				if(explorerMode == 1){
 					Save::saveAs(grid, path);
@@ -176,7 +177,7 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 				}
 				explorerMode = 0;
 			}
-			if(i == 2){
+			if(i == FileExplorerUpdate_Close){
 				explorerMode = 0;
 			}
 		}
@@ -191,53 +192,55 @@ void ImGuiClass::nodeProperties(NodeGrid* grid){
 		if(ImGui::Button("remove")){
 			grid->removeNode(grid->selected);
 		}
-		ImGui::SameLine();
-		if(ImGui::Button("+")){
-			ImGui::OpenPopup("add");
-		}
-		if(ImGui::BeginPopup("add")){
-			bool overides = false;
-			bool marker = false;
-			bool delay = false;
-			bool turn = false;
-			for(int i = 0; i < node->parts.size(); i++){
-				NodePart* part = node->parts[i];
-				switch(part->getId()){
-					case 1:
-					overides = true;
-					break;
-					case 2:
-					marker = true;
-					break;
-					case 3:
-					delay = true;
-					break;
-					case 4:
-					turn = true;
-					break;
-				}
+		if(grid->selected > 0){
+			ImGui::SameLine();
+			if(ImGui::Button("+")){
+				ImGui::OpenPopup("add");
 			}
-			if(!overides){
-				if(ImGui::MenuItem("overides")){
-					node->parts.push_back(new Overides());
+			if(ImGui::BeginPopup("add")){
+				bool overides = false;
+				bool marker = false;
+				bool delay = false;
+				bool turn = false;
+				for(int i = 0; i < node->parts.size(); i++){
+					NodePart* part = node->parts[i];
+					switch(part->getId()){
+						case 1:
+						overides = true;
+						break;
+						case 2:
+						marker = true;
+						break;
+						case 3:
+						delay = true;
+						break;
+						case 4:
+						turn = true;
+						break;
+					}
 				}
-			}
-			if(!marker){
-				if(ImGui::MenuItem("marker")){
-					node->parts.push_back(new Marker());
+				if(!overides){
+					if(ImGui::MenuItem("overides")){
+						node->parts.push_back(new Overides());
+					}
 				}
-			}
-			if(!delay){
-				if(ImGui::MenuItem("delay")){
-					node->parts.push_back(new Delay());
+				if(!marker){
+					if(ImGui::MenuItem("marker")){
+						node->parts.push_back(new Marker());
+					}
 				}
-			}
-			if(!turn){
-				if(ImGui::MenuItem("turn")){
-					node->parts.push_back(new Turn());
+				if(!delay){
+					if(ImGui::MenuItem("delay")){
+						node->parts.push_back(new Delay());
+					}
 				}
+				if(!turn){
+					if(ImGui::MenuItem("turn")){
+						node->parts.push_back(new Turn());
+					}
+				}
+				ImGui::EndPopup();
 			}
-			ImGui::EndPopup();
 		}
 
 		if(ImGui::TreeNode("transform")){
@@ -246,86 +249,87 @@ void ImGuiClass::nodeProperties(NodeGrid* grid){
 			ImGui::InputInt("layer", &(node->layer), 1, 1, 0);
 			ImGui::TreePop();
 		}
-
-		if(ImGui::TreeNode("path")){
-			const char* headingModes[] = {"none", "linear", "constant", "spline"};
-
-			if(ImGui::BeginCombo("heading mode", headingModes[node->headingMode])){
-				for(int i = 0; i < 4; i++){
-					if(ImGui::Selectable(headingModes[i])){
-						node->headingMode = i;
+		if(grid->selected > 0){
+			if(ImGui::TreeNode("path")){
+				const char* headingModes[] = {"none", "linear", "constant", "spline"};
+	
+				if(ImGui::BeginCombo("heading mode", headingModes[node->headingMode])){
+					for(int i = 0; i < 4; i++){
+						if(ImGui::Selectable(headingModes[i])){
+							node->headingMode = i;
+						}
 					}
+					ImGui::EndCombo();
 				}
-				ImGui::EndCombo();
-			}
-			const char* lineMode[] = {"spline", "line"};
-
-			if(ImGui::BeginCombo("line", lineMode[node->line])){
-				for(int i = 0; i < 2; i++){
-					if(ImGui::Selectable(lineMode[i])){
-						node->line = i;
+				const char* lineMode[] = {"spline", "line"};
+	
+				if(ImGui::BeginCombo("line", lineMode[node->line])){
+					for(int i = 0; i < 2; i++){
+						if(ImGui::Selectable(lineMode[i])){
+							node->line = i;
+						}
 					}
+					ImGui::EndCombo();
 				}
-				ImGui::EndCombo();
+				ImGui::TreePop();
 			}
-			ImGui::TreePop();
-		}
-		ImGui::Separator();
-		for(int i = 0; i < node->parts.size(); i++){
-			switch(node->parts[i]->getId()){
-				case 1:
-					if(ImGui::TreeNode("speed overides")){
-						Overides* overides = (Overides*)node->parts[i];
-						nodePartButtons(node, i);
-						ImGui::PushID(1);
-						ImGui::Checkbox("", &(overides->vel));
-						ImGui::PopID();
-						ImGui::SameLine();
-						ImGui::InputFloat("vel", &(overides->velV));
-
-						ImGui::PushID(2);
-						ImGui::Checkbox("", &(overides->accel));
-						ImGui::PopID();
-						ImGui::SameLine();
-						ImGui::InputFloat("accel", &(overides->accelV));
-
-						ImGui::PushID(3);
-						ImGui::Checkbox("", &(overides->angVel));
-						ImGui::PopID();
-						ImGui::SameLine();
-						ImGui::InputFloat("ang vel", &(overides->angVelV));
-
-						ImGui::PushID(4);
-						ImGui::Checkbox("", &(overides->angAccel));
-						ImGui::PopID();
-						ImGui::SameLine();
-						ImGui::InputFloat("ang accel", &(overides->angAccelV));
-						ImGui::TreePop();
-					}
-					break;
-				case 2:
-					if(ImGui::TreeNode("marker")){
-						Marker* marker = (Marker*)node->parts[i];
-						nodePartButtons(node, i);
-						ImGui::InputText("label", marker->text, 255);
-						ImGui::TreePop();
-					}
-					break;
-				case 3:
-					if(ImGui::TreeNode("delay")){
-						Delay* delay = (Delay*)node->parts[i];
-						nodePartButtons(node, i);
-						ImGui::InputFloat("time", &(delay->time));
-						ImGui::TreePop();
-					}
-					break;
-				case 4:
-					if(ImGui::TreeNode("turn")){
-						Turn* turn = (Turn*)node->parts[i];
-						nodePartButtons(node, i);
-						ImGui::InputFloat("angle", &(turn->angle));
-						ImGui::TreePop();
-					}
+			ImGui::Separator();
+			for(int i = 0; i < node->parts.size(); i++){
+				switch(node->parts[i]->getId()){
+					case 1:
+						if(ImGui::TreeNode("speed overides")){
+							Overides* overides = (Overides*)node->parts[i];
+							nodePartButtons(node, i);
+							ImGui::PushID(1);
+							ImGui::Checkbox("", &(overides->vel));
+							ImGui::PopID();
+							ImGui::SameLine();
+							ImGui::InputFloat("vel", &(overides->velV));
+	
+							ImGui::PushID(2);
+							ImGui::Checkbox("", &(overides->accel));
+							ImGui::PopID();
+							ImGui::SameLine();
+							ImGui::InputFloat("accel", &(overides->accelV));
+	
+							ImGui::PushID(3);
+							ImGui::Checkbox("", &(overides->angVel));
+							ImGui::PopID();
+							ImGui::SameLine();
+							ImGui::InputFloat("ang vel", &(overides->angVelV));
+	
+							ImGui::PushID(4);
+							ImGui::Checkbox("", &(overides->angAccel));
+							ImGui::PopID();
+							ImGui::SameLine();
+							ImGui::InputFloat("ang accel", &(overides->angAccelV));
+							ImGui::TreePop();
+						}
+						break;
+					case 2:
+						if(ImGui::TreeNode("marker")){
+							Marker* marker = (Marker*)node->parts[i];
+							nodePartButtons(node, i);
+							ImGui::InputText("label", marker->text, 255);
+							ImGui::TreePop();
+						}
+						break;
+					case 3:
+						if(ImGui::TreeNode("delay")){
+							Delay* delay = (Delay*)node->parts[i];
+							nodePartButtons(node, i);
+							ImGui::InputFloat("time", &(delay->time));
+							ImGui::TreePop();
+						}
+						break;
+					case 4:
+						if(ImGui::TreeNode("turn")){
+							Turn* turn = (Turn*)node->parts[i];
+							nodePartButtons(node, i);
+							ImGui::InputFloat("angle", &(turn->angle));
+							ImGui::TreePop();
+						}
+				}
 			}
 		}
 	}

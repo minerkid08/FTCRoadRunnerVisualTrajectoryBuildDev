@@ -74,11 +74,14 @@ void Save::save(NodeGrid* grid){
 	if(_path.find("\\") != std::string::npos){
 		_path = _path.substr(path.find("\\") + 1);
 	}
-	if(_path.find("\\") != std::string::npos){
+	std::string folders = "save\\";
+	while(_path.find("\\") != std::string::npos){
 		std::string folder = _path.substr(0, _path.find("\\") + 1);
-		if(!std::filesystem::exists("save\\" + folder)){
-			std::filesystem::create_directory("save\\" + folder);
+		folders += folder;
+		if(!std::filesystem::exists(folders)){
+			std::filesystem::create_directory(folders);
 		}
+		_path = _path.substr(_path.find("\\") + 1);
 	}
 	std::cout << "saved: " << path << "\n";
 	std::ofstream fout(path);
@@ -97,6 +100,7 @@ void Save::load(NodeGrid* grid, const std::string& _path){
 	nlohmann::json json = nlohmann::json::parse(sstream);
 	
 	int i = 0;
+	grid->reset();
 	for(auto jNode : json){	
 		PathNode* node = (grid->nodes + i);
 		node->pos = {
@@ -106,6 +110,7 @@ void Save::load(NodeGrid* grid, const std::string& _path){
 		node->layer = jNode["layer"];
 		node->rot = jNode["rot"];
 		node->headingMode = jNode["headingMode"];
+		node->line = jNode["line"];
 		for(auto jPart : jNode["other"]){
 			if(jPart.contains("vel")){;
 				Overides* overides = new Overides();
@@ -170,7 +175,11 @@ void Save::exp(NodeGrid* grid){
 				func << ")\n";
 				break;
 			case 1:
-				func << "lineToLinearHeading(new Pose2d" << pose.str() << ")\n";
+				func << "lineToLinearHeading(new Pose2d" << pose.str();
+				if(node->headingMode == 1 && !node->line){
+					func << ang.str();
+				}
+				func << ")\n";
 				break;
 			case 2:
 				func << "lineToConstantHeading(new Vector2d" << vec.str();
@@ -185,7 +194,7 @@ void Save::exp(NodeGrid* grid){
 				break;
 		}
 		if(i == 0){
-			sstream << "drive.trajectorySequenceBuilder(new Pose2d(" << node->pos.x << ", " << node->pos.y << ang.str() << ")))\n";
+			sstream << "drive.trajectorySequenceBuilder(new Pose2d(" << node->pos.x << ", " << node->pos.y << ang.str() << "))\n";
 		}else{
 			if(node->pos != prevPos){
 				sstream << func.str();
@@ -226,16 +235,19 @@ void Save::exp(NodeGrid* grid){
 	if(_path.find("\\") != std::string::npos){
 		_path = _path.substr(path.find("\\") + 1);
 	}
-	if(_path.find("\\") != std::string::npos){
+	std::string folders = "";
+	while(_path.find("\\") != std::string::npos){
 		std::string folder = _path.substr(0, _path.find("\\") + 1);
-		if(!std::filesystem::exists("export/" + folder)){
-			std::filesystem::create_directory("export/" + folder);
+		folders += folder;
+		if(!std::filesystem::exists("export\\" + folders)){
+			std::filesystem::create_directory("export\\" + folders);
 		}
+		_path = _path.substr(_path.find("\\") + 1);
 	}
 	if(_path.find(".") != std::string::npos){
 		_path = _path.substr(0, _path.find("."));
 	}
-	std::cout << "exported: export\\" << _path << ".java\n";
-	std::ofstream fout("export\\" + _path + ".java");
+	std::cout << "exported: export\\" << folders << _path << ".java\n";
+	std::ofstream fout("export\\" +  folders + _path + ".java");
 	fout << sstream.str();
 }

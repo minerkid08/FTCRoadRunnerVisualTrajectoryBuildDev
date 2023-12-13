@@ -58,6 +58,7 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 				if(node->layer == layer && h == 0){
 					continue;
 				}
+				{
 				glm::mat4 mat = glm::rotate(
 					glm::mat4(1), 
 					glm::radians(node->rot), glm::vec3(0, 0, 1)
@@ -96,6 +97,37 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 					tint.a = 0.5;
 				}
 				renderer.draw(verts, &circleTex, shader, tint);
+				}
+				if(node->hasPart(NodePartTurn)){
+					Turn* turn;
+					for(int j = 0; j < node->parts.size(); j++){
+						if(node->parts[j]->getId() == NodePartTurn){
+							turn = (Turn*)node->parts[j];
+							break;
+						}
+					}
+					glm::mat4 mat = glm::rotate(
+						glm::mat4(1),
+						glm::radians(turn->angle), glm::vec3(0, 0, 1)
+					);
+					glm::vec4 verts[4] = {
+						glm::vec4(+0.04, +0.04, 0, 1) * mat,
+						glm::vec4(+0.04, -0.04, 0, 1) * mat,
+						glm::vec4(-0.04, +0.04, 0, 1) * mat,
+						glm::vec4(-0.04, -0.04, 0, 1) * mat,
+					};
+					glm::vec2 pos = node->pos;
+					pos.y /= 72;
+					pos.x /= 72;
+					for(int j = 0; j < 4; j++){
+						verts[j] = {pos.x + verts[j].x, pos.y + verts[j].y, 0, 1};
+					}
+					glm::vec4 tint = {0, 0.5f, 1, 1};
+					if(h == 0 && layer != -1){
+						tint.a = 0.5;
+					}
+					renderer.draw(verts, &arrowSquareTex, shader, tint);
+				}
 			}
 		}
 	}
@@ -165,8 +197,7 @@ void NodeGrid::removeNode(int ind){
 	(nodes + ind)->parts.resize(0);
 	for(int i = ind; i < nodeCount - 1; i++){
 		PathNode* node = (nodes + i);
-		node->pos = (nodes + i + 1)->pos;
-		node->rot = (nodes + i + 1)->rot;
+		*node = *(nodes + i + 1);
 	}
 	nodeCount--;
 }
@@ -203,4 +234,15 @@ void NodeGrid::flipHoriz(){
 		(nodes + i)->pos.x *= -1;
 		(nodes + i)->rot *= -1;
 	}
+}
+
+void NodeGrid::reset(){
+	for(int i = 0; i < nodeCount; i++){
+		PathNode* node = nodes + i;
+		for(NodePart* part : node->parts){
+			delete part;
+		}
+		node->parts.resize(0);
+	}
+	nodeCount = 0;
 }

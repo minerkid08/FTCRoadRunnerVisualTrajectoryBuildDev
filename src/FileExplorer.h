@@ -5,6 +5,10 @@
 #define FileExplorerFlags_DontShowFolders 1 << 1
 #define FileExplorerFlags_DontShowFiles 1 << 2
 #define FileExplorerFlags_AlwaysShowBack 1 << 3
+
+#define FileExplorerUpdate_Normal 0
+#define FileExplorerUpdate_PathSelected 1
+#define FileExplorerUpdate_Close 2
 class FileExplorer{
 	public:
 	FileExplorer();

@@ -27,6 +27,8 @@ class NodeGrid{
 	void flipVert();
 	void flipHoriz();
 
+	void reset();
+
 	PathNode* operator[](int i){
 		return nodes + i;
 	}
