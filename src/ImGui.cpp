@@ -125,6 +125,7 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 	if(ImGui::Button("flipVert")){
 		grid->flipVert();
 	}
+	ImGui::Checkbox("grid snap", &(grid->gridSnap));
 	if(ImGui::Button("^")){
 		grid->moveUp(grid->selected);
 	}

@@ -134,9 +134,13 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 	if(shiftDown){
 		float x = (mouseX - (float)(windowSize/2)) / (windowSize/2) * 72;
 		float y = (mouseY - (float)(windowSize/2)) / (windowSize/2) * 72;
-
-		x = round(x / 6.0f) * 6;
-		y = round(y / 6.0f) * -6;
+		
+		if(gridSnap){
+			x = round(x / 6.0f) * 6;
+			y = round(y / 6.0f) * -6;
+		}else{
+			y *= -1;
+		}
 
 		x /= 72;
 		y /= 72;
@@ -157,8 +161,12 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, bool shiftDown){
 	float x = (mouseX - (float)(windowSize/2)) / (windowSize/2) * 72;
 	float y = (mouseY - (float)(windowSize/2)) / (windowSize/2) * 72;
-	x = round(x / 6.0f) * 6;
-	y = round(y / 6.0f) * -6;
+	if(gridSnap){
+		x = round(x / 6.0f) * 6;
+		y = round(y / 6.0f) * -6;
+	}else{
+		y *= -1;
+	}
 	if(shiftDown){
 		addNode({x, y});
 	}else{

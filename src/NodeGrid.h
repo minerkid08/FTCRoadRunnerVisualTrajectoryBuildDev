@@ -11,6 +11,7 @@ class NodeGrid{
 	int selected = -1;
 	const int maxNodes = 32;
 	int layer = -1;
+	bool gridSnap = true;
 	
 	NodeGrid(Shader* shader);
 	~NodeGrid();
