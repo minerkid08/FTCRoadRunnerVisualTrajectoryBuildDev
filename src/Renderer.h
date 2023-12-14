@@ -18,6 +18,7 @@ class Renderer{
 	void draw(glm::vec4 verts[4], Texture* tex, Shader* shader, glm::vec4 tint);
 
 	private:
+	glm::mat4 camMat;
 	GLuint va;
 	GLuint vb;
 	GLuint ib;

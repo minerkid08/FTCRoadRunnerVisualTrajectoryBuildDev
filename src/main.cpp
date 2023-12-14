@@ -45,7 +45,7 @@ int main(int argc, char* argv[]){
 	bool running = true;
 	glfwInit();
 
-	window = glfwCreateWindow(windowSize, windowSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
+	window = glfwCreateWindow(windowSize * 2, windowSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 	glfwSetWindowUserPointer(window, &running);
 	glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);

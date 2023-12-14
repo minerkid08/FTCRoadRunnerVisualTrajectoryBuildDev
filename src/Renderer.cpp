@@ -1,4 +1,5 @@
 #include <Renderer.h>
+#include <glm/gtc/matrix_transform.hpp>
 void errorCheck(int num){
 	int err = glGetError();
 	while(err != GL_NO_ERROR){
@@ -60,6 +61,8 @@ Renderer::Renderer(){
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(inds), inds, GL_STATIC_DRAW);
 	glErrorCheck();
+
+	camMat = glm::ortho(-2.0f, 2.0f, -1.0f, 1.0f);
 }
 
 Renderer::~Renderer(){
@@ -71,7 +74,8 @@ Renderer::~Renderer(){
 void Renderer::draw(glm::vec4 verts[4], Texture* tex, Shader* shader, glm::vec4 tint){
 	Vertex vertices[4];
 	for(int i = 0; i < 4; i++){
-		vertices[i].pos = {verts[i].x, verts[i].y};
+		glm::vec4 vert = verts[i] * camMat;
+		vertices[i].pos = {vert.x - 0.5f, vert.y};
 		vertices[i].texUV = uv[i];
 		vertices[i].tint = tint;
 	}
