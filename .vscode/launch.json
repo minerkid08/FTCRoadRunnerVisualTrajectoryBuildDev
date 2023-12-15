@@ -25,7 +25,7 @@
 			"windows": {
 			  "miDebuggerPath": "C:/raylib/w64devkit/bin/gdb.exe",
 			},
-			"preLaunchTask": "build"
+			"preLaunchTask": "test"
 		}
 	]
 }

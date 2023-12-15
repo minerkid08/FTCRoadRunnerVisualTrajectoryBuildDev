@@ -26,7 +26,7 @@ int mouseY = 0;
 
 bool shiftDown = false;
 
-int main(int argc, char* argv[]){
+int main(int argc, char** argv){
 
 	if(!std::filesystem::exists("save")){
 		std::filesystem::create_directory("save");
@@ -158,7 +158,7 @@ int main(int argc, char* argv[]){
 		shader.use();
 
 		renderer.draw(verts, &tex, &shader, glm::vec4(1, 1, 1, 1));
-
+		
 		grid->update(renderer, mouseX, mouseY, windowSize, shiftDown);
 
 		imGui.begin();
