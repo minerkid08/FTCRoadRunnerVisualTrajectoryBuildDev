@@ -1,27 +1,43 @@
 #include <NodeGrid.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-NodeGrid::NodeGrid(Shader* _shader) : circleTex("circle.png"), arrowTex("arrow.png"), arrowSquareTex("arrowSquare.png"){
-	nodes = new PathNode[maxNodes]();
-	nodeCount = 0;
+void NodeGrid::drawRotatedArrow(Renderer& renderer, glm::vec2 pos, float rot, glm::vec4 tint){
+	glm::mat4 mat = glm::rotate(
+		glm::mat4(1),
+		glm::radians(rot), glm::vec3(0, 0, 1)
+	);
+	glm::vec4 verts[4] = {
+		glm::vec4(+0.04, +0.04, 0, 1) * mat,
+		glm::vec4(+0.04, -0.04, 0, 1) * mat,
+		glm::vec4(-0.04, +0.04, 0, 1) * mat,
+		glm::vec4(-0.04, -0.04, 0, 1) * mat,
+	};
+	pos.y /= 72;
+	pos.x /= 72;
+	for(int j = 0; j < 4; j++){
+		verts[j] = {pos.x + verts[j].x, pos.y + verts[j].y, 0, 1};
+	}
+	renderer.draw(verts, &arrowSquareTex, shader, tint);
+}
+
+NodeGrid::NodeGrid(Shader* _shader) : circleTex("circle.png"), arrowTex("arrow.png"), arrowSquareTex("arrowSquare.png"), nodes(maxNodes), segs(maxSegs){
 	shader = _shader;
 }
 
-NodeGrid::~NodeGrid(){
-	delete nodes;
-}
-void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, bool shiftDown){
-	if(selected >= nodeCount){
-		selected = nodeCount - 1;
+NodeGrid::~NodeGrid(){}
+
+void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods){
+	if(selected.ind >= nodes.count){
+		selected.ind = nodes.count - 1;
 	}
 	if(layer < -1){
 		layer = -1;
 	}
-	if(nodeCount > 0){
-		if(nodeCount > 1){
-			for(int i = 0; i < nodeCount - 1; i++){
-				PathNode* node1 = (nodes + i);
-				PathNode* node2 = (nodes + i + 1);
+	if(nodes.count > 0){
+		if(nodes.count > 1){
+			for(int i = 0; i < segs.count; i++){
+				PathNode* node1 = nodes.get(segs.get(i)->startNode);
+				PathNode* node2 = nodes.get(segs.get(i)->endNode);
 				glm::vec2 pos1 = {node1->pos.x / 72, node1->pos.y / 72};
 				glm::vec2 pos2 = {node2->pos.x / 72, node2->pos.y / 72};
 				glm::vec2 dif = pos2 - pos1;
@@ -32,22 +48,22 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 				verts[1] = {-dif2.y + pos1.x, dif2.x + pos1.y, 0, 1};
 				verts[2] = {dif2.y + pos1.x + dif.x, -dif2.x + dif.y + pos1.y, 0, 1};
 				verts[3] = {-dif2.y + pos1.x + dif.x, dif2.x + dif.y + pos1.y, 0, 1};
-				renderer.draw(verts, &arrowTex, shader, {0.5f, 0.5f, 0.5f, 1});
+				renderer.draw(verts, &arrowTex, shader, {selected.type == TypeSegment && selected.ind == i ? 1.0f : 0.5f, 0.5f, 0.5f, 1});
 			}
 		}
 		for(int h = 0; h < 2; h++){
-			if((layer == -1 || selected == -1) && h == 1){
+			if((layer == -1 || selected.ind == -1) && h == 1){
 				break;
 			}
-			for(int i = 0; i < nodeCount + 1; i++){
-				if(i == selected || selected >= nodeCount || (selected == -1 && i == nodeCount)){
+			for(int i = 0; i < nodes.count + 1; i++){
+				if(i == selected.ind || selected.ind >= nodes.count || (selected.ind == -1 && i == nodes.count)){
 					continue;
 				}
 				PathNode* node;
-				if(i < nodeCount){
-					node = (nodes + i);
+				if(i < nodes.count){
+					node = nodes.get(i);
 				}else{
-					node = (nodes + selected);
+					node = nodes.get(selected.ind);
 				}
 				if(node->layer < 0){
 					node->layer = 0;
@@ -58,7 +74,6 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 				if(node->layer == layer && h == 0){
 					continue;
 				}
-				{
 				glm::mat4 mat = glm::rotate(
 					glm::mat4(1), 
 					glm::radians(node->rot), glm::vec3(0, 0, 1)
@@ -77,61 +92,26 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 				}
 				glm::vec4 tint(0,0,0,1);
 				bool a = false;
-				if((selected == 0 && i == nodeCount) || i == 0){
-					tint.g = 1;
-				}
-				if(i == nodeCount){
+				if(i == nodes.count && selected.type == TypeNode){
 					tint.r = 1;
 				}
-				//if(node->turnAfterMove){
-				//	tint.b = 1;
-				//	a = true;
-				//}
+
 				if(tint == glm::vec4(0, 0, 0, 1)){
 					tint = {1, 1, 1, 1};
-				}
-				if(tint == glm::vec4(1, 1, 1, 1) && a){
-					tint = {-1, -1, -1, 1};
 				}
 				if(h == 0 && layer != -1){
 					tint.a = 0.5;
 				}
 				renderer.draw(verts, &circleTex, shader, tint);
+				tint = {0, 0.5f, 1, 1};
+				if(h == 0 && layer != -1){
+					tint.a = 0.5;
 				}
-				if(node->hasPart(NodePartTurn)){
-					Turn* turn;
-					for(int j = 0; j < node->parts.size(); j++){
-						if(node->parts[j]->getId() == NodePartTurn){
-							turn = (Turn*)node->parts[j];
-							break;
-						}
-					}
-					glm::mat4 mat = glm::rotate(
-						glm::mat4(1),
-						glm::radians(turn->angle), glm::vec3(0, 0, 1)
-					);
-					glm::vec4 verts[4] = {
-						glm::vec4(+0.04, +0.04, 0, 1) * mat,
-						glm::vec4(+0.04, -0.04, 0, 1) * mat,
-						glm::vec4(-0.04, +0.04, 0, 1) * mat,
-						glm::vec4(-0.04, -0.04, 0, 1) * mat,
-					};
-					glm::vec2 pos = node->pos;
-					pos.y /= 72;
-					pos.x /= 72;
-					for(int j = 0; j < 4; j++){
-						verts[j] = {pos.x + verts[j].x, pos.y + verts[j].y, 0, 1};
-					}
-					glm::vec4 tint = {0, 0.5f, 1, 1};
-					if(h == 0 && layer != -1){
-						tint.a = 0.5;
-					}
-					renderer.draw(verts, &arrowSquareTex, shader, tint);
-				}
+				drawRotatedArrow(renderer, node->pos, node->heading, tint);
 			}
 		}
 	}
-	if(shiftDown){
+	if(mods == 1){
 		float x = (mouseX - (float)(windowSize/2)) / (windowSize/2) * 72;
 		float y = (mouseY - (float)(windowSize/2)) / (windowSize/2) * 72;
 		
@@ -158,7 +138,7 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 	}
 }
 
-void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, bool shiftDown){
+void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods){
 	float x = (mouseX - (float)(windowSize/2)) / (windowSize/2) * 72;
 	float y = (mouseY - (float)(windowSize/2)) / (windowSize/2) * 72;
 	if(gridSnap){
@@ -167,90 +147,93 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, bool shiftDown
 	}else{
 		y *= -1;
 	}
-	if(shiftDown){
-		addNode({x, y});
+	if(mods == 1){
+		nodes.add()->pos = {x, y};
 	}else{
 		float closestDist = 100.0f;
 		int closestInd = -1;
-		for(int i = 0; i < nodeCount; i++){
-			PathNode* node = (nodes + i);
+		int closestType = -1;
+		for(int i = 0; i < nodes.count; i++){
+			PathNode* node = nodes.get(i);
 			if(node->layer == layer || layer == -1){
 				float dist = glm::distance(glm::vec2(x, y), glm::vec2(node->pos.x, node->pos.y));
 				if(dist < closestDist){
 					closestDist = dist;
 					closestInd = i;
+					closestType = TypeNode;
+				}
+			}
+		}
+		for(int i = 0; i < segs.count; i++){
+			PathSegment* seg = segs.get(i);
+			if(seg->layer == layer || layer == -1){
+				PathNode* start = nodes.get(seg->startNode);
+				PathNode* end = nodes.get(seg->endNode);
+				glm::vec2 pos = {(start->pos.x + end->pos.x) / 2.0f, (start->pos.y + end->pos.y) / 2.0f};
+				float dist = glm::distance(glm::vec2(x, y), glm::vec2(pos.x, pos.y));
+				if(dist < closestDist){
+					closestDist = dist;
+					closestInd = i;
+					closestType = TypeSegment;
 				}
 			}
 		}
 		if(closestDist < 12){
-			selected = closestInd;
+			if(mods == 0){
+				selected.ind = closestInd;
+				selected.type = closestType;
+			}else if(selected.ind >= 0 && selected.type == TypeNode && closestType == TypeNode){
+				PathSegment* seg = segs.add();
+				seg->startNode = selected.ind;
+				seg->endNode = closestInd;
+				seg->headingMode = 0;
+				seg->pathType = 0;
+				seg->layer = 0;
+				selected.ind++;
+				selected.type = TypeNode;
+			}
 		}
 	}
 }
 
-void NodeGrid::addNode(glm::vec2 pos){
-	if(nodeCount >= maxNodes)
-		return;
-	PathNode* node = nodes + nodeCount;
-	node->pos = pos;
+void NodeGrid::resetNode(int ind){
+	PathNode* node = nodes.get(ind);
+	node->pos = {0, 0};
 	node->rot = 0;
-	node->line = false;
-	node->headingMode = 0;
 	node->layer = (layer == -1) ? 0 : layer;
-	selected = nodeCount;
-	nodeCount++;
-}
-
-void NodeGrid::removeNode(int ind){
-	(nodes + ind)->parts.resize(0);
-	for(int i = ind; i < nodeCount - 1; i++){
-		PathNode* node = (nodes + i);
-		*node = *(nodes + i + 1);
+	for(NodePart* part : node->parts){
+		delete part;
 	}
-	nodeCount--;
-}
-
-void NodeGrid::moveUp(int ind){
-	if(ind + 1 < nodeCount){
-		PathNode node = *(nodes + ind + 1);
-		*(nodes + ind + 1) = *(nodes + ind);
-		*(nodes + ind) = node;
-		selected++;
-	}
-}
-
-void NodeGrid::moveDown(int ind){
-	if(ind - 1 > -1){
-		PathNode node = *(nodes + ind - 1);
-		*(nodes + ind - 1) = *(nodes + ind);
-		*(nodes + ind) = node;
-		selected--;
-	}
+	node->parts.clear();
 }
 
 void NodeGrid::flipVert(){
-	for(int i = 0; i < nodeCount; i++){
-		(nodes + i)->pos.y *= -1;
-		(nodes + i)->rot += 90;
-		(nodes + i)->rot *= -1;
-		(nodes + i)->rot -= 90;
-	}
+	nodes.foreach([](int ind, PathNode* node){
+		node->pos.y *= -1;
+		node->rot += 90;
+		node->rot *= -1;
+		node->rot -= 90;
+	});
 }
 
 void NodeGrid::flipHoriz(){
-	for(int i = 0; i < nodeCount; i++){
-		(nodes + i)->pos.x *= -1;
-		(nodes + i)->rot *= -1;
-	}
+	nodes.foreach([](int ind, PathNode* node){
+		node->pos.x *= -1;
+		node->rot *= -1;
+	});
 }
 
 void NodeGrid::reset(){
-	for(int i = 0; i < nodeCount; i++){
-		PathNode* node = nodes + i;
+	nodes.foreach([](int i, PathNode* node){
 		for(NodePart* part : node->parts){
 			delete part;
 		}
 		node->parts.resize(0);
-	}
-	nodeCount = 0;
+	});
+	segs.foreach([](int i, PathSegment* seg){
+		for(SegPart* part : seg->parts){
+			delete part;
+		}
+		seg->parts.resize(0);
+	});
 }

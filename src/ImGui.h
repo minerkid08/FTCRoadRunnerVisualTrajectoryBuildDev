@@ -19,4 +19,6 @@ class ImGuiClass{
 	FileExplorer explorer;
 	int explorerMode = 0;
 	char* path;
+	void nodeUi(NodeGrid* grid);
+	void segUi(NodeGrid* grid);
 };

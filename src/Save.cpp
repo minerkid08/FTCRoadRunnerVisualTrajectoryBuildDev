@@ -18,7 +18,7 @@ void Save::clearPath(){
 }
 
 void Save::save(NodeGrid* grid){
-	nlohmann::json json;
+	/*nlohmann::json json;
 	json = {};
 	for(int i = 0; i < grid->nodeCount; i++){
 		PathNode* node = (grid->nodes + i);
@@ -28,9 +28,8 @@ void Save::save(NodeGrid* grid){
 				{"y", node->pos.y}
 				}},
 			{"rot", node->rot},
-			{"headingMode", node->headingMode},
-			{"layer", node->layer},
-			{"line", node->line}
+			{"heading", node->heading},
+			{"layer", node->layer}
 		};
 		int j = 0;
 		for(NodePart* part : node->parts){
@@ -85,11 +84,11 @@ void Save::save(NodeGrid* grid){
 	}
 	std::cout << "saved: " << path << "\n";
 	std::ofstream fout(path);
-	fout << json.dump(4);
+	fout << json.dump(4);*/
 }
 
 void Save::load(NodeGrid* grid, const std::string& _path){
-	path = _path;
+	/*path = _path;
 	std::ifstream stream(path);
 	if(!stream.good()){
 		std::cout << "file " << path << " doesnt exist\n";
@@ -109,8 +108,7 @@ void Save::load(NodeGrid* grid, const std::string& _path){
 		};
 		node->layer = jNode["layer"];
 		node->rot = jNode["rot"];
-		node->headingMode = jNode["headingMode"];
-		node->line = jNode["line"];
+		node->heading = jNode["heading"];
 		for(auto jPart : jNode["other"]){
 			if(jPart.contains("vel")){;
 				Overides* overides = new Overides();
@@ -144,11 +142,11 @@ void Save::load(NodeGrid* grid, const std::string& _path){
 		i++;
 	}
 	grid->nodeCount = i;
-	std::cout << "loaded: " << path << "\n";
+	std::cout << "loaded: " << path << "\n";*/
 }
 
 void Save::exp(NodeGrid* grid){
-	std::stringstream sstream;
+	/*std::stringstream sstream;
 	float prevHeading;
 	glm::vec2 prevPos;
 	for(int i = 0; i < grid->nodeCount; i++){
@@ -160,7 +158,7 @@ void Save::exp(NodeGrid* grid){
 		}
 		bool ins = false;
 		std::stringstream pose;
-		pose << "(" << node->pos.x << ", " << node->pos.y << ", Math.toRadians(" << -((node->rot) - 90) << "))";
+		pose << "(" << node->pos.x << ", " << node->pos.y << ", Math.toRadians(" << -((node->heading) - 90) << "))";
 		std::stringstream vec;
 		vec << "(" << node->pos.x << ", " << node->pos.y << ")";
 		std::stringstream ang;
@@ -190,7 +188,7 @@ void Save::exp(NodeGrid* grid){
 				func << ")\n";
 				break;
 			case 3:
-				func << "lineToSplineHeading(new Pose2d" << vec.str() << ")\n";
+				func << "lineToSplineHeading(new Pose2d" << pose.str() << ")\n";
 				break;
 		}
 		if(i == 0){
@@ -249,5 +247,5 @@ void Save::exp(NodeGrid* grid){
 	}
 	std::cout << "exported: export\\" << folders << _path << ".java\n";
 	std::ofstream fout("export\\" +  folders + _path + ".java");
-	fout << sstream.str();
+	fout << sstream.str();*/
 }

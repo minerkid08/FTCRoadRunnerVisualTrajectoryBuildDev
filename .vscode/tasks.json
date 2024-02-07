@@ -33,8 +33,11 @@
 		{
             "type": "cppbuild",
             "label": "test",
-            "command": "D:/FTCRoadRunnerVisualTrajectoryBuilder/Build.exe",
+            "command": "D:/cppGames/Build.exe",
             "args": [
+				"2",
+				"${workspaceFolder}/include",
+				"${workspaceFolder}/src",
                 "-o",
                 "${workspaceFolder}/bin/main.exe",
 				"-lopengl32",

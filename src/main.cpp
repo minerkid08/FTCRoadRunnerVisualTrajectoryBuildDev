@@ -24,7 +24,7 @@ int windowSize = 800;
 int mouseX = 0;
 int mouseY = 0;
 
-bool shiftDown = false;
+int mods = 0;
 
 int main(int argc, char** argv){
 
@@ -62,12 +62,12 @@ int main(int argc, char** argv){
 		*running = false;
 	});
 
-	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int btn, int action, int mods){
+	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int btn, int action, int _mods){
 		if(btn == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
 			if(mouseX <= windowSize && mouseY <= windowSize){
 				ImGuiIO io = ImGui::GetIO();
 				if(!io.WantCaptureMouse){
-					grid->mouseClick(mouseX, mouseY, windowSize, shiftDown);
+					grid->mouseClick(mouseX, mouseY, windowSize, mods);
 				}
 			}
 		}
@@ -78,13 +78,21 @@ int main(int argc, char** argv){
 		mouseY = floor(y);
 	});
 
-	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods){
+	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int _mods){
 		if(key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT){
 			if(action == GLFW_PRESS){
-				shiftDown = true;
+				mods = 1;
 			}
 			if(action == GLFW_RELEASE){
-				shiftDown = false;
+				mods = 0;
+			}
+		}
+		if(key == GLFW_KEY_LEFT_CONTROL || key == GLFW_KEY_RIGHT_CONTROL){
+			if(action == GLFW_PRESS){
+				mods = 2;
+			}
+			if(action == GLFW_RELEASE){
+				mods = 0;
 			}
 		}
 	});
@@ -159,11 +167,10 @@ int main(int argc, char** argv){
 
 		renderer.draw(verts, &tex, &shader, glm::vec4(1, 1, 1, 1));
 		
-		grid->update(renderer, mouseX, mouseY, windowSize, shiftDown);
+		grid->update(renderer, mouseX, mouseY, windowSize, mods);
 
 		imGui.begin();
 		imGui.nodeList(grid);
-		imGui.nodeProperties(grid);
 		imGui.end();
 
 		glfwSwapBuffers(window);

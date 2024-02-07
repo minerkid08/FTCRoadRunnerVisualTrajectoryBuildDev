@@ -4,7 +4,6 @@
 #include <cstring>
 #include <vector>
 
-#define NodePartOveride 1
 #define NodePartMarker 2
 #define NodePartDelay 3
 #define NodePartTurn 4
@@ -14,30 +13,8 @@ struct NodePart{
 	virtual int getId(){return 0;}
 };
 
-struct Overides : public NodePart{
-	int getId(){return 1;}
-	bool vel = false;
-	float velV = 0.0f;
-	bool accel = false;
-	float accelV = 0.0f;
-	bool angVel = false;
-	float angVelV = 0.0f;
-	bool angAccel = false;
-	float angAccelV = 0.0f;
-	void reset(){
-		vel = false;
-		velV = 0.0f;
-		accel = false;
-		accelV = 0.0f;
-		angVel = false;
-		angVelV = 0.0f;
-		angAccel = false;
-		angAccelV = 0.0f;
-	}
-};
-
 struct Marker : public NodePart{
-	int getId(){return 2;}
+	int getId(){return NodePartMarker;}
 	char* text;
 	Marker(){
 		text = new char[255];
@@ -52,7 +29,7 @@ struct Marker : public NodePart{
 };
 
 struct Delay : public NodePart{
-	int getId(){return 3;}
+	int getId(){return NodePartDelay;}
 	float time = 0;
 	void reset(){
 		time = 0;
@@ -60,7 +37,7 @@ struct Delay : public NodePart{
 };
 
 struct Turn : public NodePart{
-	int getId(){return 4;}
+	int getId(){return NodePartTurn;}
 	float angle;
 	void reset(){
 		angle = 0;
@@ -70,8 +47,7 @@ struct Turn : public NodePart{
 struct PathNode{
 	glm::vec2 pos;
 	float rot = 0;
-	int headingMode = 0;
-	bool line = false;
+	float heading = 0;
 	int layer;
 	std::vector<NodePart*> parts;
 	bool hasPart(int id){

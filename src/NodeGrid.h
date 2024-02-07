@@ -1,42 +1,48 @@
 #pragma once
 
-#include <PathNode.h>
-#include <Renderer.h>
-#include <Texture.h>
+#include "PathNode.h"
+#include "Renderer.h"
+#include "Texture.h"
+#include "PathSegment.h"
+#include "List.h"
+
+#define maxNodes 32
+#define maxSegs 32
+
+#define TypeNode 1
+#define TypeSegment 2
+
+struct Selected{
+	int ind = -1;
+	int type = 0;
+};
 
 class NodeGrid{
 	public:
-	PathNode* nodes;
-	int nodeCount;
-	int selected = -1;
-	const int maxNodes = 32;
+	List<PathNode> nodes;
+	List<PathSegment> segs;
+	Selected selected;
 	int layer = -1;
 	bool gridSnap = true;
 	
 	NodeGrid(Shader* shader);
 	~NodeGrid();
-	void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, bool shiftDown);
-	void mouseClick(int mouseX, int mouseY, int windowSize, bool shiftDown);
+	void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods);
+	void mouseClick(int mouseX, int mouseY, int windowSize, int mods);
 
-	void addNode(glm::vec2 pos);
-	void removeNode(int ind);
-	PathNode* getNode(int ind);
-	
-	void moveUp(int ind);
-	void moveDown(int ind);
+	void resetNode(int i);
+	void resetSegment(int i);
 
 	void flipVert();
 	void flipHoriz();
 
 	void reset();
 
-	PathNode* operator[](int i){
-		return nodes + i;
-	}
-
 	private:
 	Texture circleTex;
 	Texture arrowTex;
 	Texture arrowSquareTex;
 	Shader* shader;
+
+	void drawRotatedArrow(Renderer& renderer, glm::vec2 pos, float angle, glm::vec4 color = {1, 1, 1, 1});
 };
