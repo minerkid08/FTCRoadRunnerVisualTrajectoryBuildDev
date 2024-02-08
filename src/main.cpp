@@ -141,7 +141,7 @@ int main(int argc, char** argv){
 		{-1, -1, 0, 1}
 	};
 
-	Texture tex("field-2023-juice-dark.png");
+	Texture tex("field.png");
 
 	ImGuiClass imGui(windowSize);
 

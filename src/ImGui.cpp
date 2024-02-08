@@ -81,7 +81,8 @@ static void nodePartButtons(PathSegment* seg, int i){
 	}
 }
 
-ImGuiClass::ImGuiClass(int windowSize){
+ImGuiClass::ImGuiClass(int _windowSize){
+	windowSize = _windowSize;
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
@@ -131,6 +132,11 @@ void ImGuiClass::end(){
 
 void ImGuiClass::nodeList(NodeGrid* grid){
 	//node list
+
+	//ImVec2 windowPos = ImGui::GetWindowPos();
+	//ImGui::SetNextWindowPos({windowPos.x + (float)windowSize, windowPos.y});
+	//ImGui::SetNextWindowSize({(float)windowSize, (float)windowSize});
+
 
 	ImGui::Begin("Node List", nullptr, ImGuiWindowFlags_MenuBar);
 	ImGui::BeginMenuBar();
@@ -224,7 +230,7 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 			}
 			ImGui::PopID();
 			ImGui::PopStyleColor();
-			if(j < grid->nodes.count - 1){
+			if(j < 16 && i < grid->nodes.count - 1){
 				ImGui::SameLine();
 				j++;
 			}else{
@@ -252,17 +258,17 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 			}
 			ImGui::PopID();
 			ImGui::PopStyleColor();
-			if(j < grid->nodes.count - 1){
+			if(j < 16 && i < grid->segs.count - 1){
 				ImGui::SameLine();
 				j++;
 			}else{
 				j = 0;
 			}
 		}
+		ImGui::Text(" ");
 	}
 
 	//node properties
-	ImGui::Text(" ");
 	ImGui::Separator();
 	if(grid->selected.type == TypeNode){
 		if(ImGui::TreeNodeEx("node properties", ImGuiTreeNodeFlags_DefaultOpen)){

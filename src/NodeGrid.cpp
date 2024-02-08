@@ -146,7 +146,11 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods){
 		y *= -1;
 	}
 	if(mods == 1){
-		nodes.add()->pos = {x, y};
+		PathNode* node = nodes.add();
+		if(node == nullptr){
+			return;
+		}
+		node->pos = {x, y};
 		resetNode(nodes.count - 1);
 	}else{
 		float closestDist = 100.0f;
@@ -183,6 +187,9 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods){
 				selected.type = closestType;
 			}else if(selected.ind >= 0 && selected.type == TypeNode && closestType == TypeNode){
 				PathSegment* seg = segs.add();
+				if(seg == nullptr){
+					return;
+				}
 				seg->startNode = selected.ind;
 				seg->endNode = closestInd;
 				seg->headingMode = 0;
