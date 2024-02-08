@@ -428,8 +428,6 @@ void ImGuiClass::segUi(NodeGrid* grid){
 			}
 			ImGui::EndPopup();
 		}		
-		ImGui::InputInt("startNode", &(seg->startNode), 1, 1, 0);
-		ImGui::InputInt("endNode", &(seg->endNode), 1, 1, 0);
 		ImGui::InputInt("layer", &(seg->layer), 1, 1, 0);
 		const char* headingModes[] = {"none", "linear", "constant", "spline"};
 	
