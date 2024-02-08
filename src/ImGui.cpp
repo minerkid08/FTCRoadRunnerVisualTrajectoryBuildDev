@@ -132,12 +132,7 @@ void ImGuiClass::end(){
 
 void ImGuiClass::nodeList(NodeGrid* grid){
 	//node list
-
-	//ImVec2 windowPos = ImGui::GetWindowPos();
-	//ImGui::SetNextWindowPos({windowPos.x + (float)windowSize, windowPos.y});
-	//ImGui::SetNextWindowSize({(float)windowSize, (float)windowSize});
-
-
+	
 	ImGui::Begin("Node List", nullptr, ImGuiWindowFlags_MenuBar);
 	ImGui::BeginMenuBar();
 	if(ImGui::MenuItem("new")){
