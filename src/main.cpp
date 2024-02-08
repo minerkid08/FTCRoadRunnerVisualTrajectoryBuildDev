@@ -155,6 +155,12 @@ int main(int argc, char** argv){
 	if(argc > 2){
 		if(strcmp(argv[2], "export") == 0){
 			Save::exp(grid);
+			if(grid->err != ""){
+				std::cout << grid->err << "\n";
+			}
+			if(grid->msg != ""){
+				std::cout << grid->msg << "\n";
+			}
 			running = false;
 		}
 	}
