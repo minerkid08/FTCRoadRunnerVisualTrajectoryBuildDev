@@ -157,7 +157,21 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 		Save::exp(grid);
 	}
 	ImGui::EndMenuBar();
+	if(grid->err != ""){
+		ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.0f, 0.0f, 1.0f});
+		ImGui::Text(grid->err.c_str());
+		ImGui::PopStyleColor();
+	}
+	if(grid->msg != "")
+		ImGui::Text(grid->msg.c_str());
 	ImGui::Text(("current path: " + Save::getPath()).c_str());
+	if(grid->mods == 1){
+		ImGui::Text("add node");
+	}else if(grid->mods == 2){
+		ImGui::Text("add segment");
+	}else{
+		ImGui::Text("select");
+	}
 	ImGui::InputInt("layer", &(grid->layer), 1, 1, 0);
 	if(ImGui::Button("flipHoriz")){
 		grid->flipHoriz();
@@ -168,11 +182,27 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 	}
 	ImGui::Checkbox("grid snap", &(grid->gridSnap));
 	if(ImGui::Button("^")){
-		grid->nodes.moveUp(grid->selected.ind);
+		if(grid->selected.type == TypeNode){
+			if(grid->nodes.moveUp(grid->selected.ind)){
+				grid->selected.ind++;
+			}
+		}else{
+			if(grid->segs.moveUp(grid->selected.ind)){
+				grid->selected.ind++;
+			}
+		}
 	}
 	ImGui::SameLine();
 	if(ImGui::Button("v")){
-		grid->nodes.moveDown(grid->selected.ind);
+		if(grid->selected.type == TypeNode){
+			if(grid->nodes.moveDown(grid->selected.ind)){
+				grid->selected.ind--;
+			}
+		}else{
+			if(grid->segs.moveDown(grid->selected.ind)){
+				grid->selected.ind--;
+			}
+		}
 	}
 	int id = 0;
 	ImGui::Text(("nodes: " + std::to_string(grid->nodes.count) + "/" + std::to_string(maxNodes)).c_str());
@@ -232,12 +262,18 @@ void ImGuiClass::nodeList(NodeGrid* grid){
 	}
 
 	//node properties
-
+	ImGui::Text(" ");
 	ImGui::Separator();
 	if(grid->selected.type == TypeNode){
-		nodeUi(grid);
+		if(ImGui::TreeNodeEx("node properties", ImGuiTreeNodeFlags_DefaultOpen)){
+			nodeUi(grid);
+			ImGui::TreePop();
+		}
 	}else{
-		segUi(grid);
+		if(ImGui::TreeNodeEx("segment properties", ImGuiTreeNodeFlags_DefaultOpen)){
+			segUi(grid);
+			ImGui::TreePop();
+		}
 	}
 	ImGui::End();
 
@@ -269,6 +305,23 @@ void ImGuiClass::nodeUi(NodeGrid* grid){
 		ImGui::Text((std::string("node: ") + std::to_string(grid->selected.ind)).c_str());
 		if(ImGui::Button("remove")){
 			grid->nodes.remove(grid->selected.ind);
+			std::vector<int> toRemove;
+			for(int i = 0; i < grid->segs.count; i++){
+				PathSegment* seg = grid->segs.get(i);
+				if(seg->startNode == grid->selected.ind || seg->endNode == grid->selected.ind){
+					toRemove.push_back(i);
+				}
+				if(seg->startNode > grid->selected.ind){
+					seg->startNode--;
+				}
+				if(seg->endNode > grid->selected.ind){
+					seg->endNode--;
+				}
+			}
+			int j = 0;
+			for(int i : toRemove){
+				grid->segs.remove(i - j++);
+			}
 		}
 		if(grid->selected.ind > 0){
 			ImGui::SameLine();
@@ -375,7 +428,8 @@ void ImGuiClass::segUi(NodeGrid* grid){
 			}
 			ImGui::EndPopup();
 		}		
-
+		ImGui::InputInt("startNode", &(seg->startNode), 1, 1, 0);
+		ImGui::InputInt("endNode", &(seg->endNode), 1, 1, 0);
 		ImGui::InputInt("layer", &(seg->layer), 1, 1, 0);
 		const char* headingModes[] = {"none", "linear", "constant", "spline"};
 	

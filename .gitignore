@@ -1,3 +1,5 @@
 imgui.ini
-#*.java
-#*.path
+save/*
+export/*
+.vscode/*
+TrajectoryBuilder.lnk

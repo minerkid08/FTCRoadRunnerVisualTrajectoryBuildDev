@@ -6,6 +6,8 @@
 #include "PathSegment.h"
 #include "List.h"
 
+#include <string>
+
 #define maxNodes 32
 #define maxSegs 32
 
@@ -19,9 +21,12 @@ struct Selected{
 
 class NodeGrid{
 	public:
+	std::string err = "";
+	std::string msg = "";
 	List<PathNode> nodes;
 	List<PathSegment> segs;
 	Selected selected;
+	int mods = 0;
 	int layer = -1;
 	bool gridSnap = true;
 	

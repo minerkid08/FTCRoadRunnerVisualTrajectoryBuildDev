@@ -26,7 +26,8 @@ NodeGrid::NodeGrid(Shader* _shader) : circleTex("circle.png"), arrowTex("arrow.p
 
 NodeGrid::~NodeGrid(){}
 
-void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods){
+void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int _mods){
+	mods = _mods;
 	if(selected.ind >= nodes.count){
 		selected.ind = nodes.count - 1;
 	}
@@ -48,7 +49,7 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 				verts[1] = {-dif2.y + pos1.x, dif2.x + pos1.y, 0, 1};
 				verts[2] = {dif2.y + pos1.x + dif.x, -dif2.x + dif.y + pos1.y, 0, 1};
 				verts[3] = {-dif2.y + pos1.x + dif.x, dif2.x + dif.y + pos1.y, 0, 1};
-				renderer.draw(verts, &arrowTex, shader, {selected.type == TypeSegment && selected.ind == i ? 1.0f : 0.5f, 0.5f, 0.5f, 1});
+				renderer.draw(verts, &arrowTex, shader, {selected.type == TypeSegment && selected.ind == i ? 1.0f : 0.5f, 0.5f, 0.5f, (segs.get(i)->layer == layer || layer == -1) ? 1 : 0.5f});
 			}
 		}
 		for(int h = 0; h < 2; h++){
@@ -90,15 +91,12 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 				for(int j = 0; j < 4; j++){
 					verts[j] = {pos.x + verts[j].x, pos.y + verts[j].y, 0, 1};
 				}
-				glm::vec4 tint(0,0,0,1);
+				glm::vec4 tint(1, 1, 1, 1);
 				bool a = false;
 				if(i == nodes.count && selected.type == TypeNode){
-					tint.r = 1;
+					tint = {1, 0, 0, 1};
 				}
 
-				if(tint == glm::vec4(0, 0, 0, 1)){
-					tint = {1, 1, 1, 1};
-				}
 				if(h == 0 && layer != -1){
 					tint.a = 0.5;
 				}
@@ -149,6 +147,7 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods){
 	}
 	if(mods == 1){
 		nodes.add()->pos = {x, y};
+		resetNode(nodes.count - 1);
 	}else{
 		float closestDist = 100.0f;
 		int closestInd = -1;
@@ -188,8 +187,8 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods){
 				seg->endNode = closestInd;
 				seg->headingMode = 0;
 				seg->pathType = 0;
-				seg->layer = 0;
-				selected.ind++;
+				seg->layer = __max(layer, 0);
+				selected.ind = closestInd;
 				selected.type = TypeNode;
 			}
 		}
@@ -198,8 +197,8 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods){
 
 void NodeGrid::resetNode(int ind){
 	PathNode* node = nodes.get(ind);
-	node->pos = {0, 0};
 	node->rot = 0;
+	node->layer = __max(layer, 0);
 	node->layer = (layer == -1) ? 0 : layer;
 	for(NodePart* part : node->parts){
 		delete part;
@@ -230,10 +229,12 @@ void NodeGrid::reset(){
 		}
 		node->parts.resize(0);
 	});
+	nodes.count = 0;
 	segs.foreach([](int i, PathSegment* seg){
 		for(SegPart* part : seg->parts){
 			delete part;
 		}
 		seg->parts.resize(0);
 	});
+	segs.count = 0;
 }

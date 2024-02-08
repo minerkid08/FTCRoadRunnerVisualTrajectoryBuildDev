@@ -35,20 +35,24 @@ template<typename T> class List{
 		}
 	}
 
-	void moveUp(int ind){
-		if(ind + 1 < max){
+	bool moveUp(int ind){
+		if(ind + 1 < count){
 			T node = *(arr + ind + 1);
 			*(arr + ind + 1) = *(arr + ind);
 			*(arr + ind) = node;
+			return true;
 		}
+		return false;
 	}
 
-	void moveDown(int ind){
+	bool moveDown(int ind){
 		if(ind - 1 > -1){
 			T node = *(arr + ind - 1);
 			*(arr + ind - 1) = *(arr + ind);
 			*(arr + ind) = node;
+			return true;
 		}
+		return false;
 	}
 	private:
 	T* arr;

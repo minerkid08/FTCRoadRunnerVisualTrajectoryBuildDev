@@ -47,7 +47,13 @@ int FileExplorer::render(const char* ext){
 	if(flags & FileExplorerFlags_MakeFile){
 		ImGui::SameLine();
 		if(ImGui::Button("+")){
-			outPath = curPath / (std::string(filename) + std::string(ext));
+			std::string name(filename);
+			for(int i = 0; i < name.size(); i++){
+				if(name[i] == '/'){
+					name[i] = '\\';
+				}
+			}
+			outPath = curPath / (name + std::string(ext));
 			ImGui::End();
 			return 1;
 		}
