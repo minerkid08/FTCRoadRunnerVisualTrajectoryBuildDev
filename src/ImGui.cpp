@@ -132,7 +132,7 @@ void ImGuiClass::end(){
 
 void ImGuiClass::nodeList(NodeGrid* grid){
 	//node list
-	
+
 	ImGui::Begin("Node List", nullptr, ImGuiWindowFlags_MenuBar);
 	ImGui::BeginMenuBar();
 	if(ImGui::MenuItem("new")){
@@ -418,7 +418,7 @@ void ImGuiClass::segUi(NodeGrid* grid){
 				SegPart* part = seg->parts[i];
 				switch(part->getId()){
 					case 1:
-					overides = true;
+					//overides = true;
 					break;
 				}
 			}
@@ -441,7 +441,7 @@ void ImGuiClass::segUi(NodeGrid* grid){
 			ImGui::EndCombo();
 		}
 		const char* lineMode[] = {"spline", "line"};
-		if(ImGui::BeginCombo("line", lineMode[seg->pathType])){
+		if(ImGui::BeginCombo("path type", lineMode[seg->pathType])){
 			for(int i = 0; i < 2; i++){
 				if(ImGui::Selectable(lineMode[i])){
 					seg->pathType = i;

@@ -36,20 +36,32 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 	}
 	if(nodes.count > 0){
 		if(nodes.count > 1){
-			for(int i = 0; i < segs.count; i++){
-				PathNode* node1 = nodes.get(segs.get(i)->startNode);
-				PathNode* node2 = nodes.get(segs.get(i)->endNode);
-				glm::vec2 pos1 = {node1->pos.x / 72, node1->pos.y / 72};
-				glm::vec2 pos2 = {node2->pos.x / 72, node2->pos.y / 72};
-				glm::vec2 dif = pos2 - pos1;
-				glm::vec2 dif2 = glm::normalize(dif);
-				dif2 = {dif2.x / 40, dif2.y / 40};
-				glm::vec4 verts[4];
-				verts[0] = {dif2.y + pos1.x, -dif2.x + pos1.y, 0, 1};
-				verts[1] = {-dif2.y + pos1.x, dif2.x + pos1.y, 0, 1};
-				verts[2] = {dif2.y + pos1.x + dif.x, -dif2.x + dif.y + pos1.y, 0, 1};
-				verts[3] = {-dif2.y + pos1.x + dif.x, dif2.x + dif.y + pos1.y, 0, 1};
-				renderer.draw(verts, &arrowTex, shader, {selected.type == TypeSegment && selected.ind == i ? 1.0f : 0.5f, 0.5f, 0.5f, (segs.get(i)->layer == layer || layer == -1) ? 1 : 0.5f});
+			for(int h = 0; h < 2; h++){
+				for(int i = 0; i < segs.count; i++){
+					PathSegment* seg = segs.get(i);
+					if(h == 0){
+						if(seg->layer == layer){
+							continue;
+						}
+					}else{
+						if(seg->layer != layer || layer == -1){
+							continue;
+						}
+					}
+					PathNode* node1 = nodes.get(seg->startNode);
+					PathNode* node2 = nodes.get(seg->endNode);
+					glm::vec2 pos1 = {node1->pos.x / 72, node1->pos.y / 72};
+					glm::vec2 pos2 = {node2->pos.x / 72, node2->pos.y / 72};
+					glm::vec2 dif = pos2 - pos1;
+					glm::vec2 dif2 = glm::normalize(dif);
+					dif2 = {dif2.x / 40, dif2.y / 40};
+					glm::vec4 verts[4];
+					verts[0] = {dif2.y + pos1.x, -dif2.x + pos1.y, 0, 1};
+					verts[1] = {-dif2.y + pos1.x, dif2.x + pos1.y, 0, 1};
+					verts[2] = {dif2.y + pos1.x + dif.x, -dif2.x + dif.y + pos1.y, 0, 1};
+					verts[3] = {-dif2.y + pos1.x + dif.x, dif2.x + dif.y + pos1.y, 0, 1};
+					renderer.draw(verts, &arrowTex, shader, {selected.type == TypeSegment && selected.ind == i ? 1.0f : 0.5f, 0.5f, 0.5f, (segs.get(i)->layer == layer || layer == -1) ? 1 : 0.5f});
+				}
 			}
 		}
 		for(int h = 0; h < 2; h++){
