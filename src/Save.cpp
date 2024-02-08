@@ -199,7 +199,7 @@ void Save::exp(NodeGrid* grid){
 			if(startInd == -1){
 				startInd = j;
 			}else{
-				grid->err = "export error: path has multiple start nodes\n";
+				grid->err = "export error: path has multiple start nodes";
 				return;
 			}
 		}
@@ -208,7 +208,7 @@ void Save::exp(NodeGrid* grid){
 		}
 	}
 	if(emptyNodes){
-		grid->err = "export warning: path has unused nodes\n";
+		grid->err = "export warning: path has unused nodes";
 	}
 	std::vector<int> segments;
 	int targetInd = startInd;

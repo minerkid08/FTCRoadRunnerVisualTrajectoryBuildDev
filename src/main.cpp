@@ -9,6 +9,7 @@
 #include <NodeGrid.h>
 #include <math.h>
 #include <Save.h>
+#include <Windows.h>
 
 #include <filesystem>
 
@@ -156,7 +157,13 @@ int main(int argc, char** argv){
 		if(strcmp(argv[2], "export") == 0){
 			Save::exp(grid);
 			if(grid->err != ""){
+				if(grid->err[7] == 'w'){
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 6);
+				}else{
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
+				}
 				std::cout << grid->err << "\n";
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 			}
 			if(grid->msg != ""){
 				std::cout << grid->msg << "\n";
