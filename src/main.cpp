@@ -149,7 +149,15 @@ int main(int argc, char** argv){
 
 	if(argc > 1){
 		if(strcmp(argv[1], "new")){
-			Save::load(grid, argv[1]);
+			int len = strlen(argv[1]);
+			char* str = new char[len];
+			memcpy(str, argv[1], len);
+			for(int i = 0; i < len; i++){
+				if(str[i] == '/'){
+					str[i] = '\\';
+				}
+			}
+			Save::load(grid, str);
 		}
 	}
 
