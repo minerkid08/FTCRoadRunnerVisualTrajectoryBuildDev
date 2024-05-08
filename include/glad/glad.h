@@ -23,10 +23,6 @@
 #ifndef __glad_h_
 #define __glad_h_
 
-void errorCheck(int num);
-
-#define glErrorCheck() errorCheck(__LINE__)
-
 #ifdef __gl_h_
 #error OpenGL header already included, remove this include, glad already provides it
 #endif

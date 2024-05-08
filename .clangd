@@ -1,0 +1,2 @@
+CompileFlags:
+	Add: [-Iinclude, -Imain\src, -std=c++20]

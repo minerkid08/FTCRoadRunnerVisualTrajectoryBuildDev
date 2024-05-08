@@ -1,4 +1,4 @@
-How two make path
+How to make path
 
 1. Shift click the field to place nodes
 2. Click on the starting node to select it

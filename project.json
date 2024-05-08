@@ -1,0 +1,14 @@
+{
+	"projects": [
+		{
+			"name": "main",
+			"build": ["include"],
+			"include": ["include"],
+			"type": "exe",
+			"out": "trajectoryBuilder.exe",
+			"dll": ["glfw3"],
+			"sdll": ["wsock32", "WS2_32"],
+			"configs": ["build", "run"]
+		}
+	]
+}
