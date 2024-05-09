@@ -36,7 +36,7 @@ void Upload::upload()
 		std::ifstream ifstream(path.string());
 		sstream << ifstream.rdbuf();
 
-		std::string str = path.filename().string();
+		std::string str = "paths\\" + path.filename().string();
 		for (int i = 0; i < str.size(); i++)
 		{
 			if (str[i] == '\\')

@@ -5,6 +5,7 @@
 #include <glfw/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
+#include <thread>
 
 static void removePart(PathNode* node, int ind)
 {
@@ -190,8 +191,11 @@ void ImGuiClass::nodeList(NodeGrid* grid)
 	}
 	if (ImGui::MenuItem("upload"))
 	{
-		Upload upload(grid);
-		upload.upload();
+		std::thread t([grid]() {
+			Upload upload(grid);
+			upload.upload();
+		});
+    t.detach();
 	}
 	ImGui::EndMenuBar();
 	if (grid->err != "")
