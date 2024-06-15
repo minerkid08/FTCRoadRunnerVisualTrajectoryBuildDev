@@ -5,10 +5,9 @@ class NodeGrid;
 class Upload
 {
   public:
-	Upload(NodeGrid* nodeGrid);
-  void upload();
-
-  private:
-	NodeGrid* grid;
-  bool opened = false;
+	static void init(NodeGrid* nodeGrid);
+  static void close();
+	static void upload(bool current);
+  static void pull();
+  static void remove();
 };

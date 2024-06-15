@@ -8,6 +8,8 @@
 
 #include "NodeGrid.hpp"
 #include "Save.hpp"
+#include "Upload.hpp"
+
 #include <Windows.h>
 #include <math.h>
 
@@ -41,6 +43,19 @@ int main(int argc, char** argv)
 		std::filesystem::create_directory("export");
 	}
 
+	glfwInit();
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+
+	int x;
+	int y;
+	int width;
+	int height;
+	glfwGetMonitorWorkarea(monitor, &x, &y, &width, &height);
+	if (width > 3000)
+	{
+		windowSize = 1700;
+	}
+
 	if (argc > 2)
 	{
 		if (strcmp(argv[2], "4k") == 0)
@@ -50,7 +65,6 @@ int main(int argc, char** argv)
 	}
 
 	bool running = true;
-	glfwInit();
 
 	window = glfwCreateWindow(windowSize * 2, windowSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
@@ -68,6 +82,7 @@ int main(int argc, char** argv)
 	glfwSetWindowCloseCallback(window, [](GLFWwindow* window) {
 		bool* running = (bool*)glfwGetWindowUserPointer(window);
 		*running = false;
+    Upload::close();
 	});
 
 	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int btn, int action, int _mods) {
@@ -194,6 +209,8 @@ int main(int argc, char** argv)
 			running = false;
 		}
 	}
+
+  Upload::init(grid);
 
 	while (running)
 	{

@@ -32,7 +32,7 @@ NodeGrid::~NodeGrid()
 void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int _mods)
 {
 	mods = _mods;
-	if (selected.ind >= nodes.count)
+	if (selected.ind >= (selected.type == TypeNode ? nodes.count : segs.count))
 	{
 		selected.ind = nodes.count - 1;
 	}
@@ -89,7 +89,8 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 			}
 			for (int i = 0; i < nodes.count + 1; i++)
 			{
-				if (i == selected.ind || selected.ind >= nodes.count || (selected.ind == -1 && i == nodes.count))
+				if (i == selected.ind || (selected.ind >= nodes.count && selected.type == TypeNode) ||
+					(selected.ind == -1 && i == nodes.count))
 				{
 					continue;
 				}
@@ -255,6 +256,7 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods)
 				seg->headingMode = 0;
 				seg->pathType = 0;
 				seg->layer = __max(layer, 0);
+				seg->recognitionId = -1;
 				selected.ind = closestInd;
 				selected.type = TypeNode;
 			}
@@ -282,6 +284,9 @@ void NodeGrid::flipVert()
 		node->rot += 90;
 		node->rot *= -1;
 		node->rot -= 90;
+		node->heading += 90;
+		node->heading *= -1;
+		node->heading -= 90;
 	});
 }
 
@@ -290,6 +295,7 @@ void NodeGrid::flipHoriz()
 	nodes.foreach ([](int ind, PathNode* node) {
 		node->pos.x *= -1;
 		node->rot *= -1;
+		node->heading *= -1;
 	});
 }
 

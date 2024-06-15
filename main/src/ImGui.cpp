@@ -189,13 +189,37 @@ void ImGuiClass::nodeList(NodeGrid* grid)
 	{
 		Save::exp(grid);
 	}
-	if (ImGui::MenuItem("upload"))
+	if (ImGui::BeginMenu("robot"))
 	{
-		std::thread t([grid]() {
-			Upload upload(grid);
-			upload.upload();
-		});
-    t.detach();
+		if (ImGui::MenuItem("upload current"))
+		{
+			std::thread t([grid]() {
+        Upload::upload(true);
+			});
+			t.detach();
+		}
+		if (ImGui::MenuItem("upload all"))
+		{
+			std::thread t([grid]() {
+        Upload::upload(false);
+			});
+			t.detach();
+		}
+		if (ImGui::MenuItem("pull from robot"))
+		{
+			std::thread t([grid]() {
+        Upload::pull();
+			});
+			t.detach();
+		}
+		if (ImGui::MenuItem("remove from robot"))
+		{
+			std::thread t([grid]() {
+				//upload.remove();
+			});
+			t.detach();
+		}
+    ImGui::EndMenu();
 	}
 	ImGui::EndMenuBar();
 	if (grid->err != "")
@@ -220,6 +244,7 @@ void ImGuiClass::nodeList(NodeGrid* grid)
 		ImGui::Text("select");
 	}
 	ImGui::InputInt("layer", &(grid->layer), 1, 1, 0);
+	ImGui::InputInt("recognitionId", &(grid->recognitionId));
 	if (ImGui::Button("flipHoriz"))
 	{
 		grid->flipHoriz();
@@ -573,6 +598,7 @@ void ImGuiClass::segUi(NodeGrid* grid)
 			}
 			ImGui::EndCombo();
 		}
+		ImGui::InputInt("recognition id", &(seg->recognitionId));
 		ImGui::Separator();
 		for (int i = 0; i < seg->parts.size(); i++)
 		{

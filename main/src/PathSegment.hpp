@@ -51,6 +51,7 @@ struct PathSegment
 	int headingMode;
 	int pathType;
 	int layer;
+  int recognitionId = -1;
 	std::vector<SegPart*> parts;
 	bool hasPart(int id)
 	{
