@@ -30,6 +30,7 @@ class NodeGrid
 	Selected selected;
 	int mods = 0;
 	int layer = -1;
+  float otherLayerA = 0.5f;
   int recognitionId = 0;
 	bool gridSnap = true;
 
