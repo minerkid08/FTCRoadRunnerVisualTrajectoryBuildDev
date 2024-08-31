@@ -77,7 +77,7 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 					verts[3] = {-dif2.y + pos1.x + dif.x, dif2.x + dif.y + pos1.y, 0, 1};
 					renderer.draw(verts, &arrowTex, shader,
 								  {selected.type == TypeSegment && selected.ind == i ? 1.0f : 0.5f, 0.5f, 0.5f,
-								   (segs.get(i)->layer == layer || layer == -1) ? 1 : 0.5f});
+								   (segs.get(i)->layer == layer || layer == -1) ? 1 : otherLayerA});
 				}
 			}
 		}
@@ -138,13 +138,13 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 
 				if (h == 0 && layer != -1)
 				{
-					tint.a = 0.5;
+					tint.a = otherLayerA;
 				}
 				renderer.draw(verts, &circleTex, shader, tint);
 				tint = {0, 0.5f, 1, 1};
 				if (h == 0 && layer != -1)
 				{
-					tint.a = 0.5;
+					tint.a = otherLayerA;
 				}
 				drawRotatedArrow(renderer, node->pos, node->heading, tint);
 			}

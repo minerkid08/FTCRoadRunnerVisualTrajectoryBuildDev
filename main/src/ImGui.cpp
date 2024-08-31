@@ -244,6 +244,7 @@ void ImGuiClass::nodeList(NodeGrid* grid)
 		ImGui::Text("select");
 	}
 	ImGui::InputInt("layer", &(grid->layer), 1, 1, 0);
+  ImGui::DragFloat("other layer transparency", &grid->otherLayerA, 0.1f, 0.0f, 1.0f);
 	ImGui::InputInt("recognitionId", &(grid->recognitionId));
 	if (ImGui::Button("flipHoriz"))
 	{

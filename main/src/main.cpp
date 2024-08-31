@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 		{
 			if (mouseX <= windowSize && mouseY <= windowSize)
 			{
-				ImGuiIO io = ImGui::GetIO();
+				ImGuiIO& io = ImGui::GetIO();
 				if (!io.WantCaptureMouse)
 				{
 					grid->mouseClick(mouseX, mouseY, windowSize, mods);

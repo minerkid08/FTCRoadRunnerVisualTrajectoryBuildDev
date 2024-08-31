@@ -2,6 +2,9 @@
 #include <cstring>
 #include <imgui/imgui.h>
 #include <iostream>
+
+static const char* err;
+
 FileExplorer::FileExplorer()
 {
 }
@@ -18,6 +21,7 @@ void FileExplorer::reset(int _flags)
 	{
 		curPath = mainPath;
 	}
+	err = "";
 }
 void FileExplorer::setMainPath(const std::string& path)
 {
@@ -61,26 +65,41 @@ int FileExplorer::render(const char* ext)
 		ImGui::SameLine();
 		if (ImGui::Button("+"))
 		{
+      err = "";
 			std::string name(filename);
 			for (int i = 0; i < name.size(); i++)
 			{
+				if (name[i] == '.')
+				{
+					err = "path name cant contain '.'";
+					break;
+				}
 				if (name[i] == '/')
 				{
 					name[i] = '\\';
 				}
 			}
-			outPath = curPath / (name + std::string(ext));
-			ImGui::End();
-			return 1;
+			if (strcmp(err, "") == 0)
+			{
+				outPath = curPath / (name + std::string(ext));
+				ImGui::End();
+				return 1;
+			}
+		}
+		if (strcmp(err, "") != 0)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.0f, 0.0f, 1.0f});
+			ImGui::Text("%s", err);
+			ImGui::PopStyleColor();
 		}
 		ImGui::SameLine();
-		ImGui::Text(curPath.string().c_str());
+		ImGui::Text("%s", curPath.string().c_str());
 		ImGui::InputText(" ", filename, sizeof(filename));
 	}
 	else
 	{
 		ImGui::SameLine();
-		ImGui::Text(curPath.string().c_str());
+		ImGui::Text("%s", curPath.string().c_str());
 	}
 	buttonSize = ImGui::GetIO().FontGlobalScale * 150;
 	float cellSize = buttonSize + padding;
@@ -105,7 +124,7 @@ int FileExplorer::render(const char* ext)
 				{
 					curPath /= name;
 				}
-				ImGui::TextWrapped(path.c_str());
+				ImGui::TextWrapped("%s", path.c_str());
 				ImGui::NextColumn();
 			}
 		}
@@ -128,7 +147,7 @@ int FileExplorer::render(const char* ext)
 						ImGui::End();
 						return 1;
 					}
-					ImGui::TextWrapped(path.c_str());
+					ImGui::TextWrapped("%s", path.c_str());
 					ImGui::NextColumn();
 				}
 			}
