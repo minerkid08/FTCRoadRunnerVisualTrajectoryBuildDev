@@ -5,6 +5,41 @@
 
 static std::string path;
 
+template <typename T> T getField(nlohmann::json json, const char* name, std::string msg, NodeGrid* grid)
+{
+	if (json.contains(name))
+	{
+		try
+		{
+			return json[name];
+		}
+		catch (nlohmann::json::type_error e)
+		{
+			grid->err = "wrong type for field \'" + std::string(name) + "\' in " + msg;
+			throw grid->err;
+		}
+	}
+	grid->err = "cant find field \'" + std::string(name) + "\' in " + msg;
+	throw grid->err;
+}
+
+template <typename T> T getField(nlohmann::json json, const char* name, std::string msg, NodeGrid* grid, T t)
+{
+	if (json.contains(name))
+	{
+		try
+		{
+			return json[name];
+		}
+		catch (nlohmann::json::type_error e)
+		{
+			grid->err = "wrong type for field \'" + std::string(name) + "\' in " + msg;
+			throw grid->err;
+		}
+	}
+	return t;
+}
+
 void Save::saveAs(NodeGrid* grid, const std::string& _path)
 {
 	path = _path;
@@ -104,82 +139,141 @@ void Save::save(NodeGrid* grid)
 	fout << j.dump(4);
 }
 
-void Save::load(NodeGrid* grid, const std::string& _path)
+bool Save::load(NodeGrid* grid, const std::string& _path)
 {
-	grid->msg = "";
-	grid->err = "";
-	path = _path;
-	std::ifstream stream(path);
-	if (!stream.good())
+	try
 	{
-		grid->err = "file " + path + " doesnt exist";
-		return;
-	}
-	std::stringstream sstream;
-	sstream << stream.rdbuf();
-	nlohmann::json json = nlohmann::json::parse(sstream);
+		grid->msg = "";
+		grid->err = "";
+		path = _path;
+		std::ifstream stream(path);
+		if (!stream.good())
+		{
+			grid->err = "file " + path + " doesnt exist";
+			return false;
+		}
+		std::stringstream sstream;
+		sstream << stream.rdbuf();
+		nlohmann::json json = nlohmann::json::parse(sstream);
 
-	int i = 0;
-	grid->reset();
-	for (auto jNode : json["nodes"])
-	{
-		PathNode* node = grid->nodes.add();
-		node->pos = {jNode["pos"]["x"], jNode["pos"]["y"]};
-		node->layer = jNode["layer"];
-		node->rot = jNode["rot"];
-		node->heading = jNode["heading"];
-		for (auto jPart : jNode["other"])
+		int i = 0;
+		std::vector<PathNode> nodes;
+		for (auto jNode : json["nodes"])
 		{
-			if (jPart.contains("text"))
+			nodes.push_back({});
+			PathNode* node = &nodes[nodes.size() - 1];
+			nlohmann::json pos = getField<nlohmann::json>(jNode, "pos", "node " + std::to_string(i), grid);
+			node->pos.x = getField<float>(pos, "x", "node " + std::to_string(i) + " position", grid);
+			node->pos.y = getField<float>(pos, "y", "node " + std::to_string(i) + " position", grid);
+			node->layer = getField<int>(jNode, "layer", "node " + std::to_string(i), grid);
+			node->rot = getField<float>(jNode, "rot", "node " + std::to_string(i), grid);
+			node->heading = getField<float>(jNode, "heading", "node " + std::to_string(i), grid);
+
+			if (jNode.contains("other"))
 			{
-				Marker* marker = new Marker();
-				std::string text = jPart["text"];
-				strcpy(marker->text, text.c_str());
-				node->parts.push_back(marker);
-			}
-			if (jPart.contains("time"))
-			{
-				Delay* delay = new Delay();
-				delay->time = jPart["time"];
-				node->parts.push_back(delay);
-			}
-			if (jPart.contains("angle"))
-			{
-				Turn* turn = new Turn();
-				turn->angle = jPart["angle"];
-				node->parts.push_back(turn);
+				nlohmann::json parts = getField<nlohmann::json>(jNode, "other", "node " + std::to_string(i), grid);
+				int i2 = 0;
+				for (nlohmann::json jPart : parts)
+				{
+					if (jPart.contains("text"))
+					{
+						Marker* marker = new Marker();
+						std::string text = getField<std::string>(
+							jPart, "text", "node " + std::to_string(i) + " other: " + std::to_string(i2), grid);
+						strcpy(marker->text, text.c_str());
+						node->parts.push_back(marker);
+					}
+					if (jPart.contains("time"))
+					{
+						Delay* delay = new Delay();
+						delay->time = getField<float>(
+							jPart, "time", "node " + std::to_string(i) + " other: " + std::to_string(i2), grid);
+						node->parts.push_back(delay);
+					}
+					if (jPart.contains("angle"))
+					{
+						Turn* turn = new Turn();
+						turn->angle = jPart["angle"];
+						turn->angle = getField<float>(
+							jPart, "angle", "node " + std::to_string(i) + " other: " + std::to_string(i2), grid);
+						node->parts.push_back(turn);
+					}
+					i2++;
+				}
+				i++;
 			}
 		}
-		i++;
-	}
-	for (auto jNode : json["segs"])
-	{
-		PathSegment* seg = grid->segs.add();
-		seg->startNode = jNode["startNode"];
-		seg->endNode = jNode["endNode"];
-		seg->layer = jNode["layer"];
-		seg->headingMode = jNode["heading"];
-		seg->pathType = jNode["path"];
-		seg->recognitionId = jNode["recognitionId"];
-		for (auto jPart : jNode["other"])
+		i = 0;
+		std::vector<PathSegment> segs;
+		for (auto jNode : json["segs"])
 		{
-			if (jPart.contains("vel"))
+			segs.push_back({});
+			PathSegment* seg = &segs[segs.size() - 1];
+			seg->startNode = getField<int>(jNode, "startNode", "segment " + std::to_string(i), grid);
+			seg->endNode = getField<int>(jNode, "endNode", "segment " + std::to_string(i), grid);
+			seg->layer = getField<int>(jNode, "layer", "segment " + std::to_string(i), grid);
+			seg->headingMode = getField<int>(jNode, "heading", "segment " + std::to_string(i), grid);
+			seg->pathType = getField<int>(jNode, "path", "segment " + std::to_string(i), grid);
+			seg->recognitionId = getField<int>(jNode, "recognitionId", "segment " + std::to_string(i), grid, -1);
+
+			for (auto jPart : jNode["other"])
 			{
-				Overides* overides = new Overides();
-				overides->vel = jPart["vel"][0];
-				overides->velV = jPart["vel"][1];
-				overides->accel = jPart["accel"][0];
-				overides->accelV = jPart["accel"][1];
-				overides->angVel = jPart["angVel"][0];
-				overides->angVelV = jPart["angVel"][1];
-				overides->angAccel = jPart["angAccel"][0];
-				overides->angAccelV = jPart["angAccel"][1];
-				seg->parts.push_back(overides);
+				if (jPart.contains("vel"))
+				{
+					Overides* overides = new Overides();
+					overides->vel = jPart["vel"][0];
+					overides->velV = jPart["vel"][1];
+					overides->accel = jPart["accel"][0];
+					overides->accelV = jPart["accel"][1];
+					overides->angVel = jPart["angVel"][0];
+					overides->angVelV = jPart["angVel"][1];
+					overides->angAccel = jPart["angAccel"][0];
+					overides->angAccelV = jPart["angAccel"][1];
+					seg->parts.push_back(overides);
+				}
+			}
+			i++;
+		}
+
+		grid->reset();
+		for (PathNode& node : nodes)
+		{
+			PathNode* node2 = grid->nodes.add();
+
+			node2->pos = node.pos;
+			node2->rot = node.rot;
+			node2->layer = node.layer;
+			node2->heading = node.heading;
+			for (NodePart* part : node.parts)
+			{
+				node2->parts.push_back(part);
 			}
 		}
-		i++;
+
+		for (PathSegment& seg : segs)
+		{
+			PathSegment* seg2 = grid->segs.add();
+
+			seg2->startNode = seg.startNode;
+			seg2->endNode = seg.endNode;
+			seg2->layer = seg.layer;
+			seg2->pathType = seg.pathType;
+			seg2->headingMode = seg.headingMode;
+			seg2->recognitionId = seg.recognitionId;
+
+			for (SegPart* part : seg.parts)
+			{
+				seg2->parts.push_back(part);
+			}
+		}
+
+		grid->msg = "loaded: " + path;
+		return true;
 	}
-	grid->msg = "loaded: " + path;
+	catch (std::string e)
+	{
+		return false;
+	}
 }
 
 void Save::exp(NodeGrid* grid)
