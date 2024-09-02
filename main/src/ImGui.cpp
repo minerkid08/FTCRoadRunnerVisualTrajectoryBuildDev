@@ -193,44 +193,38 @@ void ImGuiClass::nodeList(NodeGrid* grid)
 	{
 		if (ImGui::MenuItem("upload current"))
 		{
-			std::thread t([grid]() {
-        Upload::upload(true);
-			});
+			std::thread t([grid]() { Upload::upload(true); });
 			t.detach();
 		}
 		if (ImGui::MenuItem("upload all"))
 		{
-			std::thread t([grid]() {
-        Upload::upload(false);
-			});
+			std::thread t([grid]() { Upload::upload(false); });
 			t.detach();
 		}
 		if (ImGui::MenuItem("pull from robot"))
 		{
-			std::thread t([grid]() {
-        Upload::pull();
-			});
+			std::thread t([grid]() { Upload::pull(); });
 			t.detach();
 		}
 		if (ImGui::MenuItem("remove from robot"))
 		{
 			std::thread t([grid]() {
-				//upload.remove();
+				// upload.remove();
 			});
 			t.detach();
 		}
-    ImGui::EndMenu();
+		ImGui::EndMenu();
 	}
 	ImGui::EndMenuBar();
 	if (grid->err != "")
 	{
 		ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.0f, 0.0f, 1.0f});
-		ImGui::Text(grid->err.c_str());
+		ImGui::Text("%s", grid->err.c_str());
 		ImGui::PopStyleColor();
 	}
 	if (grid->msg != "")
-		ImGui::Text(grid->msg.c_str());
-	ImGui::Text(("current path: " + Save::getPath()).c_str());
+		ImGui::Text("%s", grid->msg.c_str());
+	ImGui::Text("%s", ("current path: " + Save::getPath()).c_str());
 	if (grid->mods == 1)
 	{
 		ImGui::Text("add node");
@@ -244,7 +238,7 @@ void ImGuiClass::nodeList(NodeGrid* grid)
 		ImGui::Text("select");
 	}
 	ImGui::InputInt("layer", &(grid->layer), 1, 1, 0);
-  ImGui::DragFloat("other layer transparency", &grid->otherLayerA, 0.1f, 0.0f, 1.0f);
+	ImGui::DragFloat("other layer transparency", &grid->otherLayerA, 0.1f, 0.0f, 1.0f);
 	ImGui::InputInt("recognitionId", &(grid->recognitionId));
 	if (ImGui::Button("flipHoriz"))
 	{
@@ -292,7 +286,7 @@ void ImGuiClass::nodeList(NodeGrid* grid)
 		}
 	}
 	int id = 0;
-	ImGui::Text(("nodes: " + std::to_string(grid->nodes.count) + "/" + std::to_string(maxNodes)).c_str());
+	ImGui::Text("%s", ("nodes: " + std::to_string(grid->nodes.count) + "/" + std::to_string(maxNodes)).c_str());
 	int j = 0;
 	if (grid->nodes.count > 0)
 	{
@@ -327,7 +321,7 @@ void ImGuiClass::nodeList(NodeGrid* grid)
 		}
 	}
 
-	ImGui::Text(("segments: " + std::to_string(grid->segs.count) + "/" + std::to_string(maxSegs)).c_str());
+	ImGui::Text("%s", ("segments: " + std::to_string(grid->segs.count) + "/" + std::to_string(maxSegs)).c_str());
 	j = 0;
 	if (grid->segs.count > 0)
 	{
@@ -416,7 +410,7 @@ void ImGuiClass::nodeUi(NodeGrid* grid)
 	if (grid->selected.ind > -1 && grid->selected.ind < grid->nodes.count)
 	{
 		PathNode* node = grid->nodes.get(grid->selected.ind);
-		ImGui::Text((std::string("node: ") + std::to_string(grid->selected.ind)).c_str());
+		ImGui::Text("%s", (std::string("node: ") + std::to_string(grid->selected.ind)).c_str());
 		if (ImGui::Button("remove"))
 		{
 			grid->nodes.remove(grid->selected.ind);
@@ -541,7 +535,7 @@ void ImGuiClass::segUi(NodeGrid* grid)
 	if (grid->selected.ind > -1 && grid->selected.ind < grid->segs.count)
 	{
 		PathSegment* seg = grid->segs.get(grid->selected.ind);
-		ImGui::Text((std::string("segment: ") + std::to_string(grid->selected.ind)).c_str());
+		ImGui::Text("%s", (std::string("segment: ") + std::to_string(grid->selected.ind)).c_str());
 		if (ImGui::Button("remove"))
 		{
 			grid->segs.remove(grid->selected.ind);
