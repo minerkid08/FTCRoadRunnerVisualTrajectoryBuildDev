@@ -9,20 +9,25 @@
 #include <stack>
 #include <stdio.h>
 #include <stdlib.h>
-#include <winsock2.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/un.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
 
-#include <windows.h>
-#include <ws2tcpip.h>
+const int INVALID_SOCKET = -1;
+const int SOCKET_ERROR = -1;
 
-SOCKET sock;
+int sock = socket(AF_UNIX, SOCK_STREAM, 0);
 
 static NodeGrid* grid;
 
 void Upload::init(NodeGrid* _grid)
 {
   grid = _grid;
-	WSADATA wsaData;
-	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	int iResult = 0; 
 	if (iResult != 0)
 	{
 		grid->err =
@@ -35,7 +40,7 @@ static void connectToRobot()
 {
 	struct addrinfo *result = NULL, *ptr = NULL, hints;
 
-	ZeroMemory(&hints, sizeof(hints));
+	//ZeroMemory(&hints, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
@@ -45,7 +50,6 @@ static void connectToRobot()
 	{
 		grid->err =
 			("getaddrinfo failed with error: " + std::to_string(iResult) + "Uploading to the robot will not work");
-		WSACleanup();
 		return;
 	}
 
@@ -56,13 +60,12 @@ static void connectToRobot()
 		{
 			grid->err =
 				("socket failed with error: " + std::to_string(iResult) + "Uploading to the robot will not work");
-			WSACleanup();
 			return;
 		}
 		iResult = connect(sock, ptr->ai_addr, (int)ptr->ai_addrlen);
-		if (iResult == SOCKET_ERROR)
+		if (iResult == SO_ERROR)
 		{
-			closesocket(sock);
+      close(sock);
 			sock = INVALID_SOCKET;
 			continue;
 		}
@@ -74,7 +77,6 @@ static void connectToRobot()
 	if (sock == INVALID_SOCKET)
 	{
 		grid->err = ("unable to connect to robot");
-		WSACleanup();
 		return;
 	}
 }
@@ -82,11 +84,10 @@ static void connectToRobot()
 static std::string sendToRobot(const std::string& msg)
 {
 	int iResult = send(sock, msg.c_str(), msg.size(), 0);
-	if (iResult == SOCKET_ERROR)
+	if (iResult == SO_ERROR)
 	{
 		grid->err = ("send failed with error: " + std::to_string(iResult));
-		closesocket(sock);
-		WSACleanup();
+		close(sock);
 		return "err";
 	}
 
@@ -110,15 +111,15 @@ static std::string sendToRobot(const std::string& msg)
 	return str2;
 }
 
-void Upload::close()
+void Upload::closeSock()
 {
-	int iResult = shutdown(sock, SD_SEND);
-	if (iResult == SOCKET_ERROR)
+	/*int iResult = shutdown(sock, SD_SEND);
+	if (iResult == SO_ERROR)
 	{
 		grid->err = ("shutdown failed with error: " + std::to_string(iResult) + "Uploading to the robot will not work");
 	}
-	closesocket(sock);
-	WSACleanup();
+  */
+	close(sock);
 }
 
 static std::string getFile(std::string path)

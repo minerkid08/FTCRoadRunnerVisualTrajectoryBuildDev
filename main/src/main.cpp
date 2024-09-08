@@ -10,7 +10,6 @@
 #include "Save.hpp"
 #include "Upload.hpp"
 
-#include <Windows.h>
 #include <math.h>
 
 #include <filesystem>
@@ -82,7 +81,7 @@ int main(int argc, char** argv)
 	glfwSetWindowCloseCallback(window, [](GLFWwindow* window) {
 		bool* running = (bool*)glfwGetWindowUserPointer(window);
 		*running = false;
-    Upload::close();
+    Upload::closeSock();
 	});
 
 	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int btn, int action, int _mods) {
@@ -184,32 +183,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	if (argc > 2)
-	{
-		if (strcmp(argv[2], "export") == 0)
-		{
-			Save::exp(grid);
-			if (grid->err != "")
-			{
-				if (grid->err[7] == 'w')
-				{
-					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 6);
-				}
-				else
-				{
-					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
-				}
-				std::cout << grid->err << "\n";
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
-			}
-			if (grid->msg != "")
-			{
-				std::cout << grid->msg << "\n";
-			}
-			running = false;
-		}
-	}
-
+	
   Upload::init(grid);
 
 	while (running)
