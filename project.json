@@ -9,7 +9,7 @@
 			"dll": ["glfw3"],
 			"sdll": ["wsock32", "WS2_32"],
 			"configs": ["build", "run"],
-      "other": ["-mwindows"]
+      "other": ["-mwindows", "-O2", "-s"]
 		}
 	]
 }
