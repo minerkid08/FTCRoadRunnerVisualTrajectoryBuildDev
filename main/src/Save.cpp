@@ -312,10 +312,9 @@ void Save::exp(NodeGrid* grid)
 			emptyNodes = true;
 		}
 	}
-	if (startInd == -1)
+	if (emptyNodes)
 	{
-		grid->err = "export error: cant find start node";
-		return;
+		grid->err = "export warning: path has unused nodes";
 	}
 	std::vector<int> segments;
 	int targetInd = startInd;
@@ -338,14 +337,6 @@ void Save::exp(NodeGrid* grid)
 					}
 					foundNode = true;
 					foundInd = seg->endNode;
-					for (int s : segments)
-					{
-						if (i == s)
-						{
-							grid->err = "export error: loop found at segment " + std::to_string(s);
-							return;
-						}
-					}
 					segments.push_back(i);
 				}
 			}
