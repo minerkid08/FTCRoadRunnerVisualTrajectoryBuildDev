@@ -1,0 +1,2 @@
+building:
+C:/raylib/w64devkit/bin/g++.exe -fdiagnostics-color=always -g D:\FTCRoadRunnerVisualTrajectoryBuilderDev\main\src/*.cpp D:\FTCRoadRunnerVisualTrajectoryBuilderDev\include\glad/*.c D:\FTCRoadRunnerVisualTrajectoryBuilderDev\include\imgui/*.cpp -o D:\FTCRoadRunnerVisualTrajectoryBuilderDev\bin\trajectoryBuilder.exe -ID:\FTCRoadRunnerVisualTrajectoryBuilderDev\include -ID:\FTCRoadRunnerVisualTrajectoryBuilderDev\main\src -lwsock32 -lWS2_32 -LD:\FTCRoadRunnerVisualTrajectoryBuilderDev\bin\ -lglfw3 -mwindows -O2 -s build sucessful

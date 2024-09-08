@@ -1,6 +1,8 @@
 #include "NodeGrid.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
+#define max(a, b) ((a) > (b) ? (a) : (b))
+
 void NodeGrid::drawRotatedArrow(Renderer& renderer, glm::vec2 pos, float rot, glm::vec4 tint)
 {
 	glm::mat4 mat = glm::rotate(glm::mat4(1), glm::radians(rot), glm::vec3(0, 0, 1));
@@ -255,7 +257,7 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods)
 				seg->endNode = closestInd;
 				seg->headingMode = 0;
 				seg->pathType = 0;
-				seg->layer = __max(layer, 0);
+				seg->layer = max(layer, 0);
 				seg->recognitionId = -1;
 				selected.ind = closestInd;
 				selected.type = TypeNode;
@@ -268,7 +270,7 @@ void NodeGrid::resetNode(int ind)
 {
 	PathNode* node = nodes.get(ind);
 	node->rot = 0;
-	node->layer = __max(layer, 0);
+	node->layer = max(layer, 0);
 	node->layer = (layer == -1) ? 0 : layer;
 	for (NodePart* part : node->parts)
 	{
