@@ -1,0 +1,41 @@
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/FileExplorer.cpp:[m[K In member function ‘[01m[Kint FileExplorer::[01;32m[Krender[m[K(const char*)[m[K’:
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/FileExplorer.cpp:39:48:[m[K [01;31m[Kerror: [m[K‘[01m[KImGuiWindowFlags_NoDocking[m[K’ was not declared in this scope; did you mean ‘[01m[KImGuiWindowFlags_Tooltip[m[K’?
+   39 |         ImGui::Begin("File Explorer", nullptr, [01;31m[KImGuiWindowFlags_NoDocking[m[K);
+      |                                                [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+      |                                                [32m[KImGuiWindowFlags_Tooltip[m[K
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/ImGui.cpp:[m[K In constructor ‘[01m[KImGuiClass::[01;32m[KImGuiClass[m[K(int)[m[K’:
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/ImGui.cpp:114:27:[m[K [01;31m[Kerror: [m[K‘[01m[KImGuiConfigFlags_DockingEnable[m[K’ was not declared in this scope; did you mean ‘[01m[KImGuiConfigFlags_None[m[K’?
+  114 |         io.ConfigFlags |= [01;31m[KImGuiConfigFlags_DockingEnable[m[K;
+      |                           [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+      |                           [32m[KImGuiConfigFlags_None[m[K
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/ImGui.cpp:115:27:[m[K [01;31m[Kerror: [m[K‘[01m[KImGuiConfigFlags_ViewportsEnable[m[K’ was not declared in this scope
+  115 |         io.ConfigFlags |= [01;31m[KImGuiConfigFlags_ViewportsEnable[m[K;
+      |                           [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/ImGui.cpp:[m[K In member function ‘[01m[Kvoid ImGuiClass::[01;32m[Kend[m[K()[m[K’:
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/ImGui.cpp:150:30:[m[K [01;31m[Kerror: [m[K‘[01m[KImGuiConfigFlags_ViewportsEnable[m[K’ was not declared in this scope
+  150 |         if (io.ConfigFlags & [01;31m[KImGuiConfigFlags_ViewportsEnable[m[K)
+      |                              [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/ImGui.cpp:153:24:[m[K [01;31m[Kerror: [m[K‘[01m[KUpdatePlatformWindows[m[K’ is not a member of ‘[01m[KImGui[m[K’
+  153 |                 ImGui::[01;31m[KUpdatePlatformWindows[m[K();
+      |                        [01;31m[K^~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/ImGui.cpp:154:24:[m[K [01;31m[Kerror: [m[K‘[01m[KRenderPlatformWindowsDefault[m[K’ is not a member of ‘[01m[KImGui[m[K’
+  154 |                 ImGui::[01;31m[KRenderPlatformWindowsDefault[m[K();
+      |                        [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/main.cpp:13:10:[m[K [01;31m[Kfatal error: [m[KWindows.h: No such file or directory
+   13 | #include [01;31m[K<Windows.h>[m[K
+      |          [01;31m[K^~~~~~~~~~~[m[K
+compilation terminated.
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/NodeGrid.cpp:[m[K In member function ‘[01m[Kvoid NodeGrid::[01;32m[KmouseClick[m[K(int, int, int, int)[m[K’:
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/NodeGrid.cpp:258:46:[m[K [01;31m[Kerror: [m[K‘[01m[K__max[m[K’ was not declared in this scope; did you mean ‘[01m[K__fmax[m[K’?
+  258 |                                 seg->layer = [01;31m[K__max[m[K(layer, 0);
+      |                                              [01;31m[K^~~~~[m[K
+      |                                              [32m[K__fmax[m[K
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/NodeGrid.cpp:[m[K In member function ‘[01m[Kvoid NodeGrid::[01;32m[KresetNode[m[K(int)[m[K’:
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/NodeGrid.cpp:271:23:[m[K [01;31m[Kerror: [m[K‘[01m[K__max[m[K’ was not declared in this scope; did you mean ‘[01m[K__fmax[m[K’?
+  271 |         node->layer = [01;31m[K__max[m[K(layer, 0);
+      |                       [01;31m[K^~~~~[m[K
+      |                       [32m[K__fmax[m[K
+[01m[K/home/chomp/gh-repos/ftc/FTCRoadRunnerVisualTrajectoryBuilder/main/src/Upload.cpp:12:10:[m[K [01;31m[Kfatal error: [m[Kwinsock2.h: No such file or directory
+   12 | #include [01;31m[K<winsock2.h>[m[K
+      |          [01;31m[K^~~~~~~~~~~~[m[K
+compilation terminated.
