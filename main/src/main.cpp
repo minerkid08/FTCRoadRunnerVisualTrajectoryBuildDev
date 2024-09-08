@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 	glfwSetWindowCloseCallback(window, [](GLFWwindow* window) {
 		bool* running = (bool*)glfwGetWindowUserPointer(window);
 		*running = false;
-    Upload::close();
+    Upload::closeSock();
 	});
 
 	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int btn, int action, int _mods) {
@@ -183,6 +183,7 @@ int main(int argc, char** argv)
 		}
 	}
 
+	
   Upload::init(grid);
 
 	while (running)

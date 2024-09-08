@@ -9,6 +9,8 @@
 #include <stack>
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef __MINGW32__
 #include <winsock2.h>
 
 #include <windows.h>
@@ -16,26 +18,52 @@
 
 SOCKET sock;
 
+#endif
+
+#ifdef __linux__
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <unistd.h>
+
+const int INVALID_SOCKET = -1;
+const int SOCKET_ERROR = -1;
+
+int sock = socket(AF_UNIX, SOCK_STREAM, 0);
+
+#endif
+
 static NodeGrid* grid;
 
 void Upload::init(NodeGrid* _grid)
 {
-  grid = _grid;
-	WSADATA wsaData;
-	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	grid = _grid;
+#ifdef __MINGW32__
+	WSAData data;
+	int iResult = WSAStartup(MAKEWORD(2, 2), &data);
 	if (iResult != 0)
 	{
 		grid->err =
 			("WSAStartup failed with error: " + std::to_string(iResult) + "Uploading to the robot will not work");
 		return;
 	}
+#endif
 }
 
 static void connectToRobot()
 {
-	struct addrinfo *result = NULL, *ptr = NULL, hints;
+	sock = INVALID_SOCKET;
 
+	struct addrinfo* result = nullptr;
+	struct addrinfo* ptr = nullptr;
+	struct addrinfo hints;
+
+#ifdef __MINGW32__
 	ZeroMemory(&hints, sizeof(hints));
+#endif
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
@@ -43,26 +71,27 @@ static void connectToRobot()
 	int iResult = getaddrinfo("192.168.43.1", "6969", &hints, &result);
 	if (iResult != 0)
 	{
-		grid->err =
-			("getaddrinfo failed with error: " + std::to_string(iResult) + "Uploading to the robot will not work");
-		WSACleanup();
+		grid->err = ("getaddrinfo failed with error: " + std::to_string(iResult) + " Uploading failed");
 		return;
 	}
 
-	for (ptr = result; ptr != NULL; ptr = ptr->ai_next)
+	for (ptr = result; ptr != nullptr; ptr = ptr->ai_next)
 	{
 		sock = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
 		if (sock == INVALID_SOCKET)
 		{
-			grid->err =
-				("socket failed with error: " + std::to_string(iResult) + "Uploading to the robot will not work");
-			WSACleanup();
+			grid->err = ("socket failed with error: " + std::to_string(iResult) + "Uploading failed");
 			return;
 		}
 		iResult = connect(sock, ptr->ai_addr, (int)ptr->ai_addrlen);
 		if (iResult == SOCKET_ERROR)
 		{
+#ifdef __MINGW32__
 			closesocket(sock);
+#endif
+#ifdef __linux__
+			close(sock);
+#endif
 			sock = INVALID_SOCKET;
 			continue;
 		}
@@ -73,20 +102,25 @@ static void connectToRobot()
 
 	if (sock == INVALID_SOCKET)
 	{
-		grid->err = ("unable to connect to robot");
-		WSACleanup();
+		grid->err = "unable to connect to robot";
 		return;
 	}
 }
 
 static std::string sendToRobot(const std::string& msg)
 {
+	if (sock == INVALID_SOCKET)
+		return "error :(";
 	int iResult = send(sock, msg.c_str(), msg.size(), 0);
-	if (iResult == SOCKET_ERROR)
+	if (iResult == SO_ERROR)
 	{
-		grid->err = ("send failed with error: " + std::to_string(iResult));
+		grid->err = ("send failed with error: " + std::to_string(iResult) + " Upload failed");
+#ifdef __MINGW32__
 		closesocket(sock);
-		WSACleanup();
+#endif
+#ifdef __linux__
+		close(sock);
+#endif
 		return "err";
 	}
 
@@ -110,15 +144,15 @@ static std::string sendToRobot(const std::string& msg)
 	return str2;
 }
 
-void Upload::close()
+void Upload::closeSock()
 {
+#ifdef __MINGW32__
 	int iResult = shutdown(sock, SD_SEND);
-	if (iResult == SOCKET_ERROR)
+	if (iResult == SO_ERROR)
 	{
-		grid->err = ("shutdown failed with error: " + std::to_string(iResult) + "Uploading to the robot will not work");
+		grid->err = ("shutdown failed with error: " + std::to_string(iResult) + "Uploading failed?");
 	}
-	closesocket(sock);
-	WSACleanup();
+#endif
 }
 
 static std::string getFile(std::string path)
@@ -147,9 +181,14 @@ static std::string getFile(std::string path)
 
 void Upload::upload(bool current)
 {
-  connectToRobot();
 	grid->err = "";
-	grid->msg = "";
+	grid->msg = "uploading";
+	connectToRobot();
+	if (sock == INVALID_SOCKET)
+	{
+		grid->err = "could not connect to robot";
+		return;
+	}
 	std::string s = "\t";
 	if (current)
 	{
@@ -184,7 +223,7 @@ void Upload::upload(bool current)
 
 void Upload::pull()
 {
-  connectToRobot();
+	connectToRobot();
 	grid->err = "";
 	grid->msg = "";
 
