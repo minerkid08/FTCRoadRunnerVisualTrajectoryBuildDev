@@ -1,107 +1,16 @@
 #include "ImGui.hpp"
+#include "Action.hpp"
+#include "FrameBuffer.hpp"
 #include "Save.hpp"
-#include "Upload.hpp"
+#include "imgui/imgui.h"
+#include <execution>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+#include <stdio.h>
 #include <string>
-#include <thread>
-
-static void removePart(PathNode* node, int ind)
-{
-	delete node->parts[ind];
-	for (int i = ind; i < node->parts.size() - 1; i++)
-	{
-		node->parts[i] = node->parts[i + 1];
-	}
-	node->parts.resize(node->parts.size() - 1);
-}
-
-static void moveUp(PathNode* node, int ind)
-{
-	if (ind + 1 < node->parts.size())
-	{
-		NodePart* nodePart = node->parts[ind + 1];
-		node->parts[ind + 1] = node->parts[ind];
-		node->parts[ind] = nodePart;
-	}
-}
-
-static void moveDown(PathNode* node, int ind)
-{
-	if (ind - 1 > -1)
-	{
-		NodePart* nodePart = node->parts[ind - 1];
-		node->parts[ind - 1] = node->parts[ind];
-		node->parts[ind] = nodePart;
-	}
-}
-
-static void nodePartButtons(PathNode* node, int i)
-{
-	if (ImGui::Button("x"))
-	{
-		removePart(node, i);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("^"))
-	{
-		moveDown(node, i);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("v"))
-	{
-		moveUp(node, i);
-	}
-}
-
-static void removePart(PathSegment* seg, int ind)
-{
-	delete seg->parts[ind];
-	for (int i = ind; i < seg->parts.size() - 1; i++)
-	{
-		seg->parts[i] = seg->parts[i + 1];
-	}
-	seg->parts.resize(seg->parts.size() - 1);
-}
-
-static void moveUp(PathSegment* seg, int ind)
-{
-	if (ind + 1 < seg->parts.size())
-	{
-		SegPart* nodePart = seg->parts[ind + 1];
-		seg->parts[ind + 1] = seg->parts[ind];
-		seg->parts[ind] = nodePart;
-	}
-}
-
-static void moveDown(PathSegment* seg, int ind)
-{
-	if (ind - 1 > -1)
-	{
-		SegPart* nodePart = seg->parts[ind - 1];
-		seg->parts[ind - 1] = seg->parts[ind];
-		seg->parts[ind] = nodePart;
-	}
-}
-
-static void nodePartButtons(PathSegment* seg, int i)
-{
-	if (ImGui::Button("x"))
-	{
-		removePart(seg, i);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("^"))
-	{
-		moveDown(seg, i);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("v"))
-	{
-		moveUp(seg, i);
-	}
-}
+#include <vector>
 
 ImGuiClass::ImGuiClass(int _windowSize)
 {
@@ -112,7 +21,7 @@ ImGuiClass::ImGuiClass(int _windowSize)
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	//	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 	io.FontDefault = io.Fonts->AddFontFromFileTTF("OpenSans-Bold.ttf", 20.0f);
 	ImGuiStyle& style = ImGui::GetStyle();
@@ -156,481 +65,257 @@ void ImGuiClass::end()
 	}
 }
 
-void ImGuiClass::nodeList(NodeGrid* grid)
+static bool open = true;
+static bool* p_open = &open;
+
+static std::vector<Action> actions;
+static Action* rootAction = nullptr;
+static Action* currentAction = nullptr;
+
+static const char* actionTypes[] = {"sequentional", "parallel", "trajectory"};
+
+static int actionTypeCount = 3;
+
+void drawAction(Action* action);
+void addAction(Action* parent);
+
+void ImGuiClass::nodeList(NodeGrid* grid, FrameBuffer& framebuffer)
 {
-	// node list
+	static bool opt_fullscreen = true;
+	static bool opt_padding = false;
+	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
-	ImGui::Begin("Node List", nullptr, ImGuiWindowFlags_MenuBar);
-	ImGui::BeginMenuBar();
-	if (ImGui::MenuItem("new"))
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+
+	if (opt_fullscreen)
 	{
-		grid->reset();
-		grid->selected.ind = -1;
-		grid->selected.type = TypeNode;
-		Save::clearPath();
-	}
-	if (ImGui::MenuItem("save"))
-	{
-		Save::save(grid);
-	}
-	if (ImGui::MenuItem("save as"))
-	{
-		memset(path, 0, 256);
-		explorerMode = 1;
-		explorer.reset(FileExplorerFlags_MakeFile);
-	}
-	if (ImGui::MenuItem("load"))
-	{
-		memset(path, 0, 256);
-		explorerMode = 2;
-		explorer.reset();
-	}
-	if (ImGui::MenuItem("export"))
-	{
-		Save::exp(grid);
-	}
-	if (ImGui::BeginMenu("robot"))
-	{
-		if (ImGui::MenuItem("upload current"))
-		{
-			std::thread t([grid]() { Upload::upload(true); });
-			t.detach();
-		}
-		if (ImGui::MenuItem("upload all"))
-		{
-			std::thread t([grid]() { Upload::upload(false); });
-			t.detach();
-		}
-		if (ImGui::MenuItem("pull from robot"))
-		{
-			std::thread t([grid]() { Upload::pull(); });
-			t.detach();
-		}
-		if (ImGui::MenuItem("remove from robot"))
-		{
-			std::thread t([grid]() {
-				// upload.remove();
-			});
-			t.detach();
-		}
-		ImGui::EndMenu();
-	}
-	ImGui::EndMenuBar();
-	if (grid->err != "")
-	{
-		ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.0f, 0.0f, 1.0f});
-		ImGui::Text("%s", grid->err.c_str());
-		ImGui::PopStyleColor();
-	}
-	if (grid->msg != "")
-		ImGui::Text("%s", grid->msg.c_str());
-	ImGui::Text("%s", ("current path: " + Save::getPath()).c_str());
-	if (grid->mods == 1)
-	{
-		ImGui::Text("add node");
-	}
-	else if (grid->mods == 2)
-	{
-		ImGui::Text("add segment");
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+						ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 	}
 	else
 	{
-		ImGui::Text("select");
+		dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
 	}
-	ImGui::InputInt("layer", &(grid->layer), 1, 1, 0);
-	ImGui::DragFloat("other layer transparency", &grid->otherLayerA, 0.1f, 0.0f, 1.0f);
-	ImGui::InputInt("recognitionId", &(grid->recognitionId));
-	if (ImGui::Button("flipHoriz"))
+
+	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+		window_flags |= ImGuiWindowFlags_NoBackground;
+
+	if (!opt_padding)
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+	ImGui::Begin("DockSpace Demo", p_open, window_flags);
+
+	if (!opt_padding)
+		ImGui::PopStyleVar();
+
+	if (opt_fullscreen)
+		ImGui::PopStyleVar(2);
+
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 	{
-		grid->flipHoriz();
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 	}
-	ImGui::SameLine();
-	if (ImGui::Button("flipVert"))
+
+	if (ImGui::BeginMenuBar())
 	{
-		grid->flipVert();
-	}
-	ImGui::Checkbox("grid snap", &(grid->gridSnap));
-	if (ImGui::Button("^"))
-	{
-		if (grid->selected.type == TypeNode)
+		if (ImGui::BeginMenu("Options"))
 		{
-			if (grid->nodes.moveUp(grid->selected.ind))
+			ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
+			ImGui::MenuItem("Padding", NULL, &opt_padding);
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))
 			{
-				grid->selected.ind++;
+				dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
 			}
+			if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))
+			{
+				dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
+			}
+			if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "",
+								(dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))
+			{
+				dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
+			}
+			if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))
+			{
+				dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
+			}
+			if (ImGui::MenuItem("Flag: PassthruCentralNode", "",
+								(dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0, opt_fullscreen))
+			{
+				dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+			}
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Close", NULL, false, p_open != NULL))
+				if (p_open != NULL)
+					*p_open = false;
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMenuBar();
+	}
+
+	ImGui::Begin("viewport");
+	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+	glm::vec2 glmSize = {viewportPanelSize.x, viewportPanelSize.y};
+	int framebufferSize = glmSize.x > glmSize.y ? glmSize.y : glmSize.x;
+	if (framebuffer.spec.width != framebufferSize)
+	{
+		framebuffer.resize(framebufferSize, framebufferSize);
+	}
+	ImVec2 screenPos = ImGui::GetCursorScreenPos();
+	ImGui::Image((void*)framebuffer.getColor(), ImVec2{(float)framebufferSize, (float)framebufferSize}, ImVec2{0, 1},
+				 ImVec2{1, 0});
+	ImGui::End();
+
+	ImGui::Begin("actionList");
+	if (rootAction == nullptr)
+	{
+		actions.push_back({});
+		rootAction = &actions[0];
+	}
+	drawAction(rootAction);
+
+	ImGui::End();
+
+	ImGui::Begin("actionEditor");
+	if (currentAction != nullptr)
+	{
+		ImGui::Combo("type", &currentAction->type, "sequental\0parallel\0trajectory\0");
+		if (currentAction->type == 2)
+		{
 		}
 		else
 		{
-			if (grid->segs.moveUp(grid->selected.ind))
+			if (ImGui::Button("addAction"))
 			{
-				grid->selected.ind++;
+				addAction(currentAction);
 			}
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("v"))
-	{
-		if (grid->selected.type == TypeNode)
-		{
-			if (grid->nodes.moveDown(grid->selected.ind))
-			{
-				grid->selected.ind--;
-			}
-		}
-		else
-		{
-			if (grid->segs.moveDown(grid->selected.ind))
-			{
-				grid->selected.ind--;
-			}
-		}
-	}
-	int id = 0;
-	ImGui::Text("%s", ("nodes: " + std::to_string(grid->nodes.count) + "/" + std::to_string(maxNodes)).c_str());
-	int j = 0;
-	if (grid->nodes.count > 0)
-	{
-		for (int i = 0; i < grid->nodes.count; i++)
-		{
-			PathNode* node = grid->nodes.get(i);
-
-			ImVec4 tint(0.25f, 0.25f, 0.25f, 1);
-			if (grid->selected.ind == i && grid->selected.type == TypeNode)
-			{
-				tint.x = 0.75f;
-			}
-
-			ImGui::PushStyleColor(ImGuiCol_Button, tint);
-			ImGui::PushID(id++);
-			if (ImGui::Button(std::to_string(i).c_str()))
-			{
-				grid->selected.ind = i;
-				grid->selected.type = TypeNode;
-			}
-			ImGui::PopID();
-			ImGui::PopStyleColor();
-			if (j < 16 && i < grid->nodes.count - 1)
-			{
-				ImGui::SameLine();
-				j++;
-			}
-			else
-			{
-				j = 0;
-			}
-		}
-	}
-
-	ImGui::Text("%s", ("segments: " + std::to_string(grid->segs.count) + "/" + std::to_string(maxSegs)).c_str());
-	j = 0;
-	if (grid->segs.count > 0)
-	{
-		for (int i = 0; i < grid->segs.count; i++)
-		{
-			PathSegment* seg = grid->segs.get(i);
-
-			ImVec4 tint(0.25f, 0.25f, 0.25f, 1);
-			if (grid->selected.ind == i && grid->selected.type == TypeSegment)
-			{
-				tint.x = 0.75f;
-			}
-
-			ImGui::PushStyleColor(ImGuiCol_Button, tint);
-			ImGui::PushID(id++);
-			if (ImGui::Button(std::to_string(i).c_str()))
-			{
-				grid->selected.ind = i;
-				grid->selected.type = TypeSegment;
-			}
-			ImGui::PopID();
-			ImGui::PopStyleColor();
-			if (j < 16 && i < grid->segs.count - 1)
-			{
-				ImGui::SameLine();
-				j++;
-			}
-			else
-			{
-				j = 0;
-			}
-		}
-		ImGui::Text(" ");
-	}
-
-	// node properties
-	ImGui::Separator();
-	if (grid->selected.type == TypeNode)
-	{
-		if (ImGui::TreeNodeEx("node properties", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			nodeUi(grid);
-			ImGui::TreePop();
-		}
-	}
-	else
-	{
-		if (ImGui::TreeNodeEx("segment properties", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			segUi(grid);
-			ImGui::TreePop();
 		}
 	}
 	ImGui::End();
 
-	// file explorer
-	if (explorerMode)
-	{
-		if (int i = explorer.render(".path"))
-		{
-			if (i == FileExplorerUpdate_PathSelected)
-			{
-				strcpy(path, explorer.outPath.string().c_str());
-				if (explorerMode == 1)
-				{
-					Save::saveAs(grid, path);
-				}
-				if (explorerMode == 2)
-				{
-					Save::load(grid, path);
-					grid->selected.ind = -1;
-					grid->selected.type = TypeNode;
-				}
-				explorerMode = 0;
-			}
-			if (i == FileExplorerUpdate_Close)
-			{
-				explorerMode = 0;
-			}
-		}
-	}
+	// End the parent window that contains the Dockspace:
+	ImGui::End();
 }
 
-void ImGuiClass::nodeUi(NodeGrid* grid)
+void drawAction(Action* action)
 {
-	if (grid->selected.ind > -1 && grid->selected.ind < grid->nodes.count)
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+							   (action == currentAction ? ImGuiTreeNodeFlags_Selected : 0);
+	bool opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", actionTypes[action->type]);
+	if (ImGui::IsItemClicked())
 	{
-		PathNode* node = grid->nodes.get(grid->selected.ind);
-		ImGui::Text("%s", (std::string("node: ") + std::to_string(grid->selected.ind)).c_str());
-		if (ImGui::Button("remove"))
-		{
-			grid->nodes.remove(grid->selected.ind);
-			std::vector<int> toRemove;
-			for (int i = 0; i < grid->segs.count; i++)
-			{
-				PathSegment* seg = grid->segs.get(i);
-				if (seg->startNode == grid->selected.ind || seg->endNode == grid->selected.ind)
-				{
-					toRemove.push_back(i);
-				}
-				if (seg->startNode > grid->selected.ind)
-				{
-					seg->startNode--;
-				}
-				if (seg->endNode > grid->selected.ind)
-				{
-					seg->endNode--;
-				}
-			}
-			int j = 0;
-			for (int i : toRemove)
-			{
-				grid->segs.remove(i - j++);
-			}
-		}
-		if (grid->selected.ind > 0)
-		{
-			ImGui::SameLine();
-			if (ImGui::Button("+"))
-			{
-				ImGui::OpenPopup("add");
-			}
-			if (ImGui::BeginPopup("add"))
-			{
-				bool marker = false;
-				bool delay = false;
-				bool turn = false;
-				for (int i = 0; i < node->parts.size(); i++)
-				{
-					NodePart* part = node->parts[i];
-					switch (part->getId())
-					{
-					case 2:
-						marker = true;
-						break;
-					case 3:
-						delay = true;
-						break;
-					case 4:
-						turn = true;
-						break;
-					}
-				}
-				if (!marker)
-				{
-					if (ImGui::MenuItem("marker"))
-					{
-						node->parts.push_back(new Marker());
-					}
-				}
-				if (!delay)
-				{
-					if (ImGui::MenuItem("delay"))
-					{
-						node->parts.push_back(new Delay());
-					}
-				}
-				if (!turn)
-				{
-					if (ImGui::MenuItem("turn"))
-					{
-						node->parts.push_back(new Turn());
-					}
-				}
-				ImGui::EndPopup();
-			}
-		}
+		currentAction = action;
+	}
 
-		ImGui::InputFloat2("pos", glm::value_ptr(node->pos));
-		ImGui::InputFloat("angle", &(node->rot));
-		ImGui::InputFloat("heading", &(node->heading));
-		ImGui::InputInt("layer", &(node->layer), 1, 1, 0);
-		ImGui::Separator();
-		for (int i = 0; i < node->parts.size(); i++)
+	if (ImGui::BeginDragDropTarget())
+	{
+		const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("action");
+		if (payload)
 		{
-			switch (node->parts[i]->getId())
+			Action* a = *(Action**)payload->Data;
+			if (a->prev)
 			{
-			case 2:
-				if (ImGui::TreeNode("marker"))
-				{
-					Marker* marker = (Marker*)node->parts[i];
-					nodePartButtons(node, i);
-					ImGui::InputText("label", marker->text, 255);
-					ImGui::TreePop();
-				}
-				break;
-			case 3:
-				if (ImGui::TreeNode("delay"))
-				{
-					Delay* delay = (Delay*)node->parts[i];
-					nodePartButtons(node, i);
-					ImGui::InputFloat("time", &(delay->time));
-					ImGui::TreePop();
-				}
-				break;
-			case 4:
-				if (ImGui::TreeNode("turn"))
-				{
-					Turn* turn = (Turn*)node->parts[i];
-					nodePartButtons(node, i);
-					ImGui::InputFloat("angle", &(turn->angle));
-					ImGui::TreePop();
-				}
+				a->prev->next = a->next;
 			}
+			else
+			{
+				a->parrent->actions = a->next;
+			}
+			if (a->next)
+			{
+				a->next->prev = a->prev;
+			}
+
+			a->next = nullptr;
+			a->parrent = a;
+			if (action->actions == nullptr)
+			{
+				action->actions = a;
+				a->prev = nullptr;
+			}
+			else
+			{
+				Action* action2 = action->actions;
+				while (true)
+				{
+					if (action2->next == nullptr)
+						break;
+					action2 = action2->next;
+				}
+				action2->next = a;
+				a->prev = action2;
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
+
+	if (action != rootAction)
+	{
+		if (ImGui::BeginDragDropSource())
+		{
+			ImGui::SetDragDropPayload("action", (void*)&action, sizeof(void*));
+			ImGui::EndDragDropSource();
 		}
 	}
-}
 
-void ImGuiClass::segUi(NodeGrid* grid)
-{
-	if (grid->selected.ind > -1 && grid->selected.ind < grid->segs.count)
+	if (opened)
 	{
-		PathSegment* seg = grid->segs.get(grid->selected.ind);
-		ImGui::Text("%s", (std::string("segment: ") + std::to_string(grid->selected.ind)).c_str());
-		if (ImGui::Button("remove"))
+		if (action->actions)
 		{
-			grid->segs.remove(grid->selected.ind);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("+"))
-		{
-			ImGui::OpenPopup("add");
-		}
-		if (ImGui::BeginPopup("add"))
-		{
-			bool overides = false;
-			for (int i = 0; i < seg->parts.size(); i++)
+			Action* action2 = action->actions;
+			while (true)
 			{
-				SegPart* part = seg->parts[i];
-				switch (part->getId())
-				{
-				case 1:
-					// overides = true;
+				drawAction(action2);
+				if (action2->next == nullptr)
 					break;
-				}
+				action2 = action2->next;
 			}
-			if (!overides)
-			{
-				if (ImGui::MenuItem("overides"))
-				{
-					seg->parts.push_back(new Overides());
-				}
-			}
-			ImGui::EndPopup();
 		}
-		ImGui::InputInt("layer", &(seg->layer), 1, 1, 0);
-		const char* headingModes[] = {"none", "linear", "constant", "spline"};
+		ImGui::TreePop();
+	}
+}
 
-		if (ImGui::BeginCombo("heading mode", headingModes[seg->headingMode]))
+void addAction(Action* parent)
+{
+	int actionInd = actions.size();
+	actions.emplace_back();
+
+	Action* action = &actions[actionInd];
+
+	action->id = actionInd;
+	action->parrent = parent;
+
+	if (parent->actions)
+	{
+		Action* a = parent->actions;
+		while (true)
 		{
-			for (int i = 0; i < 4; i++)
-			{
-				if (ImGui::Selectable(headingModes[i]))
-				{
-					seg->headingMode = i;
-				}
-			}
-			ImGui::EndCombo();
-		}
-		const char* lineMode[] = {"spline", "line"};
-		if (ImGui::BeginCombo("path type", lineMode[seg->pathType]))
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				if (ImGui::Selectable(lineMode[i]))
-				{
-					seg->pathType = i;
-				}
-			}
-			ImGui::EndCombo();
-		}
-		ImGui::InputInt("recognition id", &(seg->recognitionId));
-		ImGui::Separator();
-		for (int i = 0; i < seg->parts.size(); i++)
-		{
-			switch (seg->parts[i]->getId())
-			{
-			case 1:
-				if (ImGui::TreeNode("speed overides"))
-				{
-					Overides* overides = (Overides*)seg->parts[i];
-					nodePartButtons(seg, i);
-					ImGui::PushID(1);
-					ImGui::Checkbox("", &(overides->vel));
-					ImGui::PopID();
-					ImGui::SameLine();
-					ImGui::InputFloat("vel", &(overides->velV));
-
-					ImGui::PushID(2);
-					ImGui::Checkbox("", &(overides->accel));
-					ImGui::PopID();
-					ImGui::SameLine();
-					ImGui::InputFloat("accel", &(overides->accelV));
-
-					ImGui::PushID(3);
-					ImGui::Checkbox("", &(overides->angVel));
-					ImGui::PopID();
-					ImGui::SameLine();
-					ImGui::InputFloat("ang vel", &(overides->angVelV));
-
-					ImGui::PushID(4);
-					ImGui::Checkbox("", &(overides->angAccel));
-					ImGui::PopID();
-					ImGui::SameLine();
-					ImGui::InputFloat("ang accel", &(overides->angAccelV));
-					ImGui::TreePop();
-				}
+			if (a->next)
+				a = a->next;
+			else
 				break;
-			}
 		}
+		a->next = action;
+    action->prev = a;
+	}
+	else
+	{
+		parent->actions = action;
 	}
 }

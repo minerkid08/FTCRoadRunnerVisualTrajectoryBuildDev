@@ -2,13 +2,13 @@
 #include <glfw/glfw3.h>
 #include <iostream>
 
+#include "FrameBuffer.hpp"
 #include "ImGui.hpp"
 #include "Renderer.hpp"
 #include "Shader.hpp"
 
 #include "NodeGrid.hpp"
 #include "Save.hpp"
-#include "Upload.hpp"
 
 #include <math.h>
 
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 	window = glfwCreateWindow(windowSize * 2, windowSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 	glfwSetWindowUserPointer(window, &running);
-	glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
+	glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_TRUE);
 
 	int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
@@ -81,7 +81,6 @@ int main(int argc, char** argv)
 	glfwSetWindowCloseCallback(window, [](GLFWwindow* window) {
 		bool* running = (bool*)glfwGetWindowUserPointer(window);
 		*running = false;
-    Upload::closeSock();
 	});
 
 	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int btn, int action, int _mods) {
@@ -157,6 +156,8 @@ int main(int argc, char** argv)
 
 	Renderer renderer;
 
+  FrameBuffer framebuffer({});
+
 	glm::vec4 verts[]{{1, 1, 0, 1}, {1, -1, 0, 1}, {-1, 1, 0, 1}, {-1, -1, 0, 1}};
 
 	Texture tex("field.png");
@@ -183,22 +184,21 @@ int main(int argc, char** argv)
 		}
 	}
 
-	
-  Upload::init(grid);
-
 	while (running)
 	{
+    framebuffer.bind();
 		glClearColor(0.1, 0.1, 0.1, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.use();
-
 		renderer.draw(verts, &tex, &shader, glm::vec4(1, 1, 1, 1));
 
 		grid->update(renderer, mouseX, mouseY, windowSize, mods);
 
+    framebuffer.unbind();
+
 		imGui.begin();
-		imGui.nodeList(grid);
+		imGui.nodeList(grid, framebuffer);
 		imGui.end();
 
 		glfwSwapBuffers(window);

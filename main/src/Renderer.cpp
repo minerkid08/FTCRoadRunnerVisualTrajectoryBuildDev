@@ -36,7 +36,7 @@ Renderer::Renderer()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(inds), inds, GL_STATIC_DRAW);
 
-	camMat = glm::ortho(-2.0f, 2.0f, -1.0f, 1.0f);
+	camMat = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f);
 }
 
 Renderer::~Renderer()
@@ -52,7 +52,7 @@ void Renderer::draw(glm::vec4 verts[4], Texture* tex, Shader* shader, glm::vec4 
 	for (int i = 0; i < 4; i++)
 	{
 		glm::vec4 vert = verts[i] * camMat;
-		vertices[i].pos = {vert.x - 0.5f, vert.y};
+		vertices[i].pos = vert;
 		vertices[i].texUV = uv[i];
 		vertices[i].tint = tint;
 	}

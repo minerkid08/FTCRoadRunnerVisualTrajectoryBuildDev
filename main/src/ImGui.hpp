@@ -1,5 +1,6 @@
 #pragma once
 #include "FileExplorer.hpp"
+#include "FrameBuffer.hpp"
 #include "NodeGrid.hpp"
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -13,7 +14,7 @@ class ImGuiClass
 	~ImGuiClass();
 	void begin();
 	void end();
-	void nodeList(NodeGrid* grid);
+	void nodeList(NodeGrid* grid, FrameBuffer& framebuffer);
 	void nodeProperties(NodeGrid* grid);
 
   private:
