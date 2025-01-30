@@ -1,20 +1,203 @@
 #include "ImGui.hpp"
 #include "Action.hpp"
 #include "FrameBuffer.hpp"
-#include "Save.hpp"
-#include "imgui/imgui.h"
-#include <execution>
+#include "NodeGrid.hpp"
+#include "global.hpp"
+
+#include <imgui/imgui.h>
+
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
-#include <stdio.h>
-#include <string>
-#include <vector>
 
-ImGuiClass::ImGuiClass(int _windowSize)
+void trajectoryUi(NodeGrid* grid)
 {
-	windowSize = _windowSize;
+	ImGui::Separator();
+	if (ImGui::Button("flipHoriz"))
+	{
+		grid->flipHoriz();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("flipVert"))
+	{
+		grid->flipVert();
+	}
+	ImGui::Checkbox("grid snap", &(grid->gridSnap));
+	if (ImGui::Button("^"))
+	{
+		if (grid->selected.type == TypeNode)
+		{
+			if (grid->nodes.moveUp(grid->selected.ind))
+			{
+				grid->selected.ind++;
+			}
+		}
+		else
+		{
+			if (grid->segs.moveUp(grid->selected.ind))
+			{
+				grid->selected.ind++;
+			}
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("v"))
+	{
+		if (grid->selected.type == TypeNode)
+		{
+			if (grid->nodes.moveDown(grid->selected.ind))
+			{
+				grid->selected.ind--;
+			}
+		}
+		else
+		{
+			if (grid->segs.moveDown(grid->selected.ind))
+			{
+				grid->selected.ind--;
+			}
+		}
+	}
+	int id = 0;
+	ImGui::Text("nodes: %d/%d", grid->nodes.count, maxNodes);
+	int j = 0;
+	if (grid->nodes.count > 0)
+	{
+		for (int i = 0; i < grid->nodes.count; i++)
+		{
+			PathNode* node = grid->nodes.get(i);
+
+			ImVec4 tint(0.25f, 0.25f, 0.25f, 1);
+			if (grid->selected.ind == i && grid->selected.type == TypeNode)
+			{
+				tint.x = 0.75f;
+			}
+
+			ImGui::PushStyleColor(ImGuiCol_Button, tint);
+			ImGui::PushID(id++);
+			if (ImGui::Button(std::to_string(i).c_str()))
+			{
+				grid->selected.ind = i;
+				grid->selected.type = TypeNode;
+			}
+			ImGui::PopID();
+			ImGui::PopStyleColor();
+			if (j < 16 && i < grid->nodes.count - 1)
+			{
+				ImGui::SameLine();
+				j++;
+			}
+			else
+			{
+				j = 0;
+			}
+		}
+	}
+
+	ImGui::Text("segments: %d/%d", grid->segs.count, maxSegs);
+	j = 0;
+	if (grid->segs.count > 0)
+	{
+		for (int i = 0; i < grid->segs.count; i++)
+		{
+			PathSegment* seg = grid->segs.get(i);
+
+			ImVec4 tint(0.25f, 0.25f, 0.25f, 1);
+			if (grid->selected.ind == i && grid->selected.type == TypeSegment)
+			{
+				tint.x = 0.75f;
+			}
+
+			ImGui::PushStyleColor(ImGuiCol_Button, tint);
+			ImGui::PushID(id++);
+			if (ImGui::Button(std::to_string(i).c_str()))
+			{
+				grid->selected.ind = i;
+				grid->selected.type = TypeSegment;
+			}
+			ImGui::PopID();
+			ImGui::PopStyleColor();
+			if (j < 16 && i < grid->segs.count - 1)
+			{
+				ImGui::SameLine();
+				j++;
+			}
+			else
+			{
+				j = 0;
+			}
+		}
+		ImGui::Text(" ");
+	}
+
+	ImGui::Separator();
+
+	if (grid->selected.type == TypeNode)
+	{
+		if (grid->selected.ind > -1 && grid->selected.ind < grid->nodes.count)
+		{
+			PathNode* node = grid->nodes.get(grid->selected.ind);
+			ImGui::Text("node: %d", grid->selected.ind);
+			if (ImGui::Button("remove"))
+			{
+				grid->nodes.remove(grid->selected.ind);
+				std::vector<int> toRemove;
+				for (int i = 0; i < grid->segs.count; i++)
+				{
+					PathSegment* seg = grid->segs.get(i);
+					if (seg->startNode == grid->selected.ind || seg->endNode == grid->selected.ind)
+					{
+						toRemove.push_back(i);
+					}
+					if (seg->startNode > grid->selected.ind)
+					{
+						seg->startNode--;
+					}
+					if (seg->endNode > grid->selected.ind)
+					{
+						seg->endNode--;
+					}
+				}
+				int j = 0;
+				for (int i : toRemove)
+				{
+					grid->segs.remove(i - j++);
+				}
+				return;
+			}
+			ImGui::InputFloat2("pos", glm::value_ptr(node->pos));
+			ImGui::InputFloat("heading", &node->heading);
+		}
+	}
+	else
+	{
+		if (grid->selected.ind > -1 && grid->selected.ind < grid->segs.count)
+		{
+			PathSegment* seg = grid->segs.get(grid->selected.ind);
+			ImGui::Text("segment: %d", grid->selected.ind);
+			if (ImGui::Button("remove"))
+			{
+				grid->segs.remove(grid->selected.ind);
+			}
+			static const char* headingModes[] = {"none", "linear", "constant", "spline"};
+
+			if (ImGui::BeginCombo("heading mode", headingModes[seg->headingMode]))
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					if (ImGui::Selectable(headingModes[i]))
+					{
+						seg->headingMode = i;
+					}
+				}
+				ImGui::EndCombo();
+			}
+		}
+	}
+}
+
+void initUI()
+{
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
@@ -26,31 +209,27 @@ ImGuiClass::ImGuiClass(int _windowSize)
 	io.FontDefault = io.Fonts->AddFontFromFileTTF("OpenSans-Bold.ttf", 20.0f);
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.WindowRounding = 0.0f;
-	io.FontGlobalScale = windowSize == 1700 ? 2 : 1.5f; // 2 for 4k
-	style.ScaleAllSizes(windowSize == 1700 ? 2 : 1.5);	// 2 for 4k
+	io.FontGlobalScale = 2; // 2 for 4k, 1.5 for 1080
+	style.ScaleAllSizes(2); // 2 for 4k, 1.5 for 1080
 	ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 330");
-
-	path = new char[256];
-	memset(path, 0, 256);
-	explorer.setMainPath("save");
 }
 
-ImGuiClass::~ImGuiClass()
+void closeUI()
 {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 }
 
-void ImGuiClass::begin()
+void beginDockspace()
 {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui::NewFrame();
 }
 
-void ImGuiClass::end()
+void endDockspace()
 {
 	ImGuiIO& io = ImGui::GetIO();
 
@@ -68,44 +247,29 @@ void ImGuiClass::end()
 static bool open = true;
 static bool* p_open = &open;
 
-static std::vector<Action> actions;
-static Action* rootAction = nullptr;
-static Action* currentAction = nullptr;
-
-static const char* actionTypes[] = {"sequentional", "parallel", "trajectory"};
-
-static int actionTypeCount = 3;
-
 void drawAction(Action* action);
-void addAction(Action* parent);
 
-void ImGuiClass::nodeList(NodeGrid* grid, FrameBuffer& framebuffer)
+void renderUI(FrameBuffer& framebuffer)
 {
+	beginDockspace();
 	static bool opt_fullscreen = true;
 	static bool opt_padding = false;
 	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 
-	if (opt_fullscreen)
-	{
-		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-		ImGui::SetNextWindowPos(viewport->WorkPos);
-		ImGui::SetNextWindowSize(viewport->WorkSize);
-		ImGui::SetNextWindowViewport(viewport->ID);
+	ImGui::SetNextWindowPos(viewport->WorkPos);
+	ImGui::SetNextWindowSize(viewport->WorkSize);
+	ImGui::SetNextWindowViewport(viewport->ID);
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
-		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-						ImGuiWindowFlags_NoMove;
-		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-	}
-	else
-	{
-		dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
-	}
+	window_flags |=
+		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
 	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
 		window_flags |= ImGuiWindowFlags_NoBackground;
@@ -128,48 +292,8 @@ void ImGuiClass::nodeList(NodeGrid* grid, FrameBuffer& framebuffer)
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 	}
 
-	if (ImGui::BeginMenuBar())
-	{
-		if (ImGui::BeginMenu("Options"))
-		{
-			ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
-			ImGui::MenuItem("Padding", NULL, &opt_padding);
-			ImGui::Separator();
-
-			if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))
-			{
-				dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
-			}
-			if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))
-			{
-				dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
-			}
-			if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "",
-								(dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))
-			{
-				dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
-			}
-			if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))
-			{
-				dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
-			}
-			if (ImGui::MenuItem("Flag: PassthruCentralNode", "",
-								(dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0, opt_fullscreen))
-			{
-				dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
-			}
-			ImGui::Separator();
-
-			if (ImGui::MenuItem("Close", NULL, false, p_open != NULL))
-				if (p_open != NULL)
-					*p_open = false;
-			ImGui::EndMenu();
-		}
-
-		ImGui::EndMenuBar();
-	}
-
 	ImGui::Begin("viewport");
+	global.onViewport = ImGui::IsWindowFocused() && ImGui::IsWindowHovered();
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	glm::vec2 glmSize = {viewportPanelSize.x, viewportPanelSize.y};
 	int framebufferSize = glmSize.x > glmSize.y ? glmSize.y : glmSize.x;
@@ -178,49 +302,66 @@ void ImGuiClass::nodeList(NodeGrid* grid, FrameBuffer& framebuffer)
 		framebuffer.resize(framebufferSize, framebufferSize);
 	}
 	ImVec2 screenPos = ImGui::GetCursorScreenPos();
+	global.mouseOffsetX = screenPos.x;
+	global.mouseOffsetY = screenPos.y;
+
 	ImGui::Image((void*)framebuffer.getColor(), ImVec2{(float)framebufferSize, (float)framebufferSize}, ImVec2{0, 1},
 				 ImVec2{1, 0});
 	ImGui::End();
 
 	ImGui::Begin("actionList");
-	if (rootAction == nullptr)
+	if (global.rootAction == nullptr)
 	{
-		actions.push_back({});
-		rootAction = &actions[0];
+		global.rootAction = new Action();
+		global.actions.push_back(global.rootAction);
 	}
-	drawAction(rootAction);
+	drawAction(global.rootAction);
 
 	ImGui::End();
 
 	ImGui::Begin("actionEditor");
-	if (currentAction != nullptr)
+	if (global.currentAction != nullptr)
 	{
-		ImGui::Combo("type", &currentAction->type, "sequental\0parallel\0trajectory\0");
-		if (currentAction->type == 2)
+		if (ImGui::Combo("type", &global.currentAction->type, "sequental\0parallel\0trajectory\0"))
 		{
+			if (global.currentAction->type == ACTION_TRAJECTORY)
+			{
+				if (global.currentAction->data == nullptr)
+					global.currentAction->data = new NodeGrid();
+			}
 		}
-		else
+		if (global.currentAction->type != ACTION_TRAJECTORY)
 		{
 			if (ImGui::Button("addAction"))
 			{
-				addAction(currentAction);
+				addAction(global.currentAction);
 			}
 		}
+		if (ImGui::Button("removeAction"))
+		{
+			if (!global.currentAction->actions)
+			{
+			}
+		}
+		if (global.currentAction->type == ACTION_TRAJECTORY)
+			trajectoryUi(global.currentAction->data);
 	}
 	ImGui::End();
 
 	// End the parent window that contains the Dockspace:
 	ImGui::End();
+
+	endDockspace();
 }
 
 void drawAction(Action* action)
 {
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
-							   (action == currentAction ? ImGuiTreeNodeFlags_Selected : 0);
-	bool opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", actionTypes[action->type]);
+							   (action == global.currentAction ? ImGuiTreeNodeFlags_Selected : 0);
+	bool opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
 	if (ImGui::IsItemClicked())
 	{
-		currentAction = action;
+		global.currentAction = action;
 	}
 
 	if (ImGui::BeginDragDropTarget())
@@ -229,43 +370,12 @@ void drawAction(Action* action)
 		if (payload)
 		{
 			Action* a = *(Action**)payload->Data;
-			if (a->prev)
-			{
-				a->prev->next = a->next;
-			}
-			else
-			{
-				a->parrent->actions = a->next;
-			}
-			if (a->next)
-			{
-				a->next->prev = a->prev;
-			}
-
-			a->next = nullptr;
-			a->parrent = a;
-			if (action->actions == nullptr)
-			{
-				action->actions = a;
-				a->prev = nullptr;
-			}
-			else
-			{
-				Action* action2 = action->actions;
-				while (true)
-				{
-					if (action2->next == nullptr)
-						break;
-					action2 = action2->next;
-				}
-				action2->next = a;
-				a->prev = action2;
-			}
+			moveAction(a, action);
 		}
 		ImGui::EndDragDropTarget();
 	}
 
-	if (action != rootAction)
+	if (action != global.rootAction)
 	{
 		if (ImGui::BeginDragDropSource())
 		{
@@ -288,34 +398,5 @@ void drawAction(Action* action)
 			}
 		}
 		ImGui::TreePop();
-	}
-}
-
-void addAction(Action* parent)
-{
-	int actionInd = actions.size();
-	actions.emplace_back();
-
-	Action* action = &actions[actionInd];
-
-	action->id = actionInd;
-	action->parrent = parent;
-
-	if (parent->actions)
-	{
-		Action* a = parent->actions;
-		while (true)
-		{
-			if (a->next)
-				a = a->next;
-			else
-				break;
-		}
-		a->next = action;
-    action->prev = a;
-	}
-	else
-	{
-		parent->actions = action;
 	}
 }

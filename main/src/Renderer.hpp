@@ -13,10 +13,16 @@ struct Vertex
 class Renderer
 {
   public:
+  Texture* nodeTex;
+  Texture* segmentTex;
+  Shader* shader;
+
 	Renderer();
 	~Renderer();
 
 	void draw(glm::vec4 verts[4], Texture* tex, Shader* shader, glm::vec4 tint = {1, 1, 1, 1});
+  void drawNode(glm::vec3 pos, float heading, glm::vec4 color);
+  void drawSegment(glm::vec2 start, glm::vec2 end, float z, float startTan, float endTan, glm::vec4 color);
 
   private:
 	glm::mat4 camMat;

@@ -33,7 +33,7 @@ template <typename T> class List
 	}
 	T* get(int ind)
 	{
-		return arr + ind;
+		return &(arr[ind]);
 	}
 
 	void foreach (void (*func)(int ind, T* t))

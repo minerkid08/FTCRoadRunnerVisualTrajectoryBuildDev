@@ -4,7 +4,6 @@
 #include "PathNode.hpp"
 #include "PathSegment.hpp"
 #include "Renderer.hpp"
-#include "Texture.hpp"
 
 #include <string>
 
@@ -29,12 +28,9 @@ class NodeGrid
 	List<PathSegment> segs;
 	Selected selected;
 	int mods = 0;
-	int layer = -1;
-  float otherLayerA = 0.5f;
-  int recognitionId = 0;
 	bool gridSnap = true;
 
-	NodeGrid(Shader* shader);
+	NodeGrid();
 	~NodeGrid();
 	void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods);
 	void mouseClick(int mouseX, int mouseY, int windowSize, int mods);
@@ -46,12 +42,4 @@ class NodeGrid
 	void flipHoriz();
 
 	void reset();
-
-  private:
-	Texture circleTex;
-	Texture arrowTex;
-	Texture arrowSquareTex;
-	Shader* shader;
-
-	void drawRotatedArrow(Renderer& renderer, glm::vec2 pos, float angle, glm::vec4 color = {1, 1, 1, 1});
 };
