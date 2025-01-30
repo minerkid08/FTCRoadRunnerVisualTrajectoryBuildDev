@@ -25,7 +25,7 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 			PathNode* node1 = nodes.get(seg->startNode);
 			PathNode* node2 = nodes.get(seg->endNode);
 			bool s = (selected.type == TypeSegment && selected.ind == i);
-			renderer.drawSegment(node1->pos, node2->pos, s ? 1 : 0, 0, 0,
+			renderer.drawSegment(node1->pos, node2->pos, s ? 1 : 0, seg->startTan, seg->endTan,
 								 s ? glm::vec4(1.0, 0.0, 0.0, 1.0) : glm::vec4(0.5, 0.5, 0.5, 1.0));
 		}
 	}
@@ -129,6 +129,8 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods)
 				seg->endNode = closestInd;
 				seg->headingMode = 0;
 				seg->pathType = 0;
+				seg->startTan = 0;
+				seg->endTan = 0;
 				selected.ind = closestInd;
 				selected.type = TypeNode;
 			}

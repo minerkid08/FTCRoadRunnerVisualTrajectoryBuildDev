@@ -192,6 +192,8 @@ void trajectoryUi(NodeGrid* grid)
 				}
 				ImGui::EndCombo();
 			}
+      ImGui::InputFloat("start tangent", &seg->startTan);
+      ImGui::InputFloat("end tangent", &seg->endTan);
 		}
 	}
 }

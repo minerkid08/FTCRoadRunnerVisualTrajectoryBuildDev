@@ -8,4 +8,6 @@ struct PathSegment
 	int endNode;
 	int headingMode;
 	int pathType;
+  float startTan;
+  float endTan;
 };

@@ -1,5 +1,11 @@
 #include "Renderer.hpp"
+#include "glm/trigonometric.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+
+static float lerp(float a, float b, float t)
+{
+	return a + ((b - a) * t);
+}
 
 static int inds[] = {0, 1, 2, 2, 1, 3};
 
@@ -83,15 +89,44 @@ void Renderer::drawNode(glm::vec3 pos, float heading, glm::vec4 color)
 
 void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startTan, float endTan, glm::vec4 color)
 {
-	start = {start.x / 72, start.y / 72};
-	end = {end.x / 72, end.y / 72};
-	glm::vec2 dif = end - start;
-	glm::vec2 dif2 = glm::normalize(dif);
-	dif2 = {dif2.x / 40, dif2.y / 40};
+	// glm::vec2 dif = end - start;
+	// glm::vec2 dif2 = glm::normalize(dif);
+	// dif2 = {dif2.x / 40, dif2.y / 40};
+
+	startTan = glm::radians(startTan);
+	endTan = glm::radians(endTan);
+	glm::vec2 ctrl1 = {sin(startTan) * 6 + start.x, cos(startTan) * 6 + start.y};
+	glm::vec2 ctrl2 = {sin(endTan) * 6 + end.x, cos(endTan) * 6 + end.y};
+
 	glm::vec4 verts[4];
-	verts[0] = {dif2.y + start.x, -dif2.x + start.y, z, 1};
-	verts[1] = {-dif2.y + start.x, dif2.x + start.y, z, 1};
-	verts[2] = {dif2.y + start.x + dif.x, -dif2.x + dif.y + start.y, z, 1};
-	verts[3] = {-dif2.y + start.x + dif.x, dif2.x + dif.y + start.y, z, 1};
+
+	for (int i = 0; i < 4; i++)
+	{
+		float l = i * 0.33;
+		// The Green Lines
+		float xa = lerp(start.x, ctrl1.x, l);
+		float ya = lerp(start.y, ctrl1.y, l);
+		float xb = lerp(ctrl1.x, ctrl2.x, l);
+		float yb = lerp(ctrl1.y, ctrl2.y, l);
+		float xc = lerp(ctrl2.x, end.x, l);
+		float yc = lerp(ctrl2.y, end.y, l);
+
+		// The Blue Line
+		float xm = lerp(xa, xb, l);
+		float ym = lerp(ya, yb, l);
+		float xn = lerp(xb, xc, l);
+		float yn = lerp(yb, yc, l);
+
+		// The Black Dot
+		verts[i].x = lerp(xm, xn, l);
+		verts[i].y = lerp(ym, yn, l);
+		verts[i].x /= 72;
+		verts[i].y /= 72;
+	}
+
+	// verts[0] = {dif2.y + start.x, -dif2.x + start.y, z, 1};
+	// verts[1] = {-dif2.y + start.x, dif2.x + start.y, z, 1};
+	// verts[2] = {dif2.y + start.x + dif.x, -dif2.x + dif.y + start.y, z, 1};
+	// verts[3] = {-dif2.y + start.x + dif.x, dif2.x + dif.y + start.y, z, 1};
 	draw(verts, segmentTex, shader, color);
 }
