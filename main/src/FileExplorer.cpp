@@ -1,14 +1,26 @@
 #include "FileExplorer.hpp"
 #include <cstring>
 #include <imgui/imgui.h>
+#include <filesystem>
 #include <iostream>
+
+static int buttonSize = 256;
+static float padding = 16.0f;
+static std::filesystem::path outPath;
+
+static std::filesystem::path mainPath;
+static std::filesystem::path curPath;
+static char filename[256];
+static int flags;
 
 static const char* err;
 
-FileExplorer::FileExplorer()
+std::string explorerGetPath()
 {
+  return outPath.string();
 }
-void FileExplorer::reset(int _flags)
+
+void explorerReset(int _flags)
 {
 	flags = _flags;
 	memset(filename, 0, sizeof(filename));
@@ -23,12 +35,14 @@ void FileExplorer::reset(int _flags)
 	}
 	err = "";
 }
-void FileExplorer::setMainPath(const std::string& path)
+
+void explorerSetPath(const std::string& path)
 {
 	mainPath = path;
 	curPath = path;
 }
-int FileExplorer::render(const char* ext)
+
+int explorerUpdate(const char* ext)
 {
 	if (flags & FileExplorerFlags_MakeFile && flags & FileExplorerFlags_DontShowFiles)
 	{

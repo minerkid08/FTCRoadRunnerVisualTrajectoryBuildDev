@@ -29,6 +29,21 @@ void addAction(Action* parent)
 	}
 }
 
+void reset()
+{
+	for (const Action* action : global.actions)
+	{
+		if (action->type == ACTION_TRAJECTORY)
+		{
+			delete action->data;
+		}
+		delete action;
+	}
+	global.actions.clear();
+	global.rootAction = nullptr;
+	global.currentAction = nullptr;
+}
+
 void moveAction(Action* a, Action* action)
 {
 	if (a->prev)
@@ -63,4 +78,38 @@ void moveAction(Action* a, Action* action)
 		action2->next = a;
 		a->prev = action2;
 	}
+}
+
+void moveActionDown(Action* action)
+{
+	if (action->next == nullptr)
+		return;
+
+	Action* action2 = action->next;
+	Action* temp;
+
+  action->next = action2->next;
+  action2->prev = action->prev;
+  action2->next = action;
+  action->prev = action2;
+
+  if(action2->prev == nullptr)
+    action2->parrent->actions = action2;
+}
+
+void moveActionUp(Action* action)
+{
+	if (action->prev == nullptr)
+		return;
+
+	Action* action2 = action->prev;
+	Action* temp;
+
+  action2->next = action->next;
+  action->prev = action2->prev;
+  action->next = action2;
+  action2->prev = action;
+
+  if(action->prev == nullptr)
+    action->parrent->actions = action;
 }

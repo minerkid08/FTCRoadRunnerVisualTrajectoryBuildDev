@@ -21,5 +21,8 @@ struct Action
   Action* parrent = nullptr;
 };
 
+void reset();
 void addAction(Action* parent);
 void moveAction(Action* action, Action* newParent);
+void moveActionDown(Action* action);
+void moveActionUp(Action* action);

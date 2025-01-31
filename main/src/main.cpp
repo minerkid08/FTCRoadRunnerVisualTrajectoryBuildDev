@@ -44,11 +44,16 @@ int main(int argc, char** argv)
 	int width;
 	int height;
 	glfwGetMonitorWorkarea(monitor, &x, &y, &width, &height);
-  int winSize = 800;
+	int winSize = 800;
 
 	if (width > 3000)
 	{
-		winSize= 1700;
+		global.uiScale = 2.0;
+		winSize = 1700;
+	}
+	else
+	{
+		global.uiScale = 1.5;
 	}
 
 	if (argc > 2)
@@ -95,7 +100,8 @@ int main(int argc, char** argv)
 					if (global.currentAction)
 					{
 						if (global.currentAction->type == ACTION_TRAJECTORY)
-							((NodeGrid*)global.currentAction->data)->mouseClick(mouseX, mouseY, data->framebuffer->spec.width, mods);
+							((NodeGrid*)global.currentAction->data)
+								->mouseClick(mouseX, mouseY, data->framebuffer->spec.width, mods);
 					}
 				}
 			}
@@ -172,28 +178,38 @@ int main(int argc, char** argv)
 
 	initUI();
 
-	std::cout << "initalized" << std::endl;
+	double lastFrameTime = 0;
+	double lastUpdateTime = 0;
+	double fpsLimit = 1.0 / 60.0;
 
 	while (windowData.running)
 	{
-		framebuffer.bind();
-		glClearColor(0.1, 0.1, 0.1, 1);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		shader.use();
-		renderer.draw(verts, &tex, &shader, glm::vec4(1, 1, 1, 1));
-
-		if (global.currentAction != nullptr)
+		double now = glfwGetTime();
+		double deltaTime = now - lastUpdateTime;
+		if (now - lastFrameTime >= fpsLimit)
 		{
-			if (global.currentAction->type == ACTION_TRAJECTORY)
-				global.currentAction->data->update(renderer, mouseX, mouseY, framebuffer.spec.width, mods);
+			framebuffer.bind();
+			glClearColor(0.1, 0.1, 0.1, 1);
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			shader.use();
+			renderer.draw(verts, &tex, &shader, glm::vec4(1, 1, 1, 1));
+
+			if (global.currentAction != nullptr)
+			{
+				if (global.currentAction->type == ACTION_TRAJECTORY)
+					global.currentAction->data->update(renderer, mouseX, mouseY, framebuffer.spec.width, mods);
+			}
+
+			framebuffer.unbind();
+
+			renderUI(framebuffer);
+
+			glfwSwapBuffers(window);
+
+			lastFrameTime = now;
 		}
-
-		framebuffer.unbind();
-
-		renderUI(framebuffer);
-
-		glfwSwapBuffers(window);
+		lastUpdateTime = now;
 		glfwPollEvents();
 	}
 

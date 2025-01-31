@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 #include "glm/trigonometric.hpp"
+#include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 
 static float lerp(float a, float b, float t)
@@ -57,7 +58,7 @@ void Renderer::draw(glm::vec4 verts[4], Texture* tex, Shader* shader, glm::vec4 
 	Vertex vertices[4];
 	for (int i = 0; i < 4; i++)
 	{
-		glm::vec4 vert = verts[i] * camMat;
+		glm::vec4 vert = verts[i];
 		vertices[i].pos = vert;
 		vertices[i].texUV = uv[i];
 		vertices[i].tint = tint;
@@ -93,16 +94,27 @@ void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startT
 	// glm::vec2 dif2 = glm::normalize(dif);
 	// dif2 = {dif2.x / 40, dif2.y / 40};
 
+	static float lineWidth = 0.02;
+	static float ctrlNodeDist = 12;
+
 	startTan = glm::radians(startTan);
 	endTan = glm::radians(endTan);
-	glm::vec2 ctrl1 = {sin(startTan) * 6 + start.x, cos(startTan) * 6 + start.y};
-	glm::vec2 ctrl2 = {sin(endTan) * 6 + end.x, cos(endTan) * 6 + end.y};
+	glm::vec2 ctrl1 = {sin(startTan) * ctrlNodeDist + start.x, cos(startTan) * ctrlNodeDist+ start.y};
+	glm::vec2 ctrl2 = {sin(endTan) * ctrlNodeDist + end.x, cos(endTan) * ctrlNodeDist + end.y};
 
-	glm::vec4 verts[4];
+	glm::vec4 verts[6];
+
+	verts[0] = {start.x / 72, start.y / 72, z, 1};
+	verts[5] = {end.x / 72, end.y / 72, z, 1};
+
+	verts[0].z = cos(startTan) * lineWidth;
+	verts[0].w = sin(startTan) * lineWidth;
+	verts[5].z = -cos(endTan) * lineWidth;
+	verts[5].w = -sin(endTan) * lineWidth;
 
 	for (int i = 0; i < 4; i++)
 	{
-		float l = i * 0.33;
+		float l = i * 0.2 + 0.2;
 		// The Green Lines
 		float xa = lerp(start.x, ctrl1.x, l);
 		float ya = lerp(start.y, ctrl1.y, l);
@@ -118,15 +130,35 @@ void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startT
 		float yn = lerp(yb, yc, l);
 
 		// The Black Dot
-		verts[i].x = lerp(xm, xn, l);
-		verts[i].y = lerp(ym, yn, l);
-		verts[i].x /= 72;
-		verts[i].y /= 72;
+		verts[i + 1].x = lerp(xm, xn, l);
+		verts[i + 1].y = lerp(ym, yn, l);
+
+    float x2 = lerp(xm, xn, l + 0.001) - verts[i + 1].x;
+    float y2 = lerp(ym, yn, l + 0.001) - verts[i + 1].y;
+
+    float tangent = atan2(y2, x2);
+
+		verts[i + 1].x /= 72;
+		verts[i + 1].y /= 72;
+		verts[i + 1].z = sin(tangent) * lineWidth;
+		verts[i + 1].w = cos(tangent) * lineWidth;
+	}
+
+	for (int i = 0; i < 5; i++)
+	{
+		glm::vec4 start = verts[i];
+		glm::vec4 end = verts[i + 1];
+		glm::vec4 verts2[4];
+		verts2[0] = {-start.z + start.x, start.w + start.y, z, 1};
+		verts2[1] = {start.z + start.x, -start.w + start.y, z, 1};
+		verts2[2] = {-end.z + end.x, end.w + end.y, z, 1};
+		verts2[3] = {end.z + end.x, -end.w + end.y, z, 1};
+    draw(verts2, segmentTex, shader, color);
 	}
 
 	// verts[0] = {dif2.y + start.x, -dif2.x + start.y, z, 1};
 	// verts[1] = {-dif2.y + start.x, dif2.x + start.y, z, 1};
 	// verts[2] = {dif2.y + start.x + dif.x, -dif2.x + dif.y + start.y, z, 1};
 	// verts[3] = {-dif2.y + start.x + dif.x, dif2.x + dif.y + start.y, z, 1};
-	draw(verts, segmentTex, shader, color);
+	// draw(verts, segmentTex, shader, color);
 }

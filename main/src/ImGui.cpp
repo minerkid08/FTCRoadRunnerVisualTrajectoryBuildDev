@@ -1,14 +1,19 @@
 #include "ImGui.hpp"
 #include "Action.hpp"
+#include "FileExplorer.hpp"
 #include "FrameBuffer.hpp"
 #include "NodeGrid.hpp"
+#include "Save.hpp"
 #include "global.hpp"
 
+#include <cstdint>
 #include <imgui/imgui.h>
 
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
+
+#include <iostream>
 
 void trajectoryUi(NodeGrid* grid)
 {
@@ -192,14 +197,16 @@ void trajectoryUi(NodeGrid* grid)
 				}
 				ImGui::EndCombo();
 			}
-      ImGui::InputFloat("start tangent", &seg->startTan);
-      ImGui::InputFloat("end tangent", &seg->endTan);
+			ImGui::InputFloat("start tangent", &seg->startTan);
+			ImGui::InputFloat("end tangent", &seg->endTan);
 		}
 	}
 }
 
 void initUI()
 {
+  explorerSetPath("save");
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
@@ -211,8 +218,8 @@ void initUI()
 	io.FontDefault = io.Fonts->AddFontFromFileTTF("OpenSans-Bold.ttf", 20.0f);
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.WindowRounding = 0.0f;
-	io.FontGlobalScale = 2; // 2 for 4k, 1.5 for 1080
-	style.ScaleAllSizes(2); // 2 for 4k, 1.5 for 1080
+	io.FontGlobalScale = global.uiScale; // 2 for 4k, 1.5 for 1080
+	style.ScaleAllSizes(global.uiScale); // 2 for 4k, 1.5 for 1080
 	ImGui_ImplGlfw_InitForOpenGL(getWindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 }
@@ -294,6 +301,25 @@ void renderUI(FrameBuffer& framebuffer)
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 	}
 
+	ImGui::BeginMenuBar();
+	if (ImGui::MenuItem("new"))
+		reset();
+	if (ImGui::MenuItem("save"))
+		save(global.filename);
+	if (ImGui::MenuItem("save as"))
+	{
+		global.explorerMode = 1;
+		explorerReset(FileExplorerFlags_MakeFile);
+	}
+	if (ImGui::MenuItem("load"))
+	{
+		explorerReset();
+		global.explorerMode = 2;
+	}
+  if(ImGui::MenuItem("help"))
+    std::cout << "get gud\n";
+	ImGui::EndMenuBar();
+
 	ImGui::Begin("viewport");
 	global.onViewport = ImGui::IsWindowFocused() && ImGui::IsWindowHovered();
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
@@ -307,7 +333,7 @@ void renderUI(FrameBuffer& framebuffer)
 	global.mouseOffsetX = screenPos.x;
 	global.mouseOffsetY = screenPos.y;
 
-	ImGui::Image((void*)framebuffer.getColor(), ImVec2{(float)framebufferSize, (float)framebufferSize}, ImVec2{0, 1},
+	ImGui::Image((void*)(intptr_t)framebuffer.getColor(), ImVec2{(float)framebufferSize, (float)framebufferSize}, ImVec2{0, 1},
 				 ImVec2{1, 0});
 	ImGui::End();
 
@@ -350,6 +376,22 @@ void renderUI(FrameBuffer& framebuffer)
 	}
 	ImGui::End();
 
+	if (global.explorerMode)
+	{
+		if (int res = explorerUpdate(".path"))
+		{
+			if (res == FileExplorerUpdate_PathSelected)
+			{
+				global.filename = explorerGetPath();
+				if (global.explorerMode == 1)
+					save(global.filename);
+				else
+					load(global.filename);
+			}
+			global.explorerMode = 0;
+		}
+	}
+
 	// End the parent window that contains the Dockspace:
 	ImGui::End();
 
@@ -361,6 +403,7 @@ void drawAction(Action* action)
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
 							   (action == global.currentAction ? ImGuiTreeNodeFlags_Selected : 0);
 	bool opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
+	ImVec2 size = ImGui::GetItemRectSize();
 	if (ImGui::IsItemClicked())
 	{
 		global.currentAction = action;
@@ -383,6 +426,15 @@ void drawAction(Action* action)
 		{
 			ImGui::SetDragDropPayload("action", (void*)&action, sizeof(void*));
 			ImGui::EndDragDropSource();
+		}
+		if (action == global.currentAction)
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("^", ImVec2(0, size.y)))
+				moveActionUp(action);
+			ImGui::SameLine();
+			if (ImGui::Button("v", ImVec2(0, size.y)))
+				moveActionDown(action);
 		}
 	}
 
