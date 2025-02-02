@@ -3,7 +3,7 @@
 #include "List.hpp"
 #include "PathNode.hpp"
 #include "PathSegment.hpp"
-#include "Renderer.hpp"
+#include "renderer/Renderer.hpp"
 
 #include <string>
 

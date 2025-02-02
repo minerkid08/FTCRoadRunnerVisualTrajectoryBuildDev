@@ -1,10 +1,10 @@
 #include "ImGui.hpp"
-#include "Action.hpp"
 #include "FileExplorer.hpp"
-#include "FrameBuffer.hpp"
-#include "NodeGrid.hpp"
 #include "Save.hpp"
+#include "actions/Action.hpp"
 #include "global.hpp"
+#include "renderer/FrameBuffer.hpp"
+#include "trajectories/NodeGrid.hpp"
 
 #include <cstdint>
 #include <imgui/imgui.h>
@@ -205,7 +205,7 @@ void trajectoryUi(NodeGrid* grid)
 
 void initUI()
 {
-  explorerSetPath("save");
+	explorerSetPath("save");
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -316,8 +316,8 @@ void renderUI(FrameBuffer& framebuffer)
 		explorerReset();
 		global.explorerMode = 2;
 	}
-  if(ImGui::MenuItem("help"))
-    std::cout << "get gud\n";
+	if (ImGui::MenuItem("help"))
+		std::cout << "get gud\n";
 	ImGui::EndMenuBar();
 
 	ImGui::Begin("viewport");
@@ -333,8 +333,8 @@ void renderUI(FrameBuffer& framebuffer)
 	global.mouseOffsetX = screenPos.x;
 	global.mouseOffsetY = screenPos.y;
 
-	ImGui::Image((void*)(intptr_t)framebuffer.getColor(), ImVec2{(float)framebufferSize, (float)framebufferSize}, ImVec2{0, 1},
-				 ImVec2{1, 0});
+	ImGui::Image((void*)(intptr_t)framebuffer.getColor(), ImVec2{(float)framebufferSize, (float)framebufferSize},
+				 ImVec2{0, 1}, ImVec2{1, 0});
 	ImGui::End();
 
 	ImGui::Begin("actionList");

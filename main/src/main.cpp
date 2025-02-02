@@ -1,14 +1,15 @@
+#include <filesystem>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <iostream>
 
-#include "Action.hpp"
-#include "FrameBuffer.hpp"
 #include "ImGui.hpp"
-#include "NodeGrid.hpp"
-#include "Renderer.hpp"
-#include "Shader.hpp"
+#include "actions/Action.hpp"
 #include "global.hpp"
+#include "renderer/FrameBuffer.hpp"
+#include "renderer/Renderer.hpp"
+#include "renderer/Shader.hpp"
+#include "trajectories/NodeGrid.hpp"
 
 #include <math.h>
 
@@ -36,6 +37,11 @@ struct WindowData
 
 int main(int argc, char** argv)
 {
+  if(!std::filesystem::exists("./save"))
+    std::filesystem::create_directory("./save");
+  if(!std::filesystem::exists("./export"))
+    std::filesystem::create_directory("./export");
+
 	glfwInit();
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 

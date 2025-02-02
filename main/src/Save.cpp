@@ -1,12 +1,9 @@
 #include "Save.hpp"
-#include "Action.hpp"
-#include "NodeGrid.hpp"
-#include "PathNode.hpp"
-#include "PathSegment.hpp"
+#include "actions/Action.hpp"
+#include "trajectories/NodeGrid.hpp"
 #include "global.hpp"
 
 #include <fstream>
-#include <iomanip>
 #include <json/json.hpp>
 
 static int indexOfAction(const Action* action)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NodeGrid.hpp"
+#include "trajectories/NodeGrid.hpp"
 #define ActionFlags_Deleted 1
 
 #define ACTION_SEQUENTIONAL 0

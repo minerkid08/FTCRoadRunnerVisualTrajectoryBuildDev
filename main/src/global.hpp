@@ -1,4 +1,4 @@
-#include "Action.hpp"
+#include "actions/Action.hpp"
 #include <vector>
 
 struct Globals
