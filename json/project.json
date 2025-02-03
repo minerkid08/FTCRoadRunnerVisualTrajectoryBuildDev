@@ -1,0 +1,5 @@
+{
+  "name": "json",
+  "type": "header",
+  "export": ["export"]
+}

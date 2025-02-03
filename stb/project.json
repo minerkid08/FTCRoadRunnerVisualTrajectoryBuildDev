@@ -1,0 +1,5 @@
+{
+  "name": "stb",
+  "type": "header",
+  "export": ["export"]
+}
