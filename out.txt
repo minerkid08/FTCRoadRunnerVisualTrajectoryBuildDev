@@ -1,25 +1,16 @@
---- Building Target 'main' ---
-building: src\Action.cpp done
-building: src\FileExplorer.cpp done
-building: src\framebuffer.cpp done
-building: src\ImGui.cpp done
-building: src\main.cpp done
-building: src\NodeGrid.cpp done
-building: src\Renderer.cpp done
-building: src\Save.cpp done
-building: src\Shader.cpp done
-building: src\Texture.cpp done
-building: include\imgui\imgui.cpp done
-building: include\imgui\imgui_demo.cpp done
-building: include\imgui\imgui_draw.cpp done
-building: include\imgui\imgui_impl_glfw.cpp done
-building: include\imgui\imgui_impl_opengl3.cpp done
-building: include\imgui\imgui_tables.cpp done
-building: include\imgui\imgui_widgets.cpp done
-building: include\glad\glad.c done
-linking 
-g++ lglfw3 D:\cppGames\trajectoryBuilder\main\cache\src\Action.o D:\cppGames\trajectoryBuilder\main\cache\src\FileExplorer.o D:\cppGames\trajectoryBuilder\main\cache\src\framebuffer.o D:\cppGames\trajectoryBuilder\main\cache\src\ImGui.o D:\cppGames\trajectoryBuilder\main\cache\src\main.o D:\cppGames\trajectoryBuilder\main\cache\src\NodeGrid.o D:\cppGames\trajectoryBuilder\main\cache\src\Renderer.o D:\cppGames\trajectoryBuilder\main\cache\src\Save.o D:\cppGames\trajectoryBuilder\main\cache\src\Shader.o D:\cppGames\trajectoryBuilder\main\cache\src\Texture.o D:\cppGames\trajectoryBuilder\main\cache\include\imgui\imgui.o D:\cppGames\trajectoryBuilder\main\cache\include\imgui\imgui_demo.o D:\cppGames\trajectoryBuilder\main\cache\include\imgui\imgui_draw.o D:\cppGames\trajectoryBuilder\main\cache\include\imgui\imgui_impl_glfw.o D:\cppGames\trajectoryBuilder\main\cache\include\imgui\imgui_impl_opengl3.o D:\cppGames\trajectoryBuilder\main\cache\include\imgui\imgui_tables.o D:\cppGames\trajectoryBuilder\main\cache\include\imgui\imgui_widgets.o D:\cppGames\trajectoryBuilder\main\cache\include\glad\glad.o -o D:\cppGames\trajectoryBuilder\main\bin\trajectoryBuilder
-C:\raylib\w64devkit\bin/ld.exe: cannot find lglfw3: No such file or directory
-collect2.exe: error: ld returned 1 exit status
-
-build failed
+SequentionalAction(
+	drive.actionBuilder(Pose2d(-36.00, -66.00, Math.toRadians(-90.00)))
+		.setTangent(Math.toRadians(-90.00))
+		.splineToLinearHeading(Pose2d(-36.00, -36.00, Math.toRadians(0.00)), Math.toRadians(-450.00)))
+		.setTangent(Math.toRadians(0.00))
+		.splineToLinearHeading(Pose2d(-66.00, -36.00, Math.toRadians(-90.00)), Math.toRadians(-360.00)))
+		.setTangent(Math.toRadians(-90.00))
+		.splineTo(Vector2d(-66.00, -24.00), Math.toRadians(-450.00)))
+		.setTangent(Math.toRadians(-90.00))
+		.splineTo(Vector2d(-48.00, -12.00), Math.toRadians(-180.00)))
+		.setTangent(Math.toRadians(-180.00))
+		.splineTo(Vector2d(24.00, -12.00), Math.toRadians(-180.00)))
+		.setTangent(Math.toRadians(-180.00))
+		.splineTo(Vector2d(48.00, -36.00), Math.toRadians(-180.00)))
+		.build(),
+);

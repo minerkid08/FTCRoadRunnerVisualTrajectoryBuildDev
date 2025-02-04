@@ -7,7 +7,6 @@ struct PathSegment
 	int startNode;
 	int endNode;
 	int headingMode;
-	int pathType;
   float startTan;
   float endTan;
 };

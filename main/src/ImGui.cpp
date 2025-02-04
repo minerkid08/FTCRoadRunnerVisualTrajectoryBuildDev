@@ -1,4 +1,5 @@
 #include "ImGui.hpp"
+#include "Export.hpp"
 #include "FileExplorer.hpp"
 #include "Save.hpp"
 #include "actions/Action.hpp"
@@ -184,11 +185,11 @@ void trajectoryUi(NodeGrid* grid)
 			{
 				grid->segs.remove(grid->selected.ind);
 			}
-			static const char* headingModes[] = {"none", "linear", "constant", "spline"};
+			static const char* headingModes[] = {"none", "linear", "constant", nullptr};
 
 			if (ImGui::BeginCombo("heading mode", headingModes[seg->headingMode]))
 			{
-				for (int i = 0; i < 4; i++)
+				for (int i = 0; i < 3; i++)
 				{
 					if (ImGui::Selectable(headingModes[i]))
 					{
@@ -316,6 +317,8 @@ void renderUI(FrameBuffer& framebuffer)
 		explorerReset();
 		global.explorerMode = 2;
 	}
+	if (ImGui::MenuItem("export"))
+		exportAction(global.rootAction);
 	if (ImGui::MenuItem("help"))
 		std::cout << "get gud\n";
 	ImGui::EndMenuBar();

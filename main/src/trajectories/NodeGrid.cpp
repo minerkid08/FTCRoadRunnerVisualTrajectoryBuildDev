@@ -128,7 +128,6 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods)
 				seg->startNode = selected.ind;
 				seg->endNode = closestInd;
 				seg->headingMode = 0;
-				seg->pathType = 0;
 				seg->startTan = 0;
 				seg->endTan = 0;
 				selected.ind = closestInd;
