@@ -1,5 +1,6 @@
 #include "Action.hpp"
 #include "global.hpp"
+#include <cstring>
 
 void addAction(Action* parent)
 {
@@ -88,13 +89,13 @@ void moveActionDown(Action* action)
 	Action* action2 = action->next;
 	Action* temp;
 
-  action->next = action2->next;
-  action2->prev = action->prev;
-  action2->next = action;
-  action->prev = action2;
+	action->next = action2->next;
+	action2->prev = action->prev;
+	action2->next = action;
+	action->prev = action2;
 
-  if(action2->prev == nullptr)
-    action2->parrent->actions = action2;
+	if (action2->prev == nullptr)
+		action2->parrent->actions = action2;
 }
 
 void moveActionUp(Action* action)
@@ -105,11 +106,41 @@ void moveActionUp(Action* action)
 	Action* action2 = action->prev;
 	Action* temp;
 
-  action2->next = action->next;
-  action->prev = action2->prev;
-  action->next = action2;
-  action2->prev = action;
+	action2->next = action->next;
+	action->prev = action2->prev;
+	action->next = action2;
+	action2->prev = action;
 
-  if(action->prev == nullptr)
-    action->parrent->actions = action;
+	if (action->prev == nullptr)
+		action->parrent->actions = action;
+}
+
+void initCustomAction(Action* action)
+{
+	std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
+	if (action->data != nullptr)
+		data->resize(0);
+	else
+		data = new std::vector<CustomActionField>;
+
+	CustomActionDef* def = &global.customActionDefs[action->type - 3];
+
+	for (int i = 0; i < def->fields.size(); i++)
+	{
+		data->emplace_back();
+		CustomActionField* fa = &def->fields[i];
+		CustomActionField* fb = &(*data)[i];
+
+		fb->type = fa->type;
+		strcpy((char*)fb->name, (char*)fa->name);
+
+		if (fa->type == FIELDTYPE_STRING)
+		{
+			fb->value = malloc(64);
+			strcpy((char*)fb->value, (char*)fa->value);
+		}
+		else
+			fb->value = fa->value;
+	}
+	action->data = (NodeGrid*)data;
 }

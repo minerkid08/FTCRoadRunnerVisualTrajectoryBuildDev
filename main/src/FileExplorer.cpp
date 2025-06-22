@@ -88,10 +88,6 @@ int explorerUpdate(const char* ext)
 					err = "path name cant contain '.'";
 					break;
 				}
-				if (name[i] == '/')
-				{
-					name[i] = '\\';
-				}
 			}
 			if (strcmp(err, "") == 0)
 			{

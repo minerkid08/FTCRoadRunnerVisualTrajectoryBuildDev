@@ -1,0 +1,74 @@
+#include "ui.hpp"
+
+#include "global.hpp"
+
+#include "imgui/imgui.h"
+
+static void drawAction(Action* action)
+{
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+							   (action == global.currentAction ? ImGuiTreeNodeFlags_Selected : 0);
+	bool opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
+	ImVec2 size = ImGui::GetItemRectSize();
+	if (ImGui::IsItemClicked())
+	{
+		global.currentAction = action;
+	}
+
+	if (ImGui::BeginDragDropTarget())
+	{
+		const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("action");
+		if (payload)
+		{
+			Action* a = *(Action**)payload->Data;
+			moveAction(a, action);
+		}
+		ImGui::EndDragDropTarget();
+	}
+
+	if (action != global.rootAction)
+	{
+		if (ImGui::BeginDragDropSource())
+		{
+			ImGui::SetDragDropPayload("action", (void*)&action, sizeof(void*));
+			ImGui::EndDragDropSource();
+		}
+		if (action == global.currentAction)
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("^", ImVec2(0, size.y)))
+				moveActionUp(action);
+			ImGui::SameLine();
+			if (ImGui::Button("v", ImVec2(0, size.y)))
+				moveActionDown(action);
+		}
+	}
+
+	if (opened)
+	{
+		if (action->actions)
+		{
+			Action* action2 = action->actions;
+			while (true)
+			{
+				drawAction(action2);
+				if (action2->next == nullptr)
+					break;
+				action2 = action2->next;
+			}
+		}
+		ImGui::TreePop();
+	}
+}
+void drawActionList()
+{
+	ImGui::Begin("actionList");
+	if (global.rootAction == nullptr)
+	{
+		global.rootAction = new Action();
+		global.actions.push_back(global.rootAction);
+	}
+	drawAction(global.rootAction);
+
+	ImGui::End();
+}

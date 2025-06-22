@@ -1,0 +1,18 @@
+sequentionalAction()
+:add(
+	trajectoryAction(0.00, 0.00, -90.00)
+	:setTangent(-90.00)
+	:splineTo(0.00, 24.00, -450.00)
+	:setTangent(-90.00)
+	:splineTo(24.00, 24.00, -270.00)
+	:setTangent(-270.00)
+	:splineTo(24.00, 0.00, -270.00)
+	:build()
+)
+:add(
+	trajectoryAction(0.00, 24.00, -90.00)
+	:setTangent(-90.00)
+	:splineTo(24.00, 24.00, -270.00)
+	:build()
+)
+:build()

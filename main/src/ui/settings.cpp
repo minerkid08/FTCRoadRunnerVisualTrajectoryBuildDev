@@ -1,0 +1,253 @@
+#include "ui.hpp"
+
+#include "actions/CustomAction.hpp"
+#include "global.hpp"
+#include "settings.hpp"
+
+#include "imgui/imgui.h"
+#include <cstring>
+#include <vector>
+
+static bool open = false;
+
+std::vector<CustomActionDef> settingsActions;
+static int toRemove = -1;
+
+static const char* str = "int\0double\0bool\0string\0";
+
+static void drawFields(CustomActionDef& def, bool selected);
+static void applyCustomFields();
+
+void drawSettingsMenu()
+{
+	if (open)
+	{
+		ImGui::Begin("settings");
+		ImGui::InputText("save path", settings.savePath, 512);
+		ImGui::InputText("export path", settings.exportPath, 512);
+		ImGui::Combo("export language", &settings.language, global.languageStr);
+
+		ImGui::SeparatorText("custom actions");
+
+		ImGui::SameLine();
+		if (ImGui::Button("add"))
+			settingsActions.emplace_back();
+
+		static int selectedInd = 0;
+
+		unsigned long long i = 0;
+
+		for (CustomActionDef& def : settingsActions)
+		{
+			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+									   (i == selectedInd ? ImGuiTreeNodeFlags_Selected : 0);
+			bool opened = ImGui::TreeNodeEx((void*)i, flags, "%s", def.name);
+			if (ImGui::IsItemClicked())
+				selectedInd = i;
+
+			if (selectedInd == i)
+			{
+				ImVec2 size = ImGui::GetItemRectSize();
+				ImGui::SameLine();
+				if (ImGui::Button("-", ImVec2(0, size.y)))
+					toRemove = i;
+				ImGui::SameLine();
+				if (ImGui::Button("^", ImVec2(0, size.y)))
+				{
+					if (i > 0)
+					{
+						CustomActionDef a = settingsActions[i];
+						settingsActions[i] = settingsActions[i - 1];
+						settingsActions[i - 1] = a;
+						selectedInd--;
+					}
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("v", ImVec2(0, size.y)))
+				{
+					if (i < settingsActions.size() - 1)
+					{
+						CustomActionDef a = settingsActions[i];
+						settingsActions[i] = settingsActions[i + 1];
+						settingsActions[i + 1] = a;
+						selectedInd++;
+					}
+				}
+			}
+
+			if (opened)
+			{
+				ImGui::InputText("name", def.name, 64);
+
+				drawFields(def, i == selectedInd);
+
+				ImGui::TreePop();
+			}
+			i++;
+		}
+
+		if (ImGui::Button("apply"))
+		{
+			applyCustomFields();
+		}
+
+		ImGui::End();
+
+		if (toRemove != -1)
+		{
+			CustomActionDef& def = settingsActions[toRemove];
+
+			for (int i = toRemove; i < settingsActions.size() - 1; i++)
+				settingsActions[i] = settingsActions[i + 1];
+			settingsActions.resize(i - 1);
+			if (i >= toRemove)
+				selectedInd--;
+			toRemove = -1;
+		}
+	}
+}
+
+void openSettings()
+{
+	open = !open;
+  if(open == false)
+    saveSettings();
+}
+
+static void drawFields(CustomActionDef& def, bool selected)
+{
+	ImGui::SeparatorText("fields");
+	ImGui::SameLine();
+	if (ImGui::Button("add"))
+		def.fields.emplace_back();
+
+	static int selectedInd = 0;
+
+	unsigned long long i = 0;
+
+	static int toRemove = -1;
+
+	for (CustomActionField& field : def.fields)
+	{
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+								   (i == selectedInd && selected ? ImGuiTreeNodeFlags_Selected : 0);
+		bool opened = ImGui::TreeNodeEx((void*)(i + 512), flags, "%s", field.name);
+		if (ImGui::IsItemClicked())
+			selectedInd = i;
+
+		if (selectedInd == i && selected)
+		{
+			ImVec2 size = ImGui::GetItemRectSize();
+			ImGui::SameLine();
+			if (ImGui::Button("-", ImVec2(0, size.y)))
+				toRemove = i;
+			ImGui::SameLine();
+			if (ImGui::Button("^", ImVec2(0, size.y)))
+			{
+				if (i > 0)
+				{
+					CustomActionField a = def.fields[i];
+					def.fields[i] = def.fields[i - 1];
+					def.fields[i - 1] = a;
+					selectedInd--;
+				}
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("v", ImVec2(0, size.y)))
+			{
+				if (i < settingsActions.size() - 1)
+				{
+					CustomActionField a = def.fields[i];
+					def.fields[i] = def.fields[i + 1];
+					def.fields[i + 1] = a;
+					selectedInd++;
+				}
+			}
+		}
+		if (opened)
+		{
+			ImGui::InputText("name", field.name, 64);
+			int oldValue = field.type;
+			if (ImGui::Combo("type", &field.type, str))
+			{
+				if (oldValue != field.type)
+				{
+					if (oldValue == FIELDTYPE_STRING)
+						free(field.value);
+					field.value = 0;
+					if (field.type == FIELDTYPE_STRING)
+					{
+						field.value = malloc(64);
+						strcpy((char*)field.value, "");
+					}
+				}
+			}
+			switch (field.type)
+			{
+			case FIELDTYPE_STRING:
+				ImGui::InputText("default value", (char*)field.value, 64);
+				break;
+			case FIELDTYPE_INT:
+				ImGui::InputInt("default value", (int*)&field.value);
+				break;
+			case FIELDTYPE_BOOL:
+				ImGui::Checkbox("default value", (bool*)&field.value);
+				break;
+			case FIELDTYPE_DOUBLE:
+				ImGui::InputDouble("default value", (double*)&field.value);
+				break;
+			}
+			ImGui::TreePop();
+		}
+		i++;
+	}
+	if (toRemove != -1)
+	{
+		CustomActionField& field = def.fields[toRemove];
+
+		for (int i = toRemove; i < def.fields.size() - 1; i++)
+			def.fields[i] = def.fields[i + 1];
+		def.fields.resize(i - 1);
+		if (i >= toRemove)
+			selectedInd--;
+		toRemove = -1;
+	}
+}
+
+static void applyCustomFields()
+{
+	global.customActionDefs = settingsActions;
+
+	global.actionTypes.resize(3);
+	for (CustomActionDef& def : global.customActionDefs)
+		global.actionTypes.push_back(def.name);
+
+	const char* sequentional = "sequentional";
+	const char* parallel = "parallel";
+	const char* trajectory = "trajectory";
+
+	free(global.actionTypeStr);
+	int len = 0;
+	len += strlen(sequentional) + 1;
+	len += strlen(parallel) + 1;
+	len += strlen(trajectory) + 1;
+
+	for (CustomActionDef& def : global.customActionDefs)
+		len += strlen(def.name) + 1;
+
+	global.actionTypeStr = (char*)malloc(len + 1);
+	int i = 0;
+	strcpy(global.actionTypeStr, sequentional);
+	i += strlen(sequentional) + 1;
+	strcpy(global.actionTypeStr + i, parallel);
+	i += strlen(parallel) + 1;
+	strcpy(global.actionTypeStr + i, trajectory);
+	i += strlen(trajectory) + 1;
+
+	for (CustomActionDef& def : global.customActionDefs)
+	{
+		strcpy(global.actionTypeStr + i, def.name);
+		i += strlen(def.name) + 1;
+	}
+	global.actionTypeStr[len] = 0;
+}

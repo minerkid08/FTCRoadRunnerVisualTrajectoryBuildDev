@@ -1,4 +1,5 @@
 #include "actions/Action.hpp"
+#include "actions/CustomAction.hpp"
 #include <vector>
 
 struct Globals
@@ -16,9 +17,14 @@ struct Globals
   std::string filename;
   int explorerMode;
 
-	const char* actionTypes[3] = {"sequentional", "parallel", "trajectory"};
+  std::vector<const char*> actionTypes = {"sequentional", "parallel", "trajectory"};
+  char* actionTypeStr;
 
-	const int actionTypeCount = 3;
+  const char* languageStr;
+
+  std::vector<const char*> languages;
+
+  std::vector<CustomActionDef> customActionDefs;
 };
 
 extern Globals global;

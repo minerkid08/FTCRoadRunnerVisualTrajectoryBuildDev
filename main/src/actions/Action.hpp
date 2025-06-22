@@ -1,6 +1,7 @@
 #pragma once
 
 #include "trajectories/NodeGrid.hpp"
+
 #define ActionFlags_Deleted 1
 
 #define ACTION_SEQUENTIONAL 0
@@ -26,3 +27,5 @@ void addAction(Action* parent);
 void moveAction(Action* action, Action* newParent);
 void moveActionDown(Action* action);
 void moveActionUp(Action* action);
+
+void initCustomAction(Action* action);

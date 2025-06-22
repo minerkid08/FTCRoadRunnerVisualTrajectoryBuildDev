@@ -1,21 +1,25 @@
-#include <filesystem>
+#include "json/json.hpp"
+#include <cstring>
+#include <fstream>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
+#include <glob.h>
 #include <iostream>
 
-#include "ImGui.hpp"
 #include "actions/Action.hpp"
+#include "actions/CustomAction.hpp"
 #include "global.hpp"
 #include "renderer/FrameBuffer.hpp"
 #include "renderer/Renderer.hpp"
 #include "renderer/Shader.hpp"
+#include "settings.hpp"
 #include "trajectories/NodeGrid.hpp"
+#include "ui/ui.hpp"
 
 #include <math.h>
 
-#include <ostream>
-
 Globals global;
+Settings settings;
 
 GLFWwindow* window;
 
@@ -35,13 +39,10 @@ struct WindowData
 	bool running;
 };
 
+WindowData windowData;
+
 int main(int argc, char** argv)
 {
-  if(!std::filesystem::exists("./save"))
-    std::filesystem::create_directory("./save");
-  if(!std::filesystem::exists("./export"))
-    std::filesystem::create_directory("./export");
-
 	glfwInit();
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 
@@ -70,6 +71,8 @@ int main(int argc, char** argv)
 		}
 	}
 
+  loadSettings();
+
 	window = glfwCreateWindow(winSize * 2, winSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
@@ -81,7 +84,6 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	WindowData windowData;
 	windowData.running = true;
 
 	FrameBuffer framebuffer({});
@@ -182,7 +184,7 @@ int main(int argc, char** argv)
 	renderer.nodeTex = &nodeTex;
 	renderer.segmentTex = &segTex;
 
-	initUI();
+	initUi();
 
 	double lastFrameTime = 0;
 	double lastUpdateTime = 0;
@@ -209,7 +211,7 @@ int main(int argc, char** argv)
 
 			framebuffer.unbind();
 
-			renderUI(framebuffer);
+			renderUi(framebuffer);
 
 			glfwSwapBuffers(window);
 
@@ -219,8 +221,16 @@ int main(int argc, char** argv)
 		glfwPollEvents();
 	}
 
+	closeUi();
+
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
 	return 0;
+}
+
+void quit()
+{
+  saveSettings();
+	windowData.running = false;
 }

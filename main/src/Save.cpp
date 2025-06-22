@@ -1,10 +1,12 @@
 #include "Save.hpp"
 #include "actions/Action.hpp"
-#include "trajectories/NodeGrid.hpp"
+#include "actions/CustomAction.hpp"
 #include "global.hpp"
+#include "trajectories/NodeGrid.hpp"
 
 #include <fstream>
 #include <json/json.hpp>
+#include <vector>
 
 static int indexOfAction(const Action* action)
 {
@@ -37,6 +39,29 @@ void save(const std::string& filename)
 		{
 			j["trajectory"] = trajectories.size();
 			trajectories.push_back(action->data);
+		}
+		if (action->type > 2)
+		{
+			j["fields"] = {};
+			std::vector<CustomActionField>* fields = (std::vector<CustomActionField>*)action->data;
+			for (CustomActionField& f : *fields)
+			{
+				switch (f.type)
+				{
+				case FIELDTYPE_INT:
+					j["fields"][f.name] = *(int*)&f.value;
+					break;
+				case FIELDTYPE_DOUBLE:
+					j["fields"][f.name] = *(double*)&f.value;
+					break;
+				case FIELDTYPE_BOOL:
+					j["fields"][f.name] = *(bool*)&f.value;
+					break;
+				case FIELDTYPE_STRING:
+					j["fields"][f.name] = (char*)f.value;
+					break;
+				}
+			}
 		}
 		i++;
 	}
@@ -95,7 +120,7 @@ NodeGrid* parseTrajectory(const nlohmann::json& json, int ind)
 
 void load(const std::string& filename)
 {
-  reset();
+	reset();
 	std::ifstream stream(filename);
 	nlohmann::json json;
 	stream >> json;
@@ -111,7 +136,39 @@ void load(const std::string& filename)
 		action->actions = (Action*)(long long)node["actions"];
 		if (action->type == ACTION_TRAJECTORY)
 			action->data = parseTrajectory(trajectoryJson, node["trajectory"]);
-    action->id = global.actions.size();
+
+		if (action->type > 2)
+		{
+			initCustomAction(action);
+			std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
+			for (CustomActionField& field : *data)
+			{
+        switch (field.type) {
+				case FIELDTYPE_INT: {
+					long long v = node["fields"][field.name];
+					field.value = (void*)v;
+					break;
+				}
+				case FIELDTYPE_DOUBLE: {
+					double v = node["fields"][field.name];
+					field.value = *(void**)&v;
+					break;
+				}
+				case FIELDTYPE_BOOL: {
+					bool v = node["fields"][field.name];
+					field.value = (void*)v;
+					break;
+				}
+				case FIELDTYPE_STRING: {
+					std::string v = node["fields"][field.name];
+					strcpy((char*)field.value, v.c_str());
+					break;
+				}
+        }
+			}
+		}
+
+		action->id = global.actions.size();
 		global.actions.push_back(action);
 	}
 

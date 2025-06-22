@@ -1,13 +1,8 @@
 {
 	"name": "main",
-	"build": ["include"],
-	"include": ["include"],
+	"build": [],
 	"type": "program",
 	"out": "trajectoryBuilder",
-	"dll": ["glfw3"],
-	"sdll": ["wsock32", "WS2_32"],
-	"configs": ["build", "run"],
-  "other": ["-mwindows", "-O2", "-s"],
-  "linkArgs": ["-L. -lglfw3"],
+  "linkArgs": ["-lglfw"],
   "libs": ["imgui", "glfw", "glad", "stb", "glm", "json"]
 }

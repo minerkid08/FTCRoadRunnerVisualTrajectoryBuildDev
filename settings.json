@@ -1,0 +1,62 @@
+{
+  "customActions": [
+    {
+      "fields": [
+        {
+          "name": "power",
+          "type": 1,
+          "value": 0.5
+        },
+        {
+          "name": "delay",
+          "type": 1,
+          "value": 0.5
+        }
+      ],
+      "name": "intake"
+    },
+    {
+      "fields": [
+        {
+          "name": "power",
+          "type": 1,
+          "value": 0.5
+        },
+        {
+          "name": "delay",
+          "type": 1,
+          "value": 0.25
+        }
+      ],
+      "name": "outtake"
+    },
+    {
+      "fields": [
+        {
+          "name": "int",
+          "type": 0,
+          "value": 4
+        },
+        {
+          "name": "double",
+          "type": 1,
+          "value": 2.5
+        },
+        {
+          "name": "bool",
+          "type": 2,
+          "value": true
+        },
+        {
+          "name": "string",
+          "type": 3,
+          "value": "help"
+        }
+      ],
+      "name": "NewAction"
+    }
+  ],
+  "exportLanguage": 1,
+  "exportPath": "./export2",
+  "savePath": "./save"
+}
