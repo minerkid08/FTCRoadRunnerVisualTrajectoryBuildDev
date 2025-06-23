@@ -1,8 +1,0 @@
-SequentionalAction(
-	intake(0.20, 0.30),
-	drive.actionBuilder(Pose2d(24.00, -0.00, Math.toRadians(-90.00))
-		.setTangent(Math.toRadians(-90.00))
-		.splineTo(Vector2d(24.00, 48.00), Math.toRadians(-270.00))
-		.build(),
-	outtake(0.50, 0.25),
-)

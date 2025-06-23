@@ -1,13 +1,10 @@
-#include "json/json.hpp"
 #include <cstring>
-#include <fstream>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <glob.h>
 #include <iostream>
 
 #include "actions/Action.hpp"
-#include "actions/CustomAction.hpp"
 #include "global.hpp"
 #include "renderer/FrameBuffer.hpp"
 #include "renderer/Renderer.hpp"
