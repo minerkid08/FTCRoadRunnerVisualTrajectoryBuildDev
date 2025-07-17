@@ -3,6 +3,7 @@
 #include "actions/CustomAction.hpp"
 #include "global.hpp"
 #include "trajectories/NodeGrid.hpp"
+#include "ui/ui.hpp"
 
 #include <fstream>
 #include <json/json.hpp>
@@ -22,6 +23,7 @@ static int indexOfAction(const Action* action)
 
 void save(const std::string& filename)
 {
+	clearMsg();
 	std::vector<NodeGrid*> trajectories;
 	nlohmann::json json;
 	json["actions"] = {};
@@ -93,29 +95,142 @@ void save(const std::string& filename)
 	}
 	std::ofstream stream(filename);
 	stream << json.dump(2);
+	setNotif("saved " + filename);
 }
+
+#define tryGet(json, key, type2, out, err)                                                                             \
+	if (!json.contains(key))                                                                                           \
+	{                                                                                                                  \
+		delete err;                                                                                                    \
+		return 0;                                                                                                      \
+	}                                                                                                                  \
+	if (json[key].type() != nlohmann::detail::value_t::type2)                                                          \
+	{                                                                                                                  \
+		delete err;                                                                                                    \
+		return 0;                                                                                                      \
+	}                                                                                                                  \
+	out = json[key];
+
+#define tryGetc(json, key, type2, out, err, cast)                                                                      \
+	if (!json.contains(key))                                                                                           \
+	{                                                                                                                  \
+		delete err;                                                                                                    \
+		return 0;                                                                                                      \
+	}                                                                                                                  \
+	if (json[key].type() != nlohmann::detail::value_t::type2)                                                          \
+	{                                                                                                                  \
+		delete err;                                                                                                    \
+		return 0;                                                                                                      \
+	}                                                                                                                  \
+	out = cast json[key];
+
+#define typeCheck(json, key, type2, err)                                                                               \
+	if (!json.contains(key))                                                                                           \
+	{                                                                                                                  \
+		delete err;                                                                                                    \
+		return 0;                                                                                                      \
+	}                                                                                                                  \
+	if (json[key].type() != nlohmann::detail::value_t::type2)                                                          \
+	{                                                                                                                  \
+		delete err;                                                                                                    \
+		return 0;                                                                                                      \
+	}
+
+#define typeCheck2(json, key, type2)                                                                                   \
+	if (!json.contains(key))                                                                                           \
+	{                                                                                                                  \
+		setErr("load failed");                                                                                         \
+		reset();                                                                                                       \
+		return;                                                                                                        \
+	}                                                                                                                  \
+	if (json[key].type() != nlohmann::detail::value_t::type2)                                                          \
+	{                                                                                                                  \
+		setErr("load failed");                                                                                         \
+		reset();                                                                                                       \
+		return;                                                                                                        \
+	}
 
 NodeGrid* parseTrajectory(const nlohmann::json& json, int ind)
 {
 	NodeGrid* grid = new NodeGrid();
+	typeCheck(json, "nodes", object, grid);
+	typeCheck(json, "segments", object, grid);
 	for (const nlohmann::json& jnode : json[ind]["nodes"])
 	{
 		PathNode* node = grid->nodes.add();
-		node->pos.x = jnode["x"];
-		node->pos.y = jnode["y"];
-		node->heading = jnode["h"];
+		tryGet(jnode, "x", number_float, node->pos.x, grid);
+		tryGet(jnode, "y", number_float, node->pos.y, grid);
+		tryGet(jnode, "h", number_float, node->heading, grid);
 	}
 
 	for (const nlohmann::json& segmentJson : json[ind]["segments"])
 	{
 		PathSegment* segment = grid->segs.add();
-		segment->startNode = segmentJson["startNode"];
-		segment->endNode = segmentJson["endNode"];
-		segment->startTan = segmentJson["startTangent"];
-		segment->endTan = segmentJson["endTangent"];
-		segment->headingMode = segmentJson["headingMode"];
+		tryGet(segmentJson, "startNode", number_integer, segment->startNode, grid);
+		tryGet(segmentJson, "endNode", number_integer, segment->endNode, grid);
+		tryGet(segmentJson, "startTangent", number_float, segment->startTan, grid);
+		tryGet(segmentJson, "endTangent", number_float, segment->endTan, grid);
+		tryGet(segmentJson, "headingMode", number_integer, segment->headingMode, grid);
 	}
 	return grid;
+}
+
+Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectoryJson)
+{
+	Action* action = new Action();
+	tryGet(node, "type", number_integer, action->type, action);
+	tryGetc(node, "parent", number_integer, action->parrent, action, (Action*)(long long));
+	tryGetc(node, "next", number_integer, action->next, action, (Action*)(long long));
+	tryGetc(node, "prev", number_integer, action->prev, action, (Action*)(long long));
+	tryGetc(node, "actions", number_integer, action->actions, action, (Action*)(long long));
+
+	if (action->type == ACTION_TRAJECTORY)
+	{
+		action->data = parseTrajectory(trajectoryJson, node["trajectory"]);
+		if (action->data == 0)
+		{
+			delete action;
+			return 0;
+		}
+	}
+
+	if (action->type > 2)
+	{
+		initCustomAction(action);
+		std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
+		typeCheck(node, "fields", object, action);
+		for (CustomActionField& field : *data)
+		{
+			switch (field.type)
+			{
+			case FIELDTYPE_INT: {
+				long long v;
+				tryGet(node["fields"], field.name, number_integer, v, action);
+				field.value = (void*)v;
+				break;
+			}
+			case FIELDTYPE_DOUBLE: {
+				double v;
+				tryGet(node["fields"], field.name, number_float, v, action);
+				field.value = *(void**)&v;
+				break;
+			}
+			case FIELDTYPE_BOOL: {
+				bool v;
+				tryGet(node["fields"], field.name, boolean, v, action);
+				field.value = (void*)v;
+				break;
+			}
+			case FIELDTYPE_STRING: {
+				std::string v;
+				tryGet(node["fields"], field.name, string, v, action);
+				strcpy((char*)field.value, v.c_str());
+				break;
+			}
+			}
+		}
+	}
+	return action;
 }
 
 void load(const std::string& filename)
@@ -124,54 +239,23 @@ void load(const std::string& filename)
 	std::ifstream stream(filename);
 	nlohmann::json json;
 	stream >> json;
+
+	typeCheck2(json, "actions", array);
+
 	nlohmann::json& trajectoryJson = json["trajectories"];
 
 	for (const nlohmann::json& node : json["actions"])
 	{
-		Action* action = new Action();
-		action->type = node["type"];
-		action->parrent = (Action*)(long long)node["parent"];
-		action->next = (Action*)(long long)node["next"];
-		action->prev = (Action*)(long long)node["prev"];
-		action->actions = (Action*)(long long)node["actions"];
-		if (action->type == ACTION_TRAJECTORY)
-			action->data = parseTrajectory(trajectoryJson, node["trajectory"]);
-
-		if (action->type > 2)
+		Action* action = parseAction(node, trajectoryJson);
+		if (action == 0)
 		{
-			initCustomAction(action);
-			std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
-			for (CustomActionField& field : *data)
-			{
-        switch (field.type) {
-				case FIELDTYPE_INT: {
-					long long v = node["fields"][field.name];
-					field.value = (void*)v;
-					break;
-				}
-				case FIELDTYPE_DOUBLE: {
-					double v = node["fields"][field.name];
-					field.value = *(void**)&v;
-					break;
-				}
-				case FIELDTYPE_BOOL: {
-					bool v = node["fields"][field.name];
-					field.value = (void*)v;
-					break;
-				}
-				case FIELDTYPE_STRING: {
-					std::string v = node["fields"][field.name];
-					strcpy((char*)field.value, v.c_str());
-					break;
-				}
-        }
-			}
+			setErr("load failed");
+			reset();
+			return;
 		}
-
 		action->id = global.actions.size();
 		global.actions.push_back(action);
 	}
-
 	for (Action* action : global.actions)
 	{
 		if ((long long)action->parrent == -1)
@@ -195,4 +279,5 @@ void load(const std::string& filename)
 			action->actions = global.actions[(long long)action->actions];
 	}
 	global.rootAction = global.actions[0];
+	setNotif("loaded" + filename);
 }

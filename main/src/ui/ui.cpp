@@ -10,12 +10,53 @@
 
 #include "glfw/glfw3.h"
 #include "imgui/imgui.h"
-#include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
 #include <filesystem>
 #include <iostream>
 
 GLFWwindow* getWindow();
+
+#define LEVEL_NONE -1
+#define LEVEL_INFO 0
+#define LEVEL_WARN 1
+#define LEVEL_ERROR 2
+
+static int level;
+static std::string msg;
+
+void setNotif(const std::string& str)
+{
+	if (level < LEVEL_INFO)
+	{
+		level = LEVEL_INFO;
+		msg = str;
+	}
+}
+
+void setWarn(const std::string& str)
+{
+	if (level < LEVEL_WARN)
+	{
+		level = LEVEL_WARN;
+		msg = str;
+	}
+}
+
+void setErr(const std::string& str)
+{
+	if (level < LEVEL_ERROR)
+	{
+		level = LEVEL_ERROR;
+		msg = str;
+	}
+}
+
+void clearMsg()
+{
+	level = LEVEL_NONE;
+	msg = "";
+}
 
 void initUi()
 {
@@ -73,7 +114,7 @@ void beginDockspace()
 
 	ImGui::Begin("dockspace", &open, window_flags);
 
-  ImGui::PopStyleVar(2);
+	ImGui::PopStyleVar(2);
 
 	ImGuiIO& io = ImGui::GetIO();
 	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
@@ -85,7 +126,7 @@ void beginDockspace()
 
 void endDockspace()
 {
-  ImGui::End();
+	ImGui::End();
 	ImGuiIO& io = ImGui::GetIO();
 
 	ImGui::Render();
@@ -107,10 +148,10 @@ void renderUi(FrameBuffer& framebuffer)
 	beginDockspace();
 
 	drawMenuBar();
-  drawViewport(framebuffer);
-  drawActionList();
-  drawActionEditor();
-  drawSettingsMenu();
+	drawViewport(framebuffer);
+	drawActionList();
+	drawActionEditor();
+	drawSettingsMenu();
 
 	if (global.explorerMode)
 	{
@@ -128,7 +169,7 @@ void renderUi(FrameBuffer& framebuffer)
 		}
 	}
 
-  endDockspace();
+	endDockspace();
 }
 
 void drawMenuBar()
@@ -162,6 +203,17 @@ void drawMenuBar()
 		std::cout << "get gud\n";
 	if (ImGui::MenuItem("settings"))
 		openSettings();
+
+	ImGui::Separator();
+
+	if (level == LEVEL_ERROR)
+		ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.0f, 0.0f, 1.0f});
+	if (level == LEVEL_WARN)
+		ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 1.0f, 0.0f, 1.0f});
+	ImGui::Text("%s", msg.c_str());
+	if (level == LEVEL_WARN || level == LEVEL_ERROR)
+		ImGui::PopStyleColor();
+
 	ImGui::EndMenuBar();
 }
 

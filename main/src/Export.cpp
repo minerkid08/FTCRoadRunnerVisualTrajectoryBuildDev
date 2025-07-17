@@ -6,6 +6,7 @@
 #include "trajectories/NodeGrid.hpp"
 #include "trajectories/PathNode.hpp"
 #include "trajectories/PathSegment.hpp"
+#include "ui/ui.hpp"
 #include "utils.hpp"
 #include "json/json.hpp"
 #include <cstring>
@@ -39,7 +40,7 @@ static bool exportTrajectory(NodeGrid* grid, std::string* string, int level, nlo
 			}
 			else
 			{
-				std::cout << "export error: path has multiple start nodes\n";
+				setErr("export failed: path has multiple start nodes");
 				return false;
 			}
 		}
@@ -50,11 +51,11 @@ static bool exportTrajectory(NodeGrid* grid, std::string* string, int level, nlo
 	}
 	if (emptyNodes)
 	{
-		std::cout << "export warning: path has unused nodes\n";
+		setWarn("warning: path has unused nodes");
 	}
 	if (startInd == -1)
 	{
-		std::cout << "export error: cant find start node\n";
+		setErr("export failed: no start node found");
 		return false;
 	}
 
@@ -72,7 +73,7 @@ static bool exportTrajectory(NodeGrid* grid, std::string* string, int level, nlo
 			{
 				if (foundNode)
 				{
-					std::cout << "export error: fork found at node " << std::to_string((int)seg->startNode) << '\n';
+					setErr("export failed: fork found at node " + std::to_string((int)seg->startNode));
 					return true;
 				}
 				foundNode = true;
@@ -179,7 +180,7 @@ static void intExportAction(const Action* action, std::string* string, int level
 				}
 				if (l < data->size() - 1)
 					args += ", ";
-        l++;
+				l++;
 			}
 			*string += format(lang["custom-action"]["format"], global.actionTypes[a->type], args.c_str());
 		}
@@ -227,6 +228,7 @@ static void intExportAction(const Action* action, std::string* string, int level
 
 void exportAction(const Action* action)
 {
+  clearMsg();
 	std::string out;
 
 	std::ifstream langIfStream(format("lang/%s.json", global.languages[settings.language]));
@@ -264,11 +266,12 @@ void exportAction(const Action* action)
 	}
 	std::string prefix = settings.exportPath;
 	path = prefix + '/' + path;
-	std::cout << path << '\n';
 	std::string s = path.substr(0, path.find_last_of('/'));
 	if (!std::filesystem::exists(s))
 		std::filesystem::create_directories(s);
 	std::ofstream stream(path);
 	stream << out;
 	stream.close();
+
+  setNotif("exported to " + path);
 }
