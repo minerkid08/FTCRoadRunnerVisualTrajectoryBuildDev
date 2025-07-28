@@ -20,6 +20,8 @@ std::string explorerGetPath()
   return outPath.string();
 }
 
+static bool open = false;
+
 void explorerReset(int _flags)
 {
 	flags = _flags;
@@ -44,18 +46,15 @@ void explorerSetPath(const std::string& path)
 
 int explorerUpdate(const char* ext)
 {
+  if(open == false)
+    open = true;
 	if (flags & FileExplorerFlags_MakeFile && flags & FileExplorerFlags_DontShowFiles)
 	{
 		std::cout << "Explorer: invalid flag combination - makeFile + dontShowFiles\n";
 		return 2;
 	}
 
-	ImGui::Begin("File Explorer", nullptr, ImGuiWindowFlags_NoDocking);
-	if (ImGui::Button("x"))
-	{
-		ImGui::End();
-		return 2;
-	}
+	ImGui::Begin("File Explorer", &open, ImGuiWindowFlags_NoDocking);
 	if (curPath != mainPath || flags & FileExplorerFlags_AlwaysShowBack)
 	{
 		ImGui::SameLine();
@@ -165,5 +164,7 @@ int explorerUpdate(const char* ext)
 		ImGui::PopID();
 	}
 	ImGui::End();
+  if(open == false)
+    return FileExplorerUpdate_Close;
 	return 0;
 }

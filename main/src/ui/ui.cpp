@@ -12,6 +12,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
+#include "ui/popup.hpp"
 #include <filesystem>
 #include <iostream>
 
@@ -176,7 +177,7 @@ void drawMenuBar()
 {
 	ImGui::BeginMenuBar();
 	if (ImGui::MenuItem("quit"))
-		quit();
+		openQuitPopup();
 	if (ImGui::MenuItem("new"))
 		reset();
 	if (ImGui::MenuItem("save"))
@@ -214,11 +215,16 @@ void drawMenuBar()
 	if (level == LEVEL_WARN || level == LEVEL_ERROR)
 		ImGui::PopStyleColor();
 
+	drawQuitPopup();
+
 	ImGui::EndMenuBar();
 }
 
 void drawViewport(FrameBuffer& framebuffer)
 {
+	ImGui::Begin("style editor");
+	ImGui::ShowStyleEditor();
+	ImGui::End();
 	ImGui::Begin("viewport");
 	global.onViewport = ImGui::IsWindowFocused() && ImGui::IsWindowHovered();
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();

@@ -1,8 +1,10 @@
+#include "actions/Action.hpp"
 #include "ui.hpp"
 
 #include "global.hpp"
 
 #include "imgui/imgui.h"
+#include "ui/popup.hpp"
 
 static void drawAction(Action* action)
 {
@@ -11,9 +13,7 @@ static void drawAction(Action* action)
 	bool opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
 	ImVec2 size = ImGui::GetItemRectSize();
 	if (ImGui::IsItemClicked())
-	{
 		global.currentAction = action;
-	}
 
 	if (ImGui::BeginDragDropTarget())
 	{
@@ -33,15 +33,20 @@ static void drawAction(Action* action)
 			ImGui::SetDragDropPayload("action", (void*)&action, sizeof(void*));
 			ImGui::EndDragDropSource();
 		}
-		if (action == global.currentAction)
-		{
-			ImGui::SameLine();
-			if (ImGui::Button("^", ImVec2(0, size.y)))
-				moveActionUp(action);
-			ImGui::SameLine();
-			if (ImGui::Button("v", ImVec2(0, size.y)))
-				moveActionDown(action);
-		}
+	}
+	if (action == global.currentAction)
+	{
+		ImGui::SameLine();
+		ImGui::BeginDisabled(action == global.rootAction);
+		if (ImGui::Button("^", ImVec2(0, size.y)))
+			moveActionUp(action);
+		ImGui::SameLine();
+		if (ImGui::Button("v", ImVec2(0, size.y)))
+			moveActionDown(action);
+		ImGui::SameLine();
+		if (ImGui::Button("x", ImVec2(0, size.y)))
+      tryDelete(action);
+		ImGui::EndDisabled();
 	}
 
 	if (opened)
@@ -57,6 +62,7 @@ static void drawAction(Action* action)
 				action2 = action2->next;
 			}
 		}
+    drawDeletePopups();
 		ImGui::TreePop();
 	}
 }

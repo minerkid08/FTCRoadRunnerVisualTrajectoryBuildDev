@@ -6,8 +6,7 @@
 #include "global.hpp"
 
 #include "imgui/imgui.h"
-#include <cstdlib>
-#include <cstring>
+#include "ui/popup.hpp"
 #include <vector>
 
 void drawActionEditor()
@@ -16,44 +15,19 @@ void drawActionEditor()
 	if (global.currentAction != nullptr)
 	{
 		Action* a = global.currentAction;
-		int prevType = a->type;
-		if (ImGui::Combo("type", &a->type, global.actionTypeStr))
+		int newtype = a->type;
+		ImGui::BeginDisabled(a == global.rootAction);
+		if (ImGui::Combo("type", &newtype, global.actionTypeStr))
 		{
-			if (prevType != a->type)
-			{
-				if (prevType == ACTION_TRAJECTORY)
-				{
-					delete a->data;
-					a->data = nullptr;
-				}
-				else if (prevType > 2)
-				{
-					std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)a->data;
-					delete data;
-					a->data = nullptr;
-				}
-				if (a->type == ACTION_TRAJECTORY)
-				{
-					if (a->data == nullptr)
-						a->data = new NodeGrid();
-				}
-				else if (a->type > 2)
-					initCustomAction(a);
-			}
+			if (newtype != a->type)
+				tryChangeType(a, newtype);
 		}
+    drawChangeFromPopups();
+		ImGui::EndDisabled();
 		if (a->type < 2)
 		{
 			if (ImGui::Button("addAction"))
-			{
 				addAction(a);
-			}
-			ImGui::SameLine();
-		}
-		if (ImGui::Button("removeAction"))
-		{
-			if (!a->actions)
-			{
-			}
 		}
 		ImGui::Separator();
 		if (a->type == ACTION_TRAJECTORY)

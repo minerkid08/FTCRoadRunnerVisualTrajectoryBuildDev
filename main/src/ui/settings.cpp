@@ -22,10 +22,13 @@ void drawSettingsMenu()
 {
 	if (open)
 	{
-		ImGui::Begin("settings");
+		ImGui::Begin("settings", &open, ImGuiWindowFlags_NoDocking);
+		ImGui::SeparatorText("export");
 		ImGui::InputText("save path", settings.savePath, 512);
 		ImGui::InputText("export path", settings.exportPath, 512);
 		ImGui::Combo("export language", &settings.language, global.languageStr);
+		ImGui::SeparatorText("trajectories");
+		ImGui::SliderFloat("trajectory alpha", &settings.trajectoryOpac, 0.0f, 1.0f);
 
 		ImGui::SeparatorText("custom actions");
 
@@ -40,6 +43,7 @@ void drawSettingsMenu()
 		for (CustomActionDef& def : settingsActions)
 		{
 			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+									   ImGuiTreeNodeFlags_AllowOverlap |
 									   (i == selectedInd ? ImGuiTreeNodeFlags_Selected : 0);
 			bool opened = ImGui::TreeNodeEx((void*)i, flags, "%s", def.name);
 			if (ImGui::IsItemClicked())
@@ -48,9 +52,8 @@ void drawSettingsMenu()
 			if (selectedInd == i)
 			{
 				ImVec2 size = ImGui::GetItemRectSize();
-				ImGui::SameLine();
-				if (ImGui::Button("-", ImVec2(0, size.y)))
-					toRemove = i;
+				ImGuiStyle& style = ImGui::GetStyle();
+				style.ButtonTextAlign = ImVec2(0.5f, 0.75f);
 				ImGui::SameLine();
 				if (ImGui::Button("^", ImVec2(0, size.y)))
 				{
@@ -73,8 +76,10 @@ void drawSettingsMenu()
 						selectedInd++;
 					}
 				}
+				ImGui::SameLine();
+				if (ImGui::Button("x", ImVec2(0, size.y)))
+					toRemove = i;
 			}
-
 			if (opened)
 			{
 				ImGui::InputText("name", def.name, 64);
@@ -110,14 +115,13 @@ void drawSettingsMenu()
 void openSettings()
 {
 	open = !open;
-  if(open == false)
-    saveSettings();
+	if (open == false)
+		saveSettings();
 }
 
 static void drawFields(CustomActionDef& def, bool selected)
 {
 	ImGui::SeparatorText("fields");
-	ImGui::SameLine();
 	if (ImGui::Button("add"))
 		def.fields.emplace_back();
 

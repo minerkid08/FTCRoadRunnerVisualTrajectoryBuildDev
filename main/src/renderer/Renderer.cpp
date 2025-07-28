@@ -90,6 +90,7 @@ void Renderer::drawNode(glm::vec3 pos, float heading, glm::vec4 color)
 
 void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startTan, float endTan, glm::vec4 color)
 {
+  endTan = endTan + 180.0f;
 	// glm::vec2 dif = end - start;
 	// glm::vec2 dif2 = glm::normalize(dif);
 	// dif2 = {dif2.x / 40, dif2.y / 40};

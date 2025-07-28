@@ -25,11 +25,14 @@ class NodeGrid
 	Selected selected;
 	int mods = 0;
 	bool gridSnap = true;
+	bool visible = true;
 
 	NodeGrid();
 	~NodeGrid();
 	void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods);
 	void mouseClick(int mouseX, int mouseY, int windowSize, int mods);
+
+	void render(Renderer& renderer, float transparency, float z, bool showSelected);
 
 	void resetNode(int i);
 	void resetSegment(int i);

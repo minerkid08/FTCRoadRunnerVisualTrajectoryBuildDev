@@ -7,30 +7,23 @@
 void drawTrajectoryEditor(NodeGrid* grid)
 {
 	if (ImGui::Button("flipHoriz"))
-	{
 		grid->flipHoriz();
-	}
 	ImGui::SameLine();
 	if (ImGui::Button("flipVert"))
-	{
 		grid->flipVert();
-	}
 	ImGui::Checkbox("grid snap", &(grid->gridSnap));
+	ImGui::Checkbox("globally visible", &(grid->visible));
 	if (ImGui::Button("^"))
 	{
 		if (grid->selected.type == TypeNode)
 		{
 			if (grid->nodes.moveUp(grid->selected.ind))
-			{
 				grid->selected.ind++;
-			}
 		}
 		else
 		{
 			if (grid->segs.moveUp(grid->selected.ind))
-			{
 				grid->selected.ind++;
-			}
 		}
 	}
 	ImGui::SameLine();
@@ -39,16 +32,12 @@ void drawTrajectoryEditor(NodeGrid* grid)
 		if (grid->selected.type == TypeNode)
 		{
 			if (grid->nodes.moveDown(grid->selected.ind))
-			{
 				grid->selected.ind--;
-			}
 		}
 		else
 		{
 			if (grid->segs.moveDown(grid->selected.ind))
-			{
 				grid->selected.ind--;
-			}
 		}
 	}
 	int id = 0;
@@ -62,9 +51,7 @@ void drawTrajectoryEditor(NodeGrid* grid)
 
 			ImVec4 tint(0.25f, 0.25f, 0.25f, 1);
 			if (grid->selected.ind == i && grid->selected.type == TypeNode)
-			{
 				tint.x = 0.75f;
-			}
 
 			ImGui::PushStyleColor(ImGuiCol_Button, tint);
 			ImGui::PushID(id++);
@@ -81,9 +68,7 @@ void drawTrajectoryEditor(NodeGrid* grid)
 				j++;
 			}
 			else
-			{
 				j = 0;
-			}
 		}
 	}
 
@@ -97,9 +82,7 @@ void drawTrajectoryEditor(NodeGrid* grid)
 
 			ImVec4 tint(0.25f, 0.25f, 0.25f, 1);
 			if (grid->selected.ind == i && grid->selected.type == TypeSegment)
-			{
 				tint.x = 0.75f;
-			}
 
 			ImGui::PushStyleColor(ImGuiCol_Button, tint);
 			ImGui::PushID(id++);
@@ -116,9 +99,7 @@ void drawTrajectoryEditor(NodeGrid* grid)
 				j++;
 			}
 			else
-			{
 				j = 0;
-			}
 		}
 		ImGui::Text(" ");
 	}
@@ -139,23 +120,15 @@ void drawTrajectoryEditor(NodeGrid* grid)
 				{
 					PathSegment* seg = grid->segs.get(i);
 					if (seg->startNode == grid->selected.ind || seg->endNode == grid->selected.ind)
-					{
 						toRemove.push_back(i);
-					}
 					if (seg->startNode > grid->selected.ind)
-					{
 						seg->startNode--;
-					}
 					if (seg->endNode > grid->selected.ind)
-					{
 						seg->endNode--;
-					}
 				}
 				int j = 0;
 				for (int i : toRemove)
-				{
 					grid->segs.remove(i - j++);
-				}
 				return;
 			}
 			ImGui::InputFloat2("pos", glm::value_ptr(node->pos));
@@ -169,9 +142,7 @@ void drawTrajectoryEditor(NodeGrid* grid)
 			PathSegment* seg = grid->segs.get(grid->selected.ind);
 			ImGui::Text("segment: %d", grid->selected.ind);
 			if (ImGui::Button("remove"))
-			{
 				grid->segs.remove(grid->selected.ind);
-			}
 			static const char* headingModes[] = {"none", "linear", "constant", nullptr};
 
 			if (ImGui::BeginCombo("heading mode", headingModes[seg->headingMode]))
@@ -179,9 +150,7 @@ void drawTrajectoryEditor(NodeGrid* grid)
 				for (int i = 0; i < 3; i++)
 				{
 					if (ImGui::Selectable(headingModes[i]))
-					{
 						seg->headingMode = i;
-					}
 				}
 				ImGui::EndCombo();
 			}

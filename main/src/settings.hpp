@@ -4,7 +4,8 @@ struct Settings
 {
   char* savePath;
   char* exportPath;
-  
+  float trajectoryOpac;
+
   int language;
 };
 

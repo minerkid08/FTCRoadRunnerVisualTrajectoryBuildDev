@@ -1,14 +1,27 @@
 #include "Action.hpp"
 #include "global.hpp"
+#include "ui/popup.hpp"
 #include <cstring>
 
 void addAction(Action* parent)
 {
-	int actionInd = global.actions.size();
-	Action* action = new Action();
-	global.actions.emplace_back(action);
+	Action* action = nullptr;
+	for (Action* a : global.actions)
+	{
+		if (a->parrent == nullptr && a != global.rootAction)
+		{
+			action = a;
+			break;
+		}
+	}
+	if (action == nullptr)
+	{
+		int actionInd = global.actions.size();
+		action = new Action();
+		global.actions.emplace_back(action);
 
-	action->id = actionInd;
+		action->id = actionInd;
+	}
 	action->parrent = parent;
 
 	if (parent->actions)
@@ -25,8 +38,18 @@ void addAction(Action* parent)
 		action->prev = a;
 	}
 	else
-	{
 		parent->actions = action;
+}
+
+void deleteActionList(Action* action)
+{
+	Action* a = action;
+	while (a != nullptr)
+	{
+		if (a->actions != nullptr)
+			deleteActionList(a);
+		a->parrent = nullptr;
+		a = a->next;
 	}
 }
 
@@ -143,4 +166,113 @@ void initCustomAction(Action* action)
 			fb->value = fa->value;
 	}
 	action->data = (NodeGrid*)data;
+}
+
+void tryDelete(Action* action)
+{
+	global.toChange.action = action;
+	global.toChange.toDo = ToDo_Delete;
+	if (action->type == ACTION_TRAJECTORY)
+	{
+		NodeGrid* traj = (NodeGrid*)action->data;
+		if (traj->nodes.count > 0)
+		{
+			openDeleteTrajectory();
+			return;
+		}
+	}
+	if (action->type < 2)
+	{
+		if (action->actions != nullptr)
+		{
+			openDeleteContainer();
+			return;
+		}
+	}
+	confermAction();
+}
+
+void tryChangeType(Action* action, int newType)
+{
+	global.toChange.action = action;
+	global.toChange.toDo = ToDo_ChangeType;
+	global.toChange.arg = newType;
+	if (action->type == ACTION_TRAJECTORY)
+	{
+		NodeGrid* traj = (NodeGrid*)action->data;
+		if (traj->nodes.count > 0)
+		{
+			openChangeFromTrajectory();
+			return;
+		}
+	}
+	else if (action->type < 2)
+	{
+		if (action->actions != nullptr)
+		{
+			openChangeFromContainer();
+			return;
+		}
+	}
+	confermAction();
+}
+
+void confermAction()
+{
+	Action* action = global.toChange.action;
+	global.toChange.action = nullptr;
+	if (global.toChange.toDo == ToDo_Delete)
+	{
+		if (action->type < 2)
+		{
+			if (action->actions != nullptr)
+				deleteActionList(action->actions);
+		}
+		else if (action->type == ACTION_TRAJECTORY)
+		{
+			delete action->data;
+			action->data = nullptr;
+		}
+		else if (action->type > 2)
+		{
+			std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
+			delete data;
+			action->data = nullptr;
+		}
+		action->actions = nullptr;
+		if (action->prev)
+			action->prev->next = action->next;
+		else
+			action->parrent->actions = action->next;
+		if (action->next)
+			action->next->prev = action->prev;
+
+		action->next = nullptr;
+		action->parrent = nullptr;
+	}
+	if (global.toChange.toDo == ToDo_ChangeType)
+	{
+		int newtype = global.toChange.arg;
+		if (action->type == ACTION_TRAJECTORY)
+		{
+			delete action->data;
+			action->data = nullptr;
+		}
+		else if (action->type < 2 && newtype > 1)
+		{
+			deleteActionList(action->actions);
+			action->actions = nullptr;
+		}
+		else if (action->type > 2 && newtype <= 2)
+		{
+			std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
+			delete data;
+			action->data = nullptr;
+		}
+		if (newtype == ACTION_TRAJECTORY)
+			action->data = new NodeGrid();
+		else if (newtype > 2)
+			initCustomAction(action);
+		action->type = newtype;
+	}
 }

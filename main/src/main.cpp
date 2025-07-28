@@ -6,6 +6,7 @@
 
 #include "actions/Action.hpp"
 #include "global.hpp"
+#include "imgui/imgui.h"
 #include "renderer/FrameBuffer.hpp"
 #include "renderer/Renderer.hpp"
 #include "renderer/Shader.hpp"
@@ -57,7 +58,7 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-		global.uiScale = 1.5;
+		global.uiScale = 1.0;
 	}
 
 	if (argc > 2)
@@ -68,7 +69,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-  loadSettings();
+	loadSettings();
 
 	window = glfwCreateWindow(winSize * 2, winSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
@@ -183,6 +184,15 @@ int main(int argc, char** argv)
 
 	initUi();
 
+  ImGuiStyle& style = ImGui::GetStyle();
+
+  style.WindowRounding = 9;
+  style.FrameRounding = 4;
+  style.PopupRounding = 4;
+  style.GrabRounding = 4;
+  style.TabRounding = 9;
+  style.TabBarOverlineSize = 0;
+
 	double lastFrameTime = 0;
 	double lastUpdateTime = 0;
 	double fpsLimit = 1.0 / 60.0;
@@ -200,12 +210,20 @@ int main(int argc, char** argv)
 			shader.use();
 			renderer.draw(verts, &tex, &shader, glm::vec4(1, 1, 1, 1));
 
+			for (Action* action : global.actions)
+			{
+				if (action->type == ACTION_TRAJECTORY && action->data != nullptr)
+				{
+					if (action->data->visible)
+						action->data->render(renderer, settings.trajectoryOpac, 0, false);
+				}
+			}
+
 			if (global.currentAction != nullptr)
 			{
 				if (global.currentAction->type == ACTION_TRAJECTORY)
 					global.currentAction->data->update(renderer, mouseX, mouseY, framebuffer.spec.width, mods);
 			}
-
 			framebuffer.unbind();
 
 			renderUi(framebuffer);
@@ -228,6 +246,6 @@ int main(int argc, char** argv)
 
 void quit()
 {
-  saveSettings();
+	saveSettings();
 	windowData.running = false;
 }

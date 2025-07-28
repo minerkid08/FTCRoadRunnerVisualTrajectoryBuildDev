@@ -6,6 +6,7 @@
 #include "ui/ui.hpp"
 
 #include <fstream>
+#include <iostream>
 #include <json/json.hpp>
 #include <vector>
 
@@ -101,11 +102,13 @@ void save(const std::string& filename)
 #define tryGet(json, key, type2, out, err)                                                                             \
 	if (!json.contains(key))                                                                                           \
 	{                                                                                                                  \
+		std::cerr << "cant get key: " << key << '\n';                                                                  \
 		delete err;                                                                                                    \
 		return 0;                                                                                                      \
 	}                                                                                                                  \
-	if (json[key].type() != nlohmann::detail::value_t::type2)                                                          \
+	if (!json[key].type2())                                                                                             \
 	{                                                                                                                  \
+		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
 		delete err;                                                                                                    \
 		return 0;                                                                                                      \
 	}                                                                                                                  \
@@ -114,11 +117,13 @@ void save(const std::string& filename)
 #define tryGetc(json, key, type2, out, err, cast)                                                                      \
 	if (!json.contains(key))                                                                                           \
 	{                                                                                                                  \
+		std::cerr << "cant get key: " << key << '\n';                                                                  \
 		delete err;                                                                                                    \
 		return 0;                                                                                                      \
 	}                                                                                                                  \
-	if (json[key].type() != nlohmann::detail::value_t::type2)                                                          \
+	if (!json[key].type2())                                                                                             \
 	{                                                                                                                  \
+		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
 		delete err;                                                                                                    \
 		return 0;                                                                                                      \
 	}                                                                                                                  \
@@ -127,11 +132,13 @@ void save(const std::string& filename)
 #define typeCheck(json, key, type2, err)                                                                               \
 	if (!json.contains(key))                                                                                           \
 	{                                                                                                                  \
+		std::cerr << "cant get key: " << key << '\n';                                                                  \
 		delete err;                                                                                                    \
 		return 0;                                                                                                      \
 	}                                                                                                                  \
-	if (json[key].type() != nlohmann::detail::value_t::type2)                                                          \
+	if (!json[key].type2())                                                                                             \
 	{                                                                                                                  \
+		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
 		delete err;                                                                                                    \
 		return 0;                                                                                                      \
 	}
@@ -139,12 +146,14 @@ void save(const std::string& filename)
 #define typeCheck2(json, key, type2)                                                                                   \
 	if (!json.contains(key))                                                                                           \
 	{                                                                                                                  \
+		std::cerr << "cant get key: " << key << '\n';                                                                  \
 		setErr("load failed");                                                                                         \
 		reset();                                                                                                       \
 		return;                                                                                                        \
 	}                                                                                                                  \
-	if (json[key].type() != nlohmann::detail::value_t::type2)                                                          \
+	if (!json[key].type2())                                                                                             \
 	{                                                                                                                  \
+		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
 		setErr("load failed");                                                                                         \
 		reset();                                                                                                       \
 		return;                                                                                                        \
@@ -153,24 +162,25 @@ void save(const std::string& filename)
 NodeGrid* parseTrajectory(const nlohmann::json& json, int ind)
 {
 	NodeGrid* grid = new NodeGrid();
-	typeCheck(json, "nodes", object, grid);
-	typeCheck(json, "segments", object, grid);
-	for (const nlohmann::json& jnode : json[ind]["nodes"])
+  const nlohmann::json& traj = json[ind];
+	typeCheck(traj, "nodes", is_array, grid);
+	typeCheck(traj, "segments", is_array, grid);
+	for (const nlohmann::json& jnode : traj["nodes"])
 	{
 		PathNode* node = grid->nodes.add();
-		tryGet(jnode, "x", number_float, node->pos.x, grid);
-		tryGet(jnode, "y", number_float, node->pos.y, grid);
-		tryGet(jnode, "h", number_float, node->heading, grid);
+		tryGet(jnode, "x", is_number, node->pos.x, grid);
+		tryGet(jnode, "y", is_number, node->pos.y, grid);
+		tryGet(jnode, "h", is_number, node->heading, grid);
 	}
 
-	for (const nlohmann::json& segmentJson : json[ind]["segments"])
+	for (const nlohmann::json& segmentJson : traj["segments"])
 	{
 		PathSegment* segment = grid->segs.add();
-		tryGet(segmentJson, "startNode", number_integer, segment->startNode, grid);
-		tryGet(segmentJson, "endNode", number_integer, segment->endNode, grid);
-		tryGet(segmentJson, "startTangent", number_float, segment->startTan, grid);
-		tryGet(segmentJson, "endTangent", number_float, segment->endTan, grid);
-		tryGet(segmentJson, "headingMode", number_integer, segment->headingMode, grid);
+		tryGet(segmentJson, "startNode", is_number, segment->startNode, grid);
+		tryGet(segmentJson, "endNode", is_number, segment->endNode, grid);
+		tryGet(segmentJson, "startTangent", is_number, segment->startTan, grid);
+		tryGet(segmentJson, "endTangent", is_number, segment->endTan, grid);
+		tryGet(segmentJson, "headingMode", is_number, segment->headingMode, grid);
 	}
 	return grid;
 }
@@ -178,11 +188,11 @@ NodeGrid* parseTrajectory(const nlohmann::json& json, int ind)
 Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectoryJson)
 {
 	Action* action = new Action();
-	tryGet(node, "type", number_integer, action->type, action);
-	tryGetc(node, "parent", number_integer, action->parrent, action, (Action*)(long long));
-	tryGetc(node, "next", number_integer, action->next, action, (Action*)(long long));
-	tryGetc(node, "prev", number_integer, action->prev, action, (Action*)(long long));
-	tryGetc(node, "actions", number_integer, action->actions, action, (Action*)(long long));
+	tryGet(node, "type", is_number, action->type, action);
+	tryGetc(node, "parent", is_number, action->parrent, action, (Action*)(long long));
+	tryGetc(node, "next", is_number, action->next, action, (Action*)(long long));
+	tryGetc(node, "prev", is_number, action->prev, action, (Action*)(long long));
+	tryGetc(node, "actions", is_number, action->actions, action, (Action*)(long long));
 
 	if (action->type == ACTION_TRAJECTORY)
 	{
@@ -198,32 +208,32 @@ Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectory
 	{
 		initCustomAction(action);
 		std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
-		typeCheck(node, "fields", object, action);
+		typeCheck(node, "fields", is_object, action);
 		for (CustomActionField& field : *data)
 		{
 			switch (field.type)
 			{
 			case FIELDTYPE_INT: {
 				long long v;
-				tryGet(node["fields"], field.name, number_integer, v, action);
+				tryGet(node["fields"], field.name, is_number, v, action);
 				field.value = (void*)v;
 				break;
 			}
 			case FIELDTYPE_DOUBLE: {
 				double v;
-				tryGet(node["fields"], field.name, number_float, v, action);
+				tryGet(node["fields"], field.name, is_number, v, action);
 				field.value = *(void**)&v;
 				break;
 			}
 			case FIELDTYPE_BOOL: {
 				bool v;
-				tryGet(node["fields"], field.name, boolean, v, action);
+				tryGet(node["fields"], field.name, is_boolean, v, action);
 				field.value = (void*)v;
 				break;
 			}
 			case FIELDTYPE_STRING: {
 				std::string v;
-				tryGet(node["fields"], field.name, string, v, action);
+				tryGet(node["fields"], field.name, is_string, v, action);
 				strcpy((char*)field.value, v.c_str());
 				break;
 			}
@@ -240,7 +250,7 @@ void load(const std::string& filename)
 	nlohmann::json json;
 	stream >> json;
 
-	typeCheck2(json, "actions", array);
+	typeCheck2(json, "actions", is_array);
 
 	nlohmann::json& trajectoryJson = json["trajectories"];
 

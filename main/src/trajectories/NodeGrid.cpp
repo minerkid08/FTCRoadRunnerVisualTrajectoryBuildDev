@@ -3,6 +3,8 @@
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
+#define zoff(s) (s ? 0.1 : 0)
+
 NodeGrid::NodeGrid() : nodes(maxNodes), segs(maxSegs)
 {
 }
@@ -11,12 +13,8 @@ NodeGrid::~NodeGrid()
 {
 }
 
-void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods)
+void NodeGrid::render(Renderer& renderer, float a, float z, bool showSelected)
 {
-	if (selected.ind >= (selected.type == TypeNode ? nodes.count : segs.count))
-	{
-		selected.ind = nodes.count - 1;
-	}
 	if (nodes.count > 1)
 	{
 		for (int i = 0; i < segs.count; i++)
@@ -25,17 +23,25 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 			PathNode* node1 = nodes.get(seg->startNode);
 			PathNode* node2 = nodes.get(seg->endNode);
 			bool s = (selected.type == TypeSegment && selected.ind == i);
-			renderer.drawSegment(node1->pos, node2->pos, s ? 1 : 0, seg->startTan, seg->endTan,
-								 s ? glm::vec4(1.0, 0.0, 0.0, 1.0) : glm::vec4(0.5, 0.5, 0.5, 1.0));
+			renderer.drawSegment(node1->pos, node2->pos, z + zoff(s), seg->startTan, seg->endTan,
+								 s ? glm::vec4(1.0, 0.0, 0.0, a) : glm::vec4(0.5, 0.5, 0.5, a));
 		}
 	}
+
 	for (int i = 0; i < nodes.count; i++)
 	{
 		PathNode* node = nodes.get(i);
-		bool s = (selected.type == TypeNode && selected.ind == i);
+		bool s = (selected.type == TypeNode && selected.ind == i && showSelected);
 		renderer.drawNode({node->pos.x, node->pos.y, s ? 1 : 0}, node->heading,
-						  s ? glm::vec4(1.0, 0.0, 0.0, 1.0) : glm::vec4(1.0, 1.0, 1.0, 1.0));
+						  s ? glm::vec4(1.0, 0.0, 0.0, a) : glm::vec4(1.0, 1.0, 1.0, a));
 	}
+}
+
+void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods)
+{
+	if (selected.ind >= (selected.type == TypeNode ? nodes.count : segs.count))
+		selected.ind = nodes.count - 1;
+	render(renderer, 1.0f, 0.9f, true);
 	if (global.onViewport)
 	{
 		if (mods == 1)
