@@ -22,7 +22,7 @@ void drawActionEditor()
 			if (newtype != a->type)
 				tryChangeType(a, newtype);
 		}
-    drawChangeFromPopups();
+		drawChangeFromPopups();
 		ImGui::EndDisabled();
 		if (a->type < 2)
 		{
@@ -43,13 +43,27 @@ void drawActionEditor()
 					ImGui::InputText(field.name, (char*)field.value, 64);
 					break;
 				case FIELDTYPE_INT:
-					ImGui::InputInt(field.name, (int*)&field.value);
+					if (field.rangeChecks)
+					{
+						int min = *(int*)&field.min;
+						int max = *(int*)&field.max;
+						ImGui::SliderInt(field.name, (int*)&field.value, min, max);
+					}
+					else
+						ImGui::InputInt(field.name, (int*)&field.value);
 					break;
 				case FIELDTYPE_BOOL:
 					ImGui::Checkbox(field.name, (bool*)&field.value);
 					break;
 				case FIELDTYPE_DOUBLE:
-					ImGui::InputDouble(field.name, (double*)&field.value);
+					if (field.rangeChecks)
+					{
+						float min = *(float*)&field.min;
+						float max = *(float*)&field.max;
+						ImGui::SliderFloat(field.name, (float*)&field.value, min, max);
+					}
+					else
+						ImGui::InputFloat(field.name, (float*)&field.value);
 					break;
 				}
 			}

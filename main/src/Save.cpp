@@ -55,7 +55,7 @@ void save(const std::string& filename)
 					j["fields"][f.name] = *(int*)&f.value;
 					break;
 				case FIELDTYPE_DOUBLE:
-					j["fields"][f.name] = *(double*)&f.value;
+					j["fields"][f.name] = *(float*)&f.value;
 					break;
 				case FIELDTYPE_BOOL:
 					j["fields"][f.name] = *(bool*)&f.value;
@@ -220,7 +220,7 @@ Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectory
 				break;
 			}
 			case FIELDTYPE_DOUBLE: {
-				double v;
+				float v;
 				tryGet(node["fields"], field.name, is_number, v, action);
 				field.value = *(void**)&v;
 				break;

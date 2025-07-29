@@ -68,13 +68,23 @@ void loadSettings()
 				switch (f.type)
 				{
 				case FIELDTYPE_INT: {
-					long long v = field["value"];
+					int min = field["min"];
+					int max = field["max"];
+					f.rangeChecks = field["rangeChecks"];
+					int v = field["value"];
 					f.value = (void*)v;
+					f.min = (void*)min;
+					f.max = (void*)max;
 					break;
 				}
 				case FIELDTYPE_DOUBLE: {
-					double v = field["value"];
+					float min = field["min"];
+					float max = field["max"];
+					float v = field["value"];
+					f.rangeChecks = field["rangeChecks"];
 					f.value = *(void**)&v;
+					f.min = *(void**)&v;
+					f.max = *(void**)&v;
 					break;
 				}
 				case FIELDTYPE_BOOL: {
@@ -163,10 +173,16 @@ void saveSettings()
 			switch (f.type)
 			{
 			case FIELDTYPE_INT:
+				fields[j]["min"] = *(int*)&f.min;
+				fields[j]["max"] = *(int*)&f.max;
+				fields[j]["rangeChecks"] = f.rangeChecks;
 				fields[j]["value"] = *(int*)&f.value;
 				break;
 			case FIELDTYPE_DOUBLE:
-				fields[j]["value"] = *(double*)&f.value;
+				fields[j]["min"] = *(float*)&f.min;
+				fields[j]["max"] = *(float*)&f.max;
+				fields[j]["rangeChecks"] = f.rangeChecks;
+				fields[j]["value"] = *(float*)&f.value;
 				break;
 			case FIELDTYPE_BOOL:
 				fields[j]["value"] = *(bool*)&f.value;

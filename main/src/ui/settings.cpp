@@ -32,7 +32,6 @@ void drawSettingsMenu()
 
 		ImGui::SeparatorText("custom actions");
 
-		ImGui::SameLine();
 		if (ImGui::Button("add"))
 			settingsActions.emplace_back();
 
@@ -52,9 +51,8 @@ void drawSettingsMenu()
 			if (selectedInd == i)
 			{
 				ImVec2 size = ImGui::GetItemRectSize();
-				ImGuiStyle& style = ImGui::GetStyle();
-				style.ButtonTextAlign = ImVec2(0.5f, 0.75f);
 				ImGui::SameLine();
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 0));
 				if (ImGui::Button("^", ImVec2(0, size.y)))
 				{
 					if (i > 0)
@@ -79,6 +77,7 @@ void drawSettingsMenu()
 				ImGui::SameLine();
 				if (ImGui::Button("x", ImVec2(0, size.y)))
 					toRemove = i;
+				ImGui::PopStyleVar();
 			}
 			if (opened)
 			{
@@ -143,6 +142,7 @@ static void drawFields(CustomActionDef& def, bool selected)
 		{
 			ImVec2 size = ImGui::GetItemRectSize();
 			ImGui::SameLine();
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 0));
 			if (ImGui::Button("-", ImVec2(0, size.y)))
 				toRemove = i;
 			ImGui::SameLine();
@@ -167,6 +167,7 @@ static void drawFields(CustomActionDef& def, bool selected)
 					selectedInd++;
 				}
 			}
+			ImGui::PopStyleVar();
 		}
 		if (opened)
 		{
@@ -193,12 +194,24 @@ static void drawFields(CustomActionDef& def, bool selected)
 				break;
 			case FIELDTYPE_INT:
 				ImGui::InputInt("default value", (int*)&field.value);
+				ImGui::Checkbox("min/max", &field.rangeChecks);
+
+				ImGui::BeginDisabled(!field.rangeChecks);
+				ImGui::InputInt("min value", (int*)&field.min);
+				ImGui::InputInt("max value", (int*)&field.max);
+				ImGui::EndDisabled();
 				break;
 			case FIELDTYPE_BOOL:
 				ImGui::Checkbox("default value", (bool*)&field.value);
 				break;
 			case FIELDTYPE_DOUBLE:
-				ImGui::InputDouble("default value", (double*)&field.value);
+				ImGui::InputFloat("default value", (float*)&field.value);
+				ImGui::Checkbox("min/max", &field.rangeChecks);
+
+				ImGui::BeginDisabled(!field.rangeChecks);
+				ImGui::InputFloat("min value", (float*)&field.min);
+				ImGui::InputFloat("max value", (float*)&field.max);
+				ImGui::EndDisabled();
 				break;
 			}
 			ImGui::TreePop();
@@ -220,7 +233,11 @@ static void drawFields(CustomActionDef& def, bool selected)
 
 static void applyCustomFields()
 {
-	global.customActionDefs = settingsActions;
+	global.customActionDefs.resize(0);
+	for (const CustomActionDef& def : settingsActions)
+	{
+		global.customActionDefs.push_back(def);
+	}
 
 	global.actionTypes.resize(3);
 	for (CustomActionDef& def : global.customActionDefs)

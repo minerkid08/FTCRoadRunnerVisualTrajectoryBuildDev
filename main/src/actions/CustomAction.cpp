@@ -10,12 +10,19 @@ CustomActionField::CustomActionField()
 	strcpy(name, "new field");
 	type = FIELDTYPE_INT;
 	value = 0;
+	rangeChecks = false;
+	min = (int*)0;
+	max = (int*)10;
 }
+
 CustomActionField::CustomActionField(const CustomActionField& other)
 {
 	name = (char*)malloc(64);
 	strcpy(name, other.name);
 	type = other.type;
+	rangeChecks = other.rangeChecks;
+	min = other.min;
+	max = other.max;
 	if (type == FIELDTYPE_STRING)
 	{
 		value = (char*)malloc(64);
@@ -30,6 +37,9 @@ CustomActionField::CustomActionField(const CustomActionField&& other)
 	name = other.name;
 	type = other.type;
 	value = other.value;
+	rangeChecks = other.rangeChecks;
+	min = other.min;
+	max = other.max;
 }
 
 CustomActionField& CustomActionField::operator=(const CustomActionField& other)
@@ -50,6 +60,9 @@ CustomActionField& CustomActionField::operator=(const CustomActionField& other)
 	else
 		value = other.value;
 	type = other.type;
+	rangeChecks = other.rangeChecks;
+	min = other.min;
+	max = other.max;
 
 	return *this;
 }
@@ -83,9 +96,9 @@ CustomActionDef::CustomActionDef(const CustomActionDef&& other)
 
 CustomActionDef& CustomActionDef::operator=(const CustomActionDef& other)
 {
-  strcpy(name, other.name);
-  fields = other.fields;
-  return *this;
+	strcpy(name, other.name);
+	fields = other.fields;
+	return *this;
 }
 
 CustomActionDef::~CustomActionDef()

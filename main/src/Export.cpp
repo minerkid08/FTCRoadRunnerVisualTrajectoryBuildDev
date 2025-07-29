@@ -169,7 +169,7 @@ static void intExportAction(const Action* action, std::string* string, int level
 					args += format(actionLang["int"], *(int*)&f.value);
 					break;
 				case FIELDTYPE_DOUBLE:
-					args += format(actionLang["double"], *(double*)&f.value);
+					args += format(actionLang["double"], *(float*)&f.value);
 					break;
 				case FIELDTYPE_BOOL:
 					args += format(actionLang["bool"], f.value ? "true" : "false");

@@ -155,6 +155,9 @@ void initCustomAction(Action* action)
 		CustomActionField* fb = &(*data)[i];
 
 		fb->type = fa->type;
+		fb->min = fa->min;
+		fb->max = fa->max;
+		fb->rangeChecks = fa->rangeChecks;
 		strcpy((char*)fb->name, (char*)fa->name);
 
 		if (fa->type == FIELDTYPE_STRING)
@@ -269,10 +272,10 @@ void confermAction()
 			delete data;
 			action->data = nullptr;
 		}
+		action->type = newtype;
 		if (newtype == ACTION_TRAJECTORY)
 			action->data = new NodeGrid();
 		else if (newtype > 2)
 			initCustomAction(action);
-		action->type = newtype;
 	}
 }

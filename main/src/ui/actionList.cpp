@@ -38,6 +38,7 @@ static void drawAction(Action* action)
 	{
 		ImGui::SameLine();
 		ImGui::BeginDisabled(action == global.rootAction);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 0));
 		if (ImGui::Button("^", ImVec2(0, size.y)))
 			moveActionUp(action);
 		ImGui::SameLine();
@@ -45,7 +46,8 @@ static void drawAction(Action* action)
 			moveActionDown(action);
 		ImGui::SameLine();
 		if (ImGui::Button("x", ImVec2(0, size.y)))
-      tryDelete(action);
+			tryDelete(action);
+		ImGui::PopStyleVar();
 		ImGui::EndDisabled();
 	}
 
@@ -62,7 +64,7 @@ static void drawAction(Action* action)
 				action2 = action2->next;
 			}
 		}
-    drawDeletePopups();
+		drawDeletePopups();
 		ImGui::TreePop();
 	}
 }

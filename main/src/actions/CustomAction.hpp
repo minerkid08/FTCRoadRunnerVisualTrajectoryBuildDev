@@ -12,7 +12,11 @@ struct CustomActionField
   int type;
   char* name;
   void* value;
-  
+ 
+  bool rangeChecks = false;
+  void* min = 0;
+  void* max = (void*)10;
+
   CustomActionField();
   CustomActionField(const CustomActionField& other);
   CustomActionField(const CustomActionField&& other);
