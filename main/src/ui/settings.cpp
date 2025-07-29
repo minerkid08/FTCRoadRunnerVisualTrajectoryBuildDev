@@ -16,17 +16,19 @@ static int toRemove = -1;
 static const char* str = "int\0double\0bool\0string\0";
 
 static void drawFields(CustomActionDef& def, bool selected);
-static void applyCustomFields();
+static void applyCustomFields(bool force = false);
+
+static std::string usedAction;
 
 void drawSettingsMenu()
 {
 	if (open)
 	{
 		ImGui::Begin("settings", &open, ImGuiWindowFlags_NoDocking);
-    if(!open)
-    {
-      saveSettings();
-    }
+		if (!open)
+		{
+			saveSettings();
+		}
 
 		ImGui::SeparatorText("export");
 		ImGui::InputText("save path", settings.savePath, 512);
@@ -98,6 +100,21 @@ void drawSettingsMenu()
 		if (ImGui::Button("apply"))
 		{
 			applyCustomFields();
+		}
+
+		if (ImGui::BeginPopupModal("apply removing used trajectory"))
+		{
+			ImGui::Text("Applying changes will delete an with a type '%s'", usedAction.c_str());
+			ImGui::Text("Are you sure you want to continue.");
+			if (ImGui::Button("confirm"))
+			{
+				applyCustomFields(true);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("cancel"))
+				ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
 		}
 
 		ImGui::End();
@@ -236,8 +253,58 @@ static void drawFields(CustomActionDef& def, bool selected)
 	}
 }
 
-static void applyCustomFields()
+static void applyCustomFields(bool force)
 {
+	if (!force)
+	{
+		for (const Action* action : global.actions)
+		{
+			if (action->type < 3)
+				continue;
+
+			bool found = false;
+
+			const CustomActionDef* def2 = &global.customActionDefs[action->type - 3];
+			for (const CustomActionDef& def : settingsActions)
+			{
+				if (strcmp(def.name, def2->name) == 0)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (found)
+				continue;
+			usedAction = def2->name;
+			ImGui::OpenPopup("apply removing used trajectory");
+			return;
+		}
+	}
+
+	for (Action* action : global.actions)
+	{
+		if (action->type < 3)
+			continue;
+
+		bool found = false;
+
+		const CustomActionDef* def2 = &global.customActionDefs[action->type - 3];
+		for (int j = 0; j < settingsActions.size(); j++)
+		{
+			const CustomActionDef* def = &settingsActions[j];
+			if (strcmp(def->name, def2->name) == 0)
+			{
+				action->type = j + 3;
+				found = true;
+				break;
+			}
+		}
+		if (found)
+			continue;
+
+		deleteAction(action);
+	}
+
 	global.customActionDefs.resize(0);
 	for (const CustomActionDef& def : settingsActions)
 	{
@@ -276,4 +343,29 @@ static void applyCustomFields()
 		i += strlen(def.name) + 1;
 	}
 	global.actionTypeStr[len] = 0;
+
+	for (Action* action : global.actions)
+	{
+		if (action->type < 3)
+			continue;
+
+		if (action->parrent == nullptr)
+			continue;
+
+		bool found = false;
+
+		const CustomActionDef* def2 = &global.customActionDefs[action->type - 3];
+		for (const CustomActionDef& def : global.customActionDefs)
+		{
+			if (strcmp(def.name, def2->name) == 0)
+			{
+				customActionReload((std::vector<CustomActionField>*)action->data, *def2);
+				found = true;
+				break;
+			}
+		}
+		if (found)
+			continue;
+	}
+  saveSettings();
 }

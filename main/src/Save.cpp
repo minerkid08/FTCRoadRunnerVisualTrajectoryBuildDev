@@ -106,7 +106,7 @@ void save(const std::string& filename)
 		delete err;                                                                                                    \
 		return 0;                                                                                                      \
 	}                                                                                                                  \
-	if (!json[key].type2())                                                                                             \
+	if (!json[key].type2())                                                                                            \
 	{                                                                                                                  \
 		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
 		delete err;                                                                                                    \
@@ -121,7 +121,7 @@ void save(const std::string& filename)
 		delete err;                                                                                                    \
 		return 0;                                                                                                      \
 	}                                                                                                                  \
-	if (!json[key].type2())                                                                                             \
+	if (!json[key].type2())                                                                                            \
 	{                                                                                                                  \
 		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
 		delete err;                                                                                                    \
@@ -136,7 +136,7 @@ void save(const std::string& filename)
 		delete err;                                                                                                    \
 		return 0;                                                                                                      \
 	}                                                                                                                  \
-	if (!json[key].type2())                                                                                             \
+	if (!json[key].type2())                                                                                            \
 	{                                                                                                                  \
 		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
 		delete err;                                                                                                    \
@@ -151,7 +151,7 @@ void save(const std::string& filename)
 		reset();                                                                                                       \
 		return;                                                                                                        \
 	}                                                                                                                  \
-	if (!json[key].type2())                                                                                             \
+	if (!json[key].type2())                                                                                            \
 	{                                                                                                                  \
 		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
 		setErr("load failed");                                                                                         \
@@ -162,7 +162,7 @@ void save(const std::string& filename)
 NodeGrid* parseTrajectory(const nlohmann::json& json, int ind)
 {
 	NodeGrid* grid = new NodeGrid();
-  const nlohmann::json& traj = json[ind];
+	const nlohmann::json& traj = json[ind];
 	typeCheck(traj, "nodes", is_array, grid);
 	typeCheck(traj, "segments", is_array, grid);
 	for (const nlohmann::json& jnode : traj["nodes"])
@@ -245,10 +245,19 @@ Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectory
 
 void load(const std::string& filename)
 {
+  clearMsg();
 	reset();
 	std::ifstream stream(filename);
 	nlohmann::json json;
-	stream >> json;
+	try
+	{
+		stream >> json;
+	}
+	catch (nlohmann::json::parse_error e)
+	{
+		setErr("load failed: can't parse json file");
+		return;
+	}
 
 	typeCheck2(json, "actions", is_array);
 

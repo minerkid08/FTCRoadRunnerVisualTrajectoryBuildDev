@@ -184,14 +184,25 @@ int main(int argc, char** argv)
 
 	initUi();
 
-  ImGuiStyle& style = ImGui::GetStyle();
+	ImGuiStyle& style = ImGui::GetStyle();
 
-  style.WindowRounding = 9;
-  style.FrameRounding = 4;
-  style.PopupRounding = 4;
-  style.GrabRounding = 4;
-  style.TabRounding = 9;
-  style.TabBarOverlineSize = 0;
+	style.TabBarOverlineSize = 0;
+	if (width > 3000)
+	{
+		style.WindowRounding = 12;
+		style.FrameRounding = 12;
+		style.PopupRounding = 12;
+		style.GrabRounding = 12;
+		style.TabRounding = 12;
+	}
+	else
+	{
+		style.WindowRounding = 9;
+		style.FrameRounding = 4;
+		style.PopupRounding = 4;
+		style.GrabRounding = 4;
+		style.TabRounding = 9;
+	}
 
 	double lastFrameTime = 0;
 	double lastUpdateTime = 0;

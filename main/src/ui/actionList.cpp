@@ -75,6 +75,11 @@ static void drawAction(Action* action)
 }
 void drawActionList()
 {
+	if (global.currentAction != nullptr)
+	{
+		if (global.currentAction->parrent == nullptr && global.currentAction != global.rootAction)
+			global.currentAction = nullptr;
+	}
 	ImGui::Begin("actionList");
 	if (global.rootAction == nullptr)
 	{

@@ -1,5 +1,6 @@
 #include "Action.hpp"
 #include "global.hpp"
+#include "trajectories/NodeGrid.hpp"
 #include "ui/popup.hpp"
 #include <cstring>
 
@@ -23,6 +24,11 @@ void addAction(Action* parent)
 		action->id = actionInd;
 	}
 	action->parrent = parent;
+	action->prev = nullptr;
+	action->next = nullptr;
+	action->actions = nullptr;
+	action->data = nullptr;
+	action->type = 0;
 
 	if (parent->actions)
 	{
@@ -39,6 +45,27 @@ void addAction(Action* parent)
 	}
 	else
 		parent->actions = action;
+}
+
+void deleteAction(Action* action)
+{
+	if (action->type == ACTION_TRAJECTORY)
+		delete action->data;
+	if (action->type < ACTION_TRAJECTORY)
+		deleteActionList(action->actions);
+	if (action->type > ACTION_TRAJECTORY)
+		delete (std::vector<CustomActionField>*)action->data;
+	if (action->next != nullptr)
+		action->next->prev = action->prev;
+	if (action->prev != nullptr)
+	{
+		action->prev->next = action->next;
+		action->parrent = action->next;
+	}
+	if (action->next == nullptr && action->prev == nullptr)
+		action->parrent->actions = nullptr;
+	action->parrent = nullptr;
+	action->actions = nullptr;
 }
 
 void deleteActionList(Action* action)

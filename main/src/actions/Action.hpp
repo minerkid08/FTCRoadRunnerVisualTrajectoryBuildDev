@@ -27,6 +27,7 @@ void addAction(Action* parent);
 void moveAction(Action* action, Action* newParent);
 void moveActionDown(Action* action);
 void moveActionUp(Action* action);
+void deleteAction(Action* action);
 void deleteActionList(Action* action);
 
 void initCustomAction(Action* action);
