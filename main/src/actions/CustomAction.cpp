@@ -74,6 +74,29 @@ CustomActionField::~CustomActionField()
 		free(value);
 }
 
+void CustomActionField::reload(const CustomActionField& def)
+{
+	strcpy(name, def.name);
+	rangeChecks = def.rangeChecks;
+	min = def.min;
+	max = def.max;
+	step = def.step;
+	if (def.type == type)
+		return;
+
+	if (type == FIELDTYPE_STRING)
+		free(value);
+
+	if (def.type == FIELDTYPE_STRING)
+	{
+		value = malloc(64);
+		strcpy((char*)value, (char*)def.value);
+	}
+	else
+		value = def.value;
+	type = def.type;
+}
+
 CustomActionDef::CustomActionDef()
 {
 	name = (char*)malloc(64);
@@ -104,4 +127,28 @@ CustomActionDef& CustomActionDef::operator=(const CustomActionDef& other)
 CustomActionDef::~CustomActionDef()
 {
 	free(name);
+}
+
+void customActionReload(std::vector<CustomActionField>* fields, const CustomActionDef& def)
+{
+	std::vector<CustomActionField> orig = *fields;
+
+	fields->resize(def.fields.size());
+
+	for (int i = 0; i < def.fields.size(); i++)
+	{
+		bool found = false;
+		for (const CustomActionField& field : orig)
+		{
+			if (strcmp(field.name, def.fields[i].name) == 0)
+			{
+				(*fields)[i] = field;
+				(*fields)[i].reload(def.fields[i]);
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			(*fields)[i] = (def.fields[i]);
+	}
 }

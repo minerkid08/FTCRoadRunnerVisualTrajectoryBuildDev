@@ -9,7 +9,11 @@
 static void drawAction(Action* action)
 {
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+							   ImGuiTreeNodeFlags_AllowItemOverlap |
 							   (action == global.currentAction ? ImGuiTreeNodeFlags_Selected : 0);
+	if (action->type > 1)
+		flags |= ImGuiTreeNodeFlags_Bullet;
+
 	bool opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
 	ImVec2 size = ImGui::GetItemRectSize();
 	if (ImGui::IsItemClicked())
@@ -21,7 +25,8 @@ static void drawAction(Action* action)
 		if (payload)
 		{
 			Action* a = *(Action**)payload->Data;
-			moveAction(a, action);
+			if (action->type < 2)
+				moveAction(a, action);
 		}
 		ImGui::EndDragDropTarget();
 	}
@@ -38,14 +43,14 @@ static void drawAction(Action* action)
 	{
 		ImGui::SameLine();
 		ImGui::BeginDisabled(action == global.rootAction);
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 0));
-		if (ImGui::Button("^", ImVec2(0, size.y)))
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(6, 0));
+		if (ImGui::Button("^", ImVec2(size.y, size.y)))
 			moveActionUp(action);
 		ImGui::SameLine();
-		if (ImGui::Button("v", ImVec2(0, size.y)))
+		if (ImGui::Button("v", ImVec2(size.y, size.y)))
 			moveActionDown(action);
 		ImGui::SameLine();
-		if (ImGui::Button("x", ImVec2(0, size.y)))
+		if (ImGui::Button("x", ImVec2(size.y, size.y)))
 			tryDelete(action);
 		ImGui::PopStyleVar();
 		ImGui::EndDisabled();

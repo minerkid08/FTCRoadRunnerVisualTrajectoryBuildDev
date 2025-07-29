@@ -23,6 +23,11 @@ void drawSettingsMenu()
 	if (open)
 	{
 		ImGui::Begin("settings", &open, ImGuiWindowFlags_NoDocking);
+    if(!open)
+    {
+      saveSettings();
+    }
+
 		ImGui::SeparatorText("export");
 		ImGui::InputText("save path", settings.savePath, 512);
 		ImGui::InputText("export path", settings.exportPath, 512);
@@ -53,7 +58,7 @@ void drawSettingsMenu()
 				ImVec2 size = ImGui::GetItemRectSize();
 				ImGui::SameLine();
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 0));
-				if (ImGui::Button("^", ImVec2(0, size.y)))
+				if (ImGui::Button("^", ImVec2(size.y, size.y)))
 				{
 					if (i > 0)
 					{
@@ -64,7 +69,7 @@ void drawSettingsMenu()
 					}
 				}
 				ImGui::SameLine();
-				if (ImGui::Button("v", ImVec2(0, size.y)))
+				if (ImGui::Button("v", ImVec2(size.y, size.y)))
 				{
 					if (i < settingsActions.size() - 1)
 					{
@@ -75,7 +80,7 @@ void drawSettingsMenu()
 					}
 				}
 				ImGui::SameLine();
-				if (ImGui::Button("x", ImVec2(0, size.y)))
+				if (ImGui::Button("x", ImVec2(size.y, size.y)))
 					toRemove = i;
 				ImGui::PopStyleVar();
 			}
