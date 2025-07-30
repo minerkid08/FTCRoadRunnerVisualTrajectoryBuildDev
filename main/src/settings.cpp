@@ -83,8 +83,8 @@ void loadSettings()
 					float v = field["value"];
 					f.rangeChecks = field["rangeChecks"];
 					f.value = *(void**)&v;
-					f.min = *(void**)&v;
-					f.max = *(void**)&v;
+					f.min = *(void**)&min;
+					f.max = *(void**)&max;
 					break;
 				}
 				case FIELDTYPE_BOOL: {

@@ -1,5 +1,4 @@
 #include "actions/CustomAction.hpp"
-#include "trajectories/NodeGrid.hpp"
 #include "ui.hpp"
 
 #include "actions/Action.hpp"

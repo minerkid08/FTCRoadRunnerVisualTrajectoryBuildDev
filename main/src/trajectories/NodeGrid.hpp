@@ -25,7 +25,7 @@ class NodeGrid
 	Selected selected;
 	int mods = 0;
 	bool gridSnap = true;
-	bool visible = true;
+	bool visible = false;
 
 	NodeGrid();
 	~NodeGrid();

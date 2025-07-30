@@ -1,4 +1,5 @@
 #include "actions/Action.hpp"
+#include "trajectories/NodeGrid.hpp"
 #include "ui.hpp"
 
 #include "global.hpp"
@@ -14,7 +15,18 @@ static void drawAction(Action* action)
 	if (action->type > 1)
 		flags |= ImGuiTreeNodeFlags_Bullet;
 
-	bool opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
+	bool opened;
+	if (action->type == ACTION_TRAJECTORY)
+	{
+		NodeGrid* grid = action->data;
+		if (grid->visible)
+			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 120, 255, 255));
+		opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
+		if (grid->visible)
+			ImGui::PopStyleColor();
+	}
+	else
+		opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
 	ImVec2 size = ImGui::GetItemRectSize();
 	if (ImGui::IsItemClicked())
 		global.currentAction = action;
