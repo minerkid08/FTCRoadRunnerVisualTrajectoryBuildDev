@@ -66,6 +66,8 @@ void deleteAction(Action* action)
 		action->parrent->actions = nullptr;
 	action->parrent = nullptr;
 	action->actions = nullptr;
+  if(global.currentAction == action)
+    global.currentAction = nullptr;
 }
 
 void deleteActionList(Action* action)
@@ -269,16 +271,7 @@ void confermAction()
 			delete data;
 			action->data = nullptr;
 		}
-		action->actions = nullptr;
-		if (action->prev)
-			action->prev->next = action->next;
-		else
-			action->parrent->actions = action->next;
-		if (action->next)
-			action->next->prev = action->prev;
-
-		action->next = nullptr;
-		action->parrent = nullptr;
+    deleteAction(action);
 	}
 	if (global.toChange.toDo == ToDo_ChangeType)
 	{

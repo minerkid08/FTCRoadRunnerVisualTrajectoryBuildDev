@@ -150,8 +150,8 @@ void renderUi(FrameBuffer& framebuffer)
 
 	drawMenuBar();
 	drawViewport(framebuffer);
-	drawActionList();
 	drawActionEditor();
+	drawActionList();
 	drawSettingsMenu();
 
 	if (global.explorerMode)
@@ -222,9 +222,11 @@ void drawMenuBar()
 
 void drawViewport(FrameBuffer& framebuffer)
 {
+#ifdef DEBUG
 	ImGui::Begin("style editor");
 	ImGui::ShowStyleEditor();
 	ImGui::End();
+#endif
 	ImGui::Begin("viewport");
 	global.onViewport = ImGui::IsWindowFocused() && ImGui::IsWindowHovered();
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();

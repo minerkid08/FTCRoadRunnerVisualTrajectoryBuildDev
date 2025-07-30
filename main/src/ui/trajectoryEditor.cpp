@@ -6,6 +6,8 @@
 
 void drawTrajectoryEditor(NodeGrid* grid)
 {
+  if(grid == nullptr)
+    return;
 	if (ImGui::Button("flipHoriz"))
 		grid->flipHoriz();
 	ImGui::SameLine();
