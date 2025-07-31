@@ -13,6 +13,7 @@ class FrameBuffer
 	FrameBufferSpec spec;
 	FrameBuffer(const FrameBufferSpec& _spec);
 	~FrameBuffer();
+	void del();
 	void regen(const FrameBufferSpec& _spec);
 	void resize(int width, int height);
 	void bind();

@@ -10,7 +10,7 @@
 static void drawAction(Action* action)
 {
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
-							   ImGuiTreeNodeFlags_AllowItemOverlap |
+							   ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_DrawLinesFull |
 							   (action == global.currentAction ? ImGuiTreeNodeFlags_Selected : 0);
 	if (action->type > 1)
 		flags |= ImGuiTreeNodeFlags_Bullet;

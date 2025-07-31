@@ -1,6 +1,6 @@
 #include "Shader.hpp"
-#include <iostream>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
 Shader::Shader(const char* vertSrc, const char* fragSrc)
 {
@@ -27,7 +27,16 @@ Shader::Shader(const char* vertSrc, const char* fragSrc)
 
 Shader::~Shader()
 {
-	glDeleteProgram(prgmId);
+  del();
+}
+
+void Shader::del()
+{
+	if (prgmId == -1)
+	{
+		glDeleteProgram(prgmId);
+		prgmId = -1;
+	}
 }
 
 void Shader::use()

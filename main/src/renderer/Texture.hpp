@@ -8,6 +8,8 @@ class Texture
 	Texture(const std::string& path);
 	~Texture();
 
+  void del();
+
 	int getWidth()
 	{
 		return width;

@@ -1,16 +1,17 @@
 #include "Texture.hpp"
 #include <iostream>
 
-#include <stb/stbImage.h>
 #include <filesystem>
+#include <stb/stbImage.h>
 
 Texture::Texture(const std::string& path)
 {
 	stbi_set_flip_vertically_on_load(1);
 	int channels;
-  if(!std::filesystem::exists(path)){
-    std::cout << "Texture does not exist: " << path << "\n";
-  }
+	if (!std::filesystem::exists(path))
+	{
+		std::cout << "Texture does not exist: " << path << "\n";
+	}
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 	if (data == nullptr)
 	{
@@ -30,7 +31,16 @@ Texture::Texture(const std::string& path)
 
 Texture::~Texture()
 {
-	glDeleteTextures(1, &id);
+  del();
+}
+
+void Texture::del()
+{
+	if (width != 0)
+	{
+		glDeleteTextures(1, &id);
+		width = 0;
+	}
 }
 
 void Texture::bind()

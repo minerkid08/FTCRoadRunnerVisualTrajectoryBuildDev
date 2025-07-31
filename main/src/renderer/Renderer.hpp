@@ -24,6 +24,8 @@ class Renderer
   void drawNode(glm::vec3 pos, float heading, glm::vec4 color);
   void drawSegment(glm::vec2 start, glm::vec2 end, float z, float startTan, float endTan, glm::vec4 color);
 
+  void del();
+
   private:
 	glm::mat4 camMat;
 	GLuint va;

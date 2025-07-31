@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 #include "glm/trigonometric.hpp"
+#include "imgui/imgui.h"
 #include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -48,9 +49,18 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-	glDeleteBuffers(1, &vb);
-	glDeleteBuffers(1, &ib);
-	glDeleteVertexArrays(1, &va);
+	del();
+}
+
+void Renderer::del()
+{
+	if (shader == nullptr)
+	{
+		glDeleteBuffers(1, &vb);
+		glDeleteBuffers(1, &ib);
+		glDeleteVertexArrays(1, &va);
+		shader = nullptr;
+	}
 }
 
 void Renderer::draw(glm::vec4 verts[4], Texture* tex, Shader* shader, glm::vec4 tint)
@@ -90,7 +100,7 @@ void Renderer::drawNode(glm::vec3 pos, float heading, glm::vec4 color)
 
 void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startTan, float endTan, glm::vec4 color)
 {
-  endTan = endTan + 180.0f;
+	endTan = endTan + 180.0f;
 	// glm::vec2 dif = end - start;
 	// glm::vec2 dif2 = glm::normalize(dif);
 	// dif2 = {dif2.x / 40, dif2.y / 40};
@@ -100,7 +110,7 @@ void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startT
 
 	startTan = glm::radians(startTan);
 	endTan = glm::radians(endTan);
-	glm::vec2 ctrl1 = {sin(startTan) * ctrlNodeDist + start.x, cos(startTan) * ctrlNodeDist+ start.y};
+	glm::vec2 ctrl1 = {sin(startTan) * ctrlNodeDist + start.x, cos(startTan) * ctrlNodeDist + start.y};
 	glm::vec2 ctrl2 = {sin(endTan) * ctrlNodeDist + end.x, cos(endTan) * ctrlNodeDist + end.y};
 
 	glm::vec4 verts[6];
@@ -134,10 +144,10 @@ void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startT
 		verts[i + 1].x = lerp(xm, xn, l);
 		verts[i + 1].y = lerp(ym, yn, l);
 
-    float x2 = lerp(xm, xn, l + 0.001) - verts[i + 1].x;
-    float y2 = lerp(ym, yn, l + 0.001) - verts[i + 1].y;
+		float x2 = lerp(xm, xn, l + 0.001) - verts[i + 1].x;
+		float y2 = lerp(ym, yn, l + 0.001) - verts[i + 1].y;
 
-    float tangent = atan2(y2, x2);
+		float tangent = atan2(y2, x2);
 
 		verts[i + 1].x /= 72;
 		verts[i + 1].y /= 72;
@@ -154,7 +164,7 @@ void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startT
 		verts2[1] = {start.z + start.x, -start.w + start.y, z, 1};
 		verts2[2] = {-end.z + end.x, end.w + end.y, z, 1};
 		verts2[3] = {end.z + end.x, -end.w + end.y, z, 1};
-    draw(verts2, segmentTex, shader, color);
+		draw(verts2, segmentTex, shader, color);
 	}
 
 	// verts[0] = {dif2.y + start.x, -dif2.x + start.y, z, 1};

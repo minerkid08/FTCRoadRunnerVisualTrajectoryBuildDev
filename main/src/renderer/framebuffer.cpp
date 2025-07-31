@@ -8,10 +8,20 @@ FrameBuffer::FrameBuffer(const FrameBufferSpec& _spec)
 }
 FrameBuffer::~FrameBuffer()
 {
-	glDeleteFramebuffers(1, &id);
-	glDeleteTextures(1, &color);
-	glDeleteTextures(1, &depth);
+	del();
 }
+
+void FrameBuffer::del()
+{
+	if (id)
+	{
+		id = 0;
+		glDeleteFramebuffers(1, &id);
+		glDeleteTextures(1, &color);
+		glDeleteTextures(1, &depth);
+	}
+}
+
 void FrameBuffer::regen(const FrameBufferSpec& _spec)
 {
 	spec = _spec;

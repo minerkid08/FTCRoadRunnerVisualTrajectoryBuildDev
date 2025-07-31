@@ -4,6 +4,5 @@
   "out": "imgui.a",
   "build": [],
   "export": ["export"],
-  "libs": ["glfw", "glad"],
-  "autoBuild": false
+  "libs": ["glfw", "glad"]
 }

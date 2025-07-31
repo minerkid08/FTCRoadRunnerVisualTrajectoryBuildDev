@@ -12,6 +12,7 @@ class Shader
 	void setUniform(const std::string& name, float val);
 	void setUniform(const std::string& name, glm::vec2 val);
 	void setUniform(const std::string& name, glm::vec4 val);
+  void del();
 
   private:
 	int prgmId;

@@ -206,7 +206,7 @@ int main(int argc, char** argv)
 
 	double lastFrameTime = 0;
 	double lastUpdateTime = 0;
-	double fpsLimit = 1.0 / 60.0;
+	double fpsLimit = 1.0 / 30.0;
 
 	while (windowData.running)
 	{
@@ -249,6 +249,12 @@ int main(int argc, char** argv)
 
 	closeUi();
 
+  shader.del();
+	renderer.del();
+  tex.del();
+  nodeTex.del();
+  segTex.del();
+  framebuffer.del();
 	glfwDestroyWindow(window);
 	glfwTerminate();
 

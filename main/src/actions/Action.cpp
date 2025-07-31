@@ -55,19 +55,31 @@ void deleteAction(Action* action)
 		deleteActionList(action->actions);
 	if (action->type > ACTION_TRAJECTORY)
 		delete (std::vector<CustomActionField>*)action->data;
+
 	if (action->next != nullptr)
+	{
 		action->next->prev = action->prev;
+		if (action->prev == nullptr)
+		{
+			action->parrent->actions = action->next;
+		}
+	}
+
 	if (action->prev != nullptr)
 	{
 		action->prev->next = action->next;
-		action->parrent = action->next;
+		if (action->next == nullptr)
+		{
+			action->parrent->actions = action->prev;
+		}
 	}
+
 	if (action->next == nullptr && action->prev == nullptr)
 		action->parrent->actions = nullptr;
 	action->parrent = nullptr;
 	action->actions = nullptr;
-  if(global.currentAction == action)
-    global.currentAction = nullptr;
+	if (global.currentAction == action)
+		global.currentAction = nullptr;
 }
 
 void deleteActionList(Action* action)
@@ -139,7 +151,13 @@ void moveActionDown(Action* action)
 		return;
 
 	Action* action2 = action->next;
-	Action* temp;
+	Action* prev = action->prev;
+	Action* next = action2->next;
+
+  if(next != nullptr)
+	  next->prev = action;
+  if(prev != nullptr)
+	  prev->next= action2;
 
 	action->next = action2->next;
 	action2->prev = action->prev;
@@ -156,8 +174,13 @@ void moveActionUp(Action* action)
 		return;
 
 	Action* action2 = action->prev;
-	Action* temp;
+	Action* prev = action2->prev;
+	Action* next = action->next;
 
+  if(next != nullptr)
+	  next->prev = action2;
+  if(prev != nullptr)
+	  prev->next= action;
 	action2->next = action->next;
 	action->prev = action2->prev;
 	action->next = action2;
@@ -271,7 +294,7 @@ void confermAction()
 			delete data;
 			action->data = nullptr;
 		}
-    deleteAction(action);
+		deleteAction(action);
 	}
 	if (global.toChange.toDo == ToDo_ChangeType)
 	{
