@@ -11,7 +11,7 @@
 #include "renderer/Renderer.hpp"
 #include "renderer/Shader.hpp"
 #include "settings.hpp"
-#include "trajectories/NodeGrid.hpp"
+#include "trajectories/Trajectory.hpp"
 #include "ui/ui.hpp"
 
 #include <math.h>
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
 					if (global.currentAction)
 					{
 						if (global.currentAction->type == ACTION_TRAJECTORY)
-							((NodeGrid*)global.currentAction->data)
+							((Trajectory*)global.currentAction->data)
 								->mouseClick(mouseX, mouseY, data->framebuffer->spec.width, mods);
 					}
 				}

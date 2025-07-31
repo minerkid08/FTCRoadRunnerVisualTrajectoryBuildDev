@@ -4,7 +4,7 @@
 #include "imgui/imgui.h"
 #include <vector>
 
-void drawTrajectoryEditor(NodeGrid* grid)
+void drawTrajectoryEditor(Trajectory* grid)
 {
   if(grid == nullptr)
     return;

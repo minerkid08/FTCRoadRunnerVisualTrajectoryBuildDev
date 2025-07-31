@@ -3,7 +3,7 @@
 #include "actions/CustomAction.hpp"
 #include "global.hpp"
 #include "settings.hpp"
-#include "trajectories/NodeGrid.hpp"
+#include "trajectories/Trajectory.hpp"
 #include "trajectories/PathNode.hpp"
 #include "trajectories/PathSegment.hpp"
 #include "ui/ui.hpp"
@@ -18,7 +18,7 @@
 
 #define rot(a) (-(a) - 90)
 
-static bool exportTrajectory(NodeGrid* grid, std::string* string, int level, nlohmann::json& lang)
+static bool exportTrajectory(Trajectory* grid, std::string* string, int level, nlohmann::json& lang)
 {
 	uint8_t* segUsage = new uint8_t[grid->nodes.count];
 	memset(segUsage, 0, grid->nodes.count);

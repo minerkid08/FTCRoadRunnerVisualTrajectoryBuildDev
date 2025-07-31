@@ -155,6 +155,7 @@ static void drawFields(CustomActionDef& def, bool selected)
 	for (CustomActionField& field : def.fields)
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+								   ImGuiTreeNodeFlags_AllowOverlap |
 								   (i == selectedInd && selected ? ImGuiTreeNodeFlags_Selected : 0);
 		bool opened = ImGui::TreeNodeEx((void*)(i + 512), flags, "%s", field.name);
 		if (ImGui::IsItemClicked())
@@ -367,5 +368,5 @@ static void applyCustomFields(bool force)
 		if (found)
 			continue;
 	}
-  saveSettings();
+	saveSettings();
 }

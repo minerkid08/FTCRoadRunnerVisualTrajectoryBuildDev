@@ -1,6 +1,6 @@
 #include "Action.hpp"
 #include "global.hpp"
-#include "trajectories/NodeGrid.hpp"
+#include "trajectories/Trajectory.hpp"
 #include "ui/popup.hpp"
 #include <cstring>
 
@@ -220,7 +220,7 @@ void initCustomAction(Action* action)
 		else
 			fb->value = fa->value;
 	}
-	action->data = (NodeGrid*)data;
+	action->data = (Trajectory*)data;
 }
 
 void tryDelete(Action* action)
@@ -229,7 +229,7 @@ void tryDelete(Action* action)
 	global.toChange.toDo = ToDo_Delete;
 	if (action->type == ACTION_TRAJECTORY)
 	{
-		NodeGrid* traj = (NodeGrid*)action->data;
+		Trajectory* traj = (Trajectory*)action->data;
 		if (traj->nodes.count > 0)
 		{
 			openDeleteTrajectory();
@@ -254,7 +254,7 @@ void tryChangeType(Action* action, int newType)
 	global.toChange.arg = newType;
 	if (action->type == ACTION_TRAJECTORY)
 	{
-		NodeGrid* traj = (NodeGrid*)action->data;
+		Trajectory* traj = (Trajectory*)action->data;
 		if (traj->nodes.count > 0)
 		{
 			openChangeFromTrajectory();
@@ -317,7 +317,7 @@ void confermAction()
 		}
 		action->type = newtype;
 		if (newtype == ACTION_TRAJECTORY)
-			action->data = new NodeGrid();
+			action->data = new Trajectory();
 		else if (newtype > 2)
 			initCustomAction(action);
 	}

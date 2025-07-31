@@ -17,7 +17,7 @@ struct Selected
 	int type = 0;
 };
 
-class NodeGrid
+class Trajectory
 {
   public:
 	List<PathNode> nodes;
@@ -27,8 +27,8 @@ class NodeGrid
 	bool gridSnap = true;
 	bool visible = false;
 
-	NodeGrid();
-	~NodeGrid();
+	Trajectory();
+	~Trajectory();
 	void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods);
 	void mouseClick(int mouseX, int mouseY, int windowSize, int mods);
 

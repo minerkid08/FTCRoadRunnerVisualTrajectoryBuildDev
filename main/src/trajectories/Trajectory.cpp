@@ -1,19 +1,19 @@
-#include "NodeGrid.hpp"
+#include "Trajectory.hpp"
 #include "global.hpp"
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
 #define zoff(s) (s ? 0.1 : 0)
 
-NodeGrid::NodeGrid() : nodes(maxNodes), segs(maxSegs)
+Trajectory::Trajectory() : nodes(maxNodes), segs(maxSegs)
 {
 }
 
-NodeGrid::~NodeGrid()
+Trajectory::~Trajectory()
 {
 }
 
-void NodeGrid::render(Renderer& renderer, float a, float z, bool showSelected)
+void Trajectory::render(Renderer& renderer, float a, float z, bool showSelected)
 {
 	if (nodes.count > 1)
 	{
@@ -37,7 +37,7 @@ void NodeGrid::render(Renderer& renderer, float a, float z, bool showSelected)
 	}
 }
 
-void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods)
+void Trajectory::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods)
 {
 	if (selected.ind >= (selected.type == TypeNode ? nodes.count : segs.count))
 		selected.ind = nodes.count - 1;
@@ -64,7 +64,7 @@ void NodeGrid::update(Renderer& renderer, int mouseX, int mouseY, int windowSize
 	}
 }
 
-void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods)
+void Trajectory::mouseClick(int mouseX, int mouseY, int windowSize, int mods)
 {
 	float x = (mouseX - (float)(windowSize / 2)) / (windowSize / 2) * 72;
 	float y = (mouseY - (float)(windowSize / 2)) / (windowSize / 2) * 72;
@@ -143,13 +143,13 @@ void NodeGrid::mouseClick(int mouseX, int mouseY, int windowSize, int mods)
 	}
 }
 
-void NodeGrid::resetNode(int ind)
+void Trajectory::resetNode(int ind)
 {
 	PathNode* node = nodes.get(ind);
 	node->heading = 0;
 }
 
-void NodeGrid::flipVert()
+void Trajectory::flipVert()
 {
 	nodes.foreach ([](int ind, PathNode* node) {
 		node->pos.y *= -1;
@@ -159,7 +159,7 @@ void NodeGrid::flipVert()
 	});
 }
 
-void NodeGrid::flipHoriz()
+void Trajectory::flipHoriz()
 {
 	nodes.foreach ([](int ind, PathNode* node) {
 		node->pos.x *= -1;
@@ -167,7 +167,7 @@ void NodeGrid::flipHoriz()
 	});
 }
 
-void NodeGrid::reset()
+void Trajectory::reset()
 {
 	nodes.count = 0;
 	segs.count = 0;

@@ -2,7 +2,7 @@
 #include "actions/Action.hpp"
 #include "actions/CustomAction.hpp"
 #include "global.hpp"
-#include "trajectories/NodeGrid.hpp"
+#include "trajectories/Trajectory.hpp"
 #include "ui/ui.hpp"
 
 #include <fstream>
@@ -25,7 +25,7 @@ static int indexOfAction(const Action* action)
 void save(const std::string& filename)
 {
 	clearMsg();
-	std::vector<NodeGrid*> trajectories;
+	std::vector<Trajectory*> trajectories;
 	nlohmann::json json;
 	json["actions"] = {};
 	json["trajectories"] = {};
@@ -69,7 +69,7 @@ void save(const std::string& filename)
 		i++;
 	}
 	i = 0;
-	for (NodeGrid* trajectory : trajectories)
+	for (Trajectory* trajectory : trajectories)
 	{
 		nlohmann::json& j = json["trajectories"][i];
 		j["nodes"] = {};
@@ -159,9 +159,9 @@ void save(const std::string& filename)
 		return;                                                                                                        \
 	}
 
-NodeGrid* parseTrajectory(const nlohmann::json& json, int ind)
+Trajectory* parseTrajectory(const nlohmann::json& json, int ind)
 {
-	NodeGrid* grid = new NodeGrid();
+	Trajectory* grid = new Trajectory();
 	const nlohmann::json& traj = json[ind];
 	typeCheck(traj, "nodes", is_array, grid);
 	typeCheck(traj, "segments", is_array, grid);

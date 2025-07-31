@@ -1,6 +1,6 @@
 #pragma once
 
-#include "trajectories/NodeGrid.hpp"
+#include "trajectories/Trajectory.hpp"
 
 #define ActionFlags_Deleted 1
 
@@ -13,7 +13,7 @@ struct Action
 	int type = 0;
   char flags = 0;
   unsigned long long id = 0;
-  NodeGrid* data = nullptr;
+  Trajectory* data = nullptr;
   int dataSize;
 
   Action* next = nullptr;

@@ -1,5 +1,5 @@
 #include "actions/Action.hpp"
-#include "trajectories/NodeGrid.hpp"
+#include "trajectories/Trajectory.hpp"
 #include "ui.hpp"
 
 #include "global.hpp"
@@ -10,15 +10,16 @@
 static void drawAction(Action* action)
 {
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
-							   ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_DrawLinesFull |
-							   (action == global.currentAction ? ImGuiTreeNodeFlags_Selected : 0);
+							   ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_DrawLinesFull;
 	if (action->type > 1)
 		flags |= ImGuiTreeNodeFlags_Bullet;
+	if (action == global.currentAction)
+		flags |= ImGuiTreeNodeFlags_Selected;
 
 	bool opened;
 	if (action->type == ACTION_TRAJECTORY)
 	{
-		NodeGrid* grid = action->data;
+		Trajectory* grid = action->data;
 		if (grid->visible)
 			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 120, 255, 255));
 		opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);

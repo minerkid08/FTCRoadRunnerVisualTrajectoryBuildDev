@@ -153,6 +153,7 @@ void renderUi(FrameBuffer& framebuffer)
 	drawActionEditor();
 	drawActionList();
 	drawSettingsMenu();
+  drawAboutWindow();
 
 	if (global.explorerMode)
 	{
@@ -204,6 +205,8 @@ void drawMenuBar()
 		std::cout << "get gud\n";
 	if (ImGui::MenuItem("settings"))
 		openSettings();
+	if (ImGui::MenuItem("about"))
+		openAboutWindow();
 
 	ImGui::Separator();
 
