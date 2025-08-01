@@ -6,7 +6,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <nlohmann/json.hpp>
+#include <json/json.hpp>
 #include <vector>
 
 extern std::vector<CustomActionDef> settingsActions;
@@ -72,9 +72,9 @@ void loadSettings()
 					int max = field["max"];
 					f.rangeChecks = field["rangeChecks"];
 					int v = field["value"];
-					f.value = (void*)v;
-					f.min = (void*)min;
-					f.max = (void*)max;
+					f.value.i = v;
+					f.min.i = min;
+					f.max.i = max;
 					break;
 				}
 				case FIELDTYPE_DOUBLE: {
@@ -82,20 +82,20 @@ void loadSettings()
 					float max = field["max"];
 					float v = field["value"];
 					f.rangeChecks = field["rangeChecks"];
-					f.value = *(void**)&v;
-					f.min = *(void**)&min;
-					f.max = *(void**)&max;
+					f.value.f = v;
+					f.min.f = min;
+					f.max.f = max;
 					break;
 				}
 				case FIELDTYPE_BOOL: {
 					bool v = field["value"];
-					f.value = (void*)v;
+					f.value.b = v;
 					break;
 				}
 				case FIELDTYPE_STRING: {
 					std::string v = field["value"];
-					f.value = malloc(64);
-					strcpy((char*)f.value, v.c_str());
+					f.value.s = (char*)malloc(64);
+					strcpy(f.value.s, v.c_str());
 					break;
 				}
 				}
@@ -173,22 +173,22 @@ void saveSettings()
 			switch (f.type)
 			{
 			case FIELDTYPE_INT:
-				fields[j]["min"] = *(int*)&f.min;
-				fields[j]["max"] = *(int*)&f.max;
+				fields[j]["min"] = f.min.i;
+				fields[j]["max"] = f.max.i;
 				fields[j]["rangeChecks"] = f.rangeChecks;
-				fields[j]["value"] = *(int*)&f.value;
+				fields[j]["value"] = f.value.i;
 				break;
 			case FIELDTYPE_DOUBLE:
-				fields[j]["min"] = *(float*)&f.min;
-				fields[j]["max"] = *(float*)&f.max;
+				fields[j]["min"] = f.min.f;
+				fields[j]["max"] = f.max.f;
 				fields[j]["rangeChecks"] = f.rangeChecks;
-				fields[j]["value"] = *(float*)&f.value;
+				fields[j]["value"] = f.value.f;
 				break;
 			case FIELDTYPE_BOOL:
-				fields[j]["value"] = *(bool*)&f.value;
+				fields[j]["value"] = f.value.b;
 				break;
 			case FIELDTYPE_STRING:
-				fields[j]["value"] = (char*)f.value;
+				fields[j]["value"] = f.value.s;
 				break;
 			}
 		}

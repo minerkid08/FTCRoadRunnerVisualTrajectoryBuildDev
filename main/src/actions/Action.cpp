@@ -214,8 +214,8 @@ void initCustomAction(Action* action)
 
 		if (fa->type == FIELDTYPE_STRING)
 		{
-			fb->value = malloc(64);
-			strcpy((char*)fb->value, (char*)fa->value);
+			fb->value.s = (char*)malloc(64);
+			strcpy(fb->value.s, fa->value.s);
 		}
 		else
 			fb->value = fa->value;

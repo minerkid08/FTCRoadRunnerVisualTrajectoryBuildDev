@@ -9,10 +9,10 @@ CustomActionField::CustomActionField()
 	name = (char*)malloc(64);
 	strcpy(name, "new field");
 	type = FIELDTYPE_INT;
-	value = 0;
+	value.i = 0;
 	rangeChecks = false;
-	min = (int*)0;
-	max = (int*)10;
+	min.i = 0;
+	max.i = 10;
 }
 
 CustomActionField::CustomActionField(const CustomActionField& other)
@@ -25,8 +25,8 @@ CustomActionField::CustomActionField(const CustomActionField& other)
 	max = other.max;
 	if (type == FIELDTYPE_STRING)
 	{
-		value = (char*)malloc(64);
-		strcpy((char*)value, (char*)other.value);
+		value.s = (char*)malloc(64);
+		strcpy(value.s, other.value.s);
 	}
 	else
 		value = other.value;
@@ -49,12 +49,12 @@ CustomActionField& CustomActionField::operator=(const CustomActionField& other)
 		value = other.value;
 	else if (other.type == FIELDTYPE_STRING)
 	{
-		value = (char*)malloc(64);
-		strcpy((char*)value, (char*)other.value);
+		value.s = (char*)malloc(64);
+		strcpy(value.s, other.value.s);
 	}
 	else if (type == FIELDTYPE_STRING)
 	{
-		free(value);
+		free(value.s);
 		value = other.value;
 	}
 	else
@@ -71,7 +71,7 @@ CustomActionField::~CustomActionField()
 {
 	free(name);
 	if (type == FIELDTYPE_STRING)
-		free(value);
+		free(value.s);
 }
 
 void CustomActionField::reload(const CustomActionField& def)
@@ -85,12 +85,12 @@ void CustomActionField::reload(const CustomActionField& def)
 		return;
 
 	if (type == FIELDTYPE_STRING)
-		free(value);
+		free(value.s);
 
 	if (def.type == FIELDTYPE_STRING)
 	{
-		value = malloc(64);
-		strcpy((char*)value, (char*)def.value);
+		value.s = (char*)malloc(64);
+		strcpy(value.s, def.value.s);
 	}
 	else
 		value = def.value;

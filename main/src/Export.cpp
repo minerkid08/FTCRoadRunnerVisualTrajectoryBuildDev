@@ -166,16 +166,16 @@ static void intExportAction(const Action* action, std::string* string, int level
 				switch (f.type)
 				{
 				case FIELDTYPE_INT:
-					args += format(actionLang["int"], *(int*)&f.value);
+					args += format(actionLang["int"], f.value.i);
 					break;
 				case FIELDTYPE_DOUBLE:
-					args += format(actionLang["double"], *(float*)&f.value);
+					args += format(actionLang["double"], f.value.f);
 					break;
 				case FIELDTYPE_BOOL:
-					args += format(actionLang["bool"], f.value ? "true" : "false");
+					args += format(actionLang["bool"], f.value.b ? "true" : "false");
 					break;
 				case FIELDTYPE_STRING:
-					args += format(actionLang["string"], (char*)f.value);
+					args += format(actionLang["string"], f.value.s);
 					break;
 				}
 				if (l < data->size() - 1)

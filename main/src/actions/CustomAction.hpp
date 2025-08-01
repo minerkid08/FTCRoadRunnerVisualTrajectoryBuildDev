@@ -7,16 +7,24 @@
 #define FIELDTYPE_BOOL 2
 #define FIELDTYPE_STRING 3
 
+union Value 
+{
+  int i;
+  float f;
+  bool b;
+  char* s;
+};
+
 struct CustomActionField
 {
 	int type;
 	char* name;
-	void* value;
+	Value value;
 
 	bool rangeChecks = false;
-	void* min = 0;
-	void* max = (void*)10;
-	void* step = (void*)1;
+	Value min;
+	Value max;
+	Value step;
 
 	CustomActionField();
 	CustomActionField(const CustomActionField& other);

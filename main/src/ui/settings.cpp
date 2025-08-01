@@ -201,39 +201,39 @@ static void drawFields(CustomActionDef& def, bool selected)
 				if (oldValue != field.type)
 				{
 					if (oldValue == FIELDTYPE_STRING)
-						free(field.value);
-					field.value = 0;
+						free(field.value.s);
+					field.value.i = 0;
 					if (field.type == FIELDTYPE_STRING)
 					{
-						field.value = malloc(64);
-						strcpy((char*)field.value, "");
+						field.value.s = (char*)malloc(64);
+						strcpy(field.value.s, "");
 					}
 				}
 			}
 			switch (field.type)
 			{
 			case FIELDTYPE_STRING:
-				ImGui::InputText("default value", (char*)field.value, 64);
+				ImGui::InputText("default value", field.value.s, 64);
 				break;
 			case FIELDTYPE_INT:
-				ImGui::InputInt("default value", (int*)&field.value);
+				ImGui::InputInt("default value", &field.value.i);
 				ImGui::Checkbox("min/max", &field.rangeChecks);
 
 				ImGui::BeginDisabled(!field.rangeChecks);
-				ImGui::InputInt("min value", (int*)&field.min);
-				ImGui::InputInt("max value", (int*)&field.max);
+				ImGui::InputInt("min value", &field.min.i);
+				ImGui::InputInt("max value", &field.max.i);
 				ImGui::EndDisabled();
 				break;
 			case FIELDTYPE_BOOL:
-				ImGui::Checkbox("default value", (bool*)&field.value);
+				ImGui::Checkbox("default value", &field.value.b);
 				break;
 			case FIELDTYPE_DOUBLE:
-				ImGui::InputFloat("default value", (float*)&field.value);
+				ImGui::InputFloat("default value", &field.value.f);
 				ImGui::Checkbox("min/max", &field.rangeChecks);
 
 				ImGui::BeginDisabled(!field.rangeChecks);
-				ImGui::InputFloat("min value", (float*)&field.min);
-				ImGui::InputFloat("max value", (float*)&field.max);
+				ImGui::InputFloat("min value", &field.min.f);
+				ImGui::InputFloat("max value", &field.max.f);
 				ImGui::EndDisabled();
 				break;
 			}

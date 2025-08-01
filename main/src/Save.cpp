@@ -52,16 +52,16 @@ void save(const std::string& filename)
 				switch (f.type)
 				{
 				case FIELDTYPE_INT:
-					j["fields"][f.name] = *(int*)&f.value;
+					j["fields"][f.name] = f.value.i;
 					break;
 				case FIELDTYPE_DOUBLE:
-					j["fields"][f.name] = *(float*)&f.value;
+					j["fields"][f.name] = f.value.f;
 					break;
 				case FIELDTYPE_BOOL:
-					j["fields"][f.name] = *(bool*)&f.value;
+					j["fields"][f.name] = f.value.b;
 					break;
 				case FIELDTYPE_STRING:
-					j["fields"][f.name] = (char*)f.value;
+					j["fields"][f.name] = f.value.s;
 					break;
 				}
 			}
@@ -214,27 +214,27 @@ Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectory
 			switch (field.type)
 			{
 			case FIELDTYPE_INT: {
-				long long v;
+				int v;
 				tryGet(node["fields"], field.name, is_number, v, action);
-				field.value = (void*)v;
+				field.value.i = v;
 				break;
 			}
 			case FIELDTYPE_DOUBLE: {
 				float v;
 				tryGet(node["fields"], field.name, is_number, v, action);
-				field.value = *(void**)&v;
+				field.value.f = v;
 				break;
 			}
 			case FIELDTYPE_BOOL: {
 				bool v;
 				tryGet(node["fields"], field.name, is_boolean, v, action);
-				field.value = (void*)v;
+				field.value.b = v;
 				break;
 			}
 			case FIELDTYPE_STRING: {
 				std::string v;
 				tryGet(node["fields"], field.name, is_string, v, action);
-				strcpy((char*)field.value, v.c_str());
+				strcpy(field.value.s, v.c_str());
 				break;
 			}
 			}

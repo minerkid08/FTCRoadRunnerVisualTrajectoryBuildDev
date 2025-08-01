@@ -1,7 +1,6 @@
 #include <cstring>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
-#include <glob.h>
 #include <iostream>
 
 #include "actions/Action.hpp"
