@@ -5,5 +5,9 @@
   "build": [],
   "export": ["src/export"],
   "include": ["src/export"],
-  "autoBuild": false
+  "linkArgs": ["-lglfw"],
+  "autoBuild": false,
+  "windows": {
+    "linkArgs": ["-L. -lglfw3"]
+  }
 }

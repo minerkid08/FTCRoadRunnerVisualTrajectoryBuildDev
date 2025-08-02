@@ -3,7 +3,6 @@
 	"build": [],
 	"type": "program",
 	"out": "trajectoryBuilder",
-  "linkArgs": ["-lglfw"],
   "libs": ["imgui", "glfw", "glad", "stb", "glm", "json"],
   "targetArgs": {
     "debug": "-DDEBUG"
