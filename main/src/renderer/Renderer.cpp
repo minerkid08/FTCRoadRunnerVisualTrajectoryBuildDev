@@ -21,11 +21,11 @@ static glm::vec2 uv[4] = {
 Renderer::Renderer()
 {
 	// va
-	glCreateVertexArrays(1, &va);
+	glGenVertexArrays(1, &va);
 	glBindVertexArray(va);
 
 	// vb
-	glCreateBuffers(1, &vb);
+	glGenBuffers(1, &vb);
 	glBindBuffer(GL_ARRAY_BUFFER, vb);
 
 	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
@@ -40,7 +40,7 @@ Renderer::Renderer()
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 4));
 
 	// ib
-	glCreateBuffers(1, &ib);
+	glGenBuffers(1, &ib);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(inds), inds, GL_STATIC_DRAW);
 

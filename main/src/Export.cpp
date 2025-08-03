@@ -94,7 +94,7 @@ static bool exportTrajectory(Trajectory* grid, std::string* string, int level, n
 			level--;
 	}
 
-	*string += format(actionLang["start"], node->pos.x, node->pos.y, rot(node->heading));
+	*string += format2(actionLang["start"], node->pos.x, node->pos.y, rot(node->heading));
 	*string += '\n';
 	for (int i = 0; i < segments.size(); i++)
 	{
@@ -102,25 +102,25 @@ static bool exportTrajectory(Trajectory* grid, std::string* string, int level, n
 		node = grid->nodes.get(seg->endNode);
 		for (int j = 0; j < level; j++)
 			*string += '\t';
-		*string += format(actionLang["setTangent"], rot(seg->startTan));
+		*string += format2(actionLang["setTangent"], rot(seg->startTan));
 		*string += '\n';
 		for (int j = 0; j < level; j++)
 			*string += '\t';
 
 		if (seg->headingMode == 0)
 		{
-			*string += format(actionLang["splineTo"], node->pos.x, node->pos.y, rot(seg->endTan + 180));
+			*string += format2(actionLang["splineTo"], node->pos.x, node->pos.y, rot(seg->endTan + 180));
 			*string += '\n';
 		}
 		if (seg->headingMode == 1)
 		{
-			*string += format(actionLang["splineToLinearHeading"], node->pos.x, node->pos.y, rot(node->heading),
+			*string += format2(actionLang["splineToLinearHeading"], node->pos.x, node->pos.y, rot(node->heading),
 							  rot(seg->endTan + 180));
 			*string += '\n';
 		}
 		if (seg->headingMode == 2)
 		{
-			*string += format(actionLang["splineToConstantHeading"], node->pos.x, node->pos.y, rot(seg->endTan + 180));
+			*string += format2(actionLang["splineToConstantHeading"], node->pos.x, node->pos.y, rot(seg->endTan + 180));
 			*string += '\n';
 		}
 	}
@@ -166,23 +166,23 @@ static void intExportAction(const Action* action, std::string* string, int level
 				switch (f.type)
 				{
 				case FIELDTYPE_INT:
-					args += format(actionLang["int"], f.value.i);
+					args += format2(actionLang["int"], f.value.i);
 					break;
 				case FIELDTYPE_DOUBLE:
-					args += format(actionLang["double"], f.value.f);
+					args += format2(actionLang["double"], f.value.f);
 					break;
 				case FIELDTYPE_BOOL:
-					args += format(actionLang["bool"], f.value.b ? "true" : "false");
+					args += format2(actionLang["bool"], f.value.b ? "true" : "false");
 					break;
 				case FIELDTYPE_STRING:
-					args += format(actionLang["string"], f.value.s);
+					args += format2(actionLang["string"], f.value.s);
 					break;
 				}
 				if (l < data->size() - 1)
 					args += ", ";
 				l++;
 			}
-			*string += format(lang["custom-action"]["format"], global.actionTypes[a->type], args.c_str());
+			*string += format2(lang["custom-action"]["format"], global.actionTypes[a->type], args.c_str());
 		}
 		else
 		{
@@ -231,7 +231,7 @@ void exportAction(const Action* action)
   clearMsg();
 	std::string out;
 
-	std::ifstream langIfStream(format("lang/%s.json", global.languages[settings.language]));
+	std::ifstream langIfStream(format2("lang/%s.json", global.languages[settings.language]));
 	std::stringstream langSstream;
 	langSstream << langIfStream.rdbuf();
 	nlohmann::json lang = nlohmann::json::parse(langSstream.str());

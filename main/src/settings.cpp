@@ -8,6 +8,7 @@
 #include <fstream>
 #include <json/json.hpp>
 #include <vector>
+#include <sstream>
 
 extern std::vector<CustomActionDef> settingsActions;
 
