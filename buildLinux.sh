@@ -1,1 +1,1 @@
-g++ -Iimgui/export -Iglad/include -Imain/src -Istb/export -Iglm/export -Ijson/export -Iglfw/export imgui/src/*.cpp glad/src/*.c main/src/*.cpp main/src/renderer/*.cpp main/src/ui/*.cpp main/src/actions/*.cpp main/src/trajectories/*.cpp -o trajectoryBuilder -lglfw
+g++ -Iimgui/export -Iglad/src/export -Imain/src -Istb/export -Iglm/export -Ijson/export -Iglfw/export imgui/src/*.cpp glad/src/*.c main/src/*.cpp main/src/renderer/*.cpp main/src/ui/*.cpp main/src/actions/*.cpp main/src/trajectories/*.cpp -o trajectoryBuilder -lglfw

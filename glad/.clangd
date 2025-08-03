@@ -1,5 +1,5 @@
 CompileFlags:
   Add: [
-    -ID:\FTCRoadRunnerVisualTrajectoryBuilderDev\glad\src,
-    -ID:\FTCRoadRunnerVisualTrajectoryBuilderDev\glad\src/export
+    -I/home/minerkid08/cppgames/FTCRoadRunnerVisualTrajectoryBuildDev/./glad/src,
+    -I/home/minerkid08/cppgames/FTCRoadRunnerVisualTrajectoryBuildDev/./glad/src/export
 ]
