@@ -1,7 +1,7 @@
-#include <cstring>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <iostream>
+#include <cstring>
 
 #include "actions/Action.hpp"
 #include "global.hpp"

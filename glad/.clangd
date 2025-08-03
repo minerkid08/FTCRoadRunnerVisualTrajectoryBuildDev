@@ -1,0 +1,5 @@
+CompileFlags:
+  Add: [
+    -ID:\FTCRoadRunnerVisualTrajectoryBuilderDev\glad\src,
+    -ID:\FTCRoadRunnerVisualTrajectoryBuilderDev\glad\src/export
+]
