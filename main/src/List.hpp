@@ -13,7 +13,7 @@ template <typename T> class List
 	}
 	~List()
 	{
-		delete arr;
+		delete[] arr;
 	}
 
 	T* add()
@@ -31,7 +31,13 @@ template <typename T> class List
 		}
 		count--;
 	}
+  
 	T* get(int ind)
+	{
+		return &(arr[ind]);
+	}
+
+	const T* get(int ind) const
 	{
 		return &(arr[ind]);
 	}

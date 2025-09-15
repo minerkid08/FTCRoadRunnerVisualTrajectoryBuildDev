@@ -1,13 +1,31 @@
+#include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include "glm/trigonometric.hpp"
+#include "preview.hpp"
+#include "trajectories/TrajectoryPedro.hpp"
 #include "ui.hpp"
 
 #include "imgui/imgui.h"
 #include <vector>
 
-void drawTrajectoryEditor(Trajectory* grid)
+void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 {
-  if(grid == nullptr)
-    return;
+	if (grid == nullptr)
+		return;
+
+	if (ImGui::TreeNode("RobotPreview"))
+	{
+		ImGui::Checkbox("active", &preview.active);
+		if (!preview.active)
+			ImGui::BeginDisabled();
+		ImGui::SliderFloat("t", &preview.t, 0, 1);
+		ImGui::Text("robot position: x %.2f, y %.2f, h %.2f", preview.curPos.x, preview.curPos.y,
+					glm::degrees(preview.curPos.z));
+		if (!preview.active)
+			ImGui::EndDisabled();
+		ImGui::TreePop();
+	}
+
 	if (ImGui::Button("flipHoriz"))
 		grid->flipHoriz();
 	ImGui::SameLine();
@@ -49,7 +67,7 @@ void drawTrajectoryEditor(Trajectory* grid)
 	{
 		for (int i = 0; i < grid->nodes.count; i++)
 		{
-			PathNode* node = grid->nodes.get(i);
+			PedroPathing::PathNode* node = grid->nodes.get(i);
 
 			ImVec4 tint(0.25f, 0.25f, 0.25f, 1);
 			if (grid->selected.ind == i && grid->selected.type == TypeNode)
@@ -80,7 +98,7 @@ void drawTrajectoryEditor(Trajectory* grid)
 	{
 		for (int i = 0; i < grid->segs.count; i++)
 		{
-			PathSegment* seg = grid->segs.get(i);
+			PedroPathing::PathSegment* seg = grid->segs.get(i);
 
 			ImVec4 tint(0.25f, 0.25f, 0.25f, 1);
 			if (grid->selected.ind == i && grid->selected.type == TypeSegment)
@@ -112,7 +130,7 @@ void drawTrajectoryEditor(Trajectory* grid)
 	{
 		if (grid->selected.ind > -1 && grid->selected.ind < grid->nodes.count)
 		{
-			PathNode* node = grid->nodes.get(grid->selected.ind);
+			PedroPathing::PathNode* node = grid->nodes.get(grid->selected.ind);
 			ImGui::Text("node: %d", grid->selected.ind);
 			if (ImGui::Button("remove"))
 			{
@@ -120,7 +138,7 @@ void drawTrajectoryEditor(Trajectory* grid)
 				std::vector<int> toRemove;
 				for (int i = 0; i < grid->segs.count; i++)
 				{
-					PathSegment* seg = grid->segs.get(i);
+					PedroPathing::PathSegment* seg = grid->segs.get(i);
 					if (seg->startNode == grid->selected.ind || seg->endNode == grid->selected.ind)
 						toRemove.push_back(i);
 					if (seg->startNode > grid->selected.ind)
@@ -141,9 +159,16 @@ void drawTrajectoryEditor(Trajectory* grid)
 	{
 		if (grid->selected.ind > -1 && grid->selected.ind < grid->segs.count)
 		{
-			PathSegment* seg = grid->segs.get(grid->selected.ind);
+			PedroPathing::PathSegment* seg = grid->segs.get(grid->selected.ind);
+			PedroPathing::PathNode* startNode = grid->nodes.get(seg->startNode);
+			PedroPathing::PathNode* endNode = grid->nodes.get(seg->endNode);
+			List<glm::vec2>* ctrlPts = &seg->controlPoints;
+
+			*ctrlPts->get(0) = startNode->pos;
+			*ctrlPts->get(ctrlPts->count - 1) = endNode->pos;
+
 			ImGui::Text("segment: %d", grid->selected.ind);
-			if (ImGui::Button("remove"))
+			if (ImGui::Button("remove##X"))
 				grid->segs.remove(grid->selected.ind);
 			static const char* headingModes[] = {"none", "linear", "constant", nullptr};
 
@@ -156,8 +181,33 @@ void drawTrajectoryEditor(Trajectory* grid)
 				}
 				ImGui::EndCombo();
 			}
-			ImGui::InputFloat("start tangent", &seg->startTan);
-			ImGui::InputFloat("end tangent", &seg->endTan);
+			ImGui::SeparatorText("control points");
+			if (ImGui::Button("add"))
+			{
+				glm::vec2* newPoint = ctrlPts->get(ctrlPts->count - 1);
+				glm::vec2* endPoint = ctrlPts->add();
+				if (endPoint != nullptr)
+				{
+					*endPoint = *newPoint;
+					*newPoint = {0, 0};
+				}
+			}
+			if (ImGui::Button("remove"))
+			{
+				glm::vec2* oldPoint = ctrlPts->get(ctrlPts->count - 1);
+				glm::vec2* endPoint = ctrlPts->get(ctrlPts->count - 2);
+				*endPoint = *oldPoint;
+				ctrlPts->count--;
+			}
+			if (ctrlPts->count > 2)
+			{
+				for (int i = 1; i < ctrlPts->count - 1; i++)
+				{
+					ImGui::PushID(i);
+					ImGui::InputFloat2("", glm::value_ptr(*ctrlPts->get(i)));
+					ImGui::PopID();
+				}
+			}
 		}
 	}
 }

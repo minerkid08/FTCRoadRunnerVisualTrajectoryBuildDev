@@ -1,8 +1,13 @@
+#include "actions/Action.hpp"
+#include "trajectories/TrajectoryPedro.hpp"
+#include "trajectories/TrajectoryRR.hpp"
 #include "ui.hpp"
 
 #include "actions/CustomAction.hpp"
 #include "global.hpp"
+#include "projectSettings.hpp"
 #include "settings.hpp"
+#include "preview.hpp"
 
 #include "imgui/imgui.h"
 #include <cstring>
@@ -20,6 +25,7 @@ static void applyCustomFields(bool force = false);
 
 static std::string usedAction;
 
+static int trajectoryType;
 void drawSettingsMenu()
 {
 	if (open)
@@ -30,106 +36,160 @@ void drawSettingsMenu()
 			saveSettings();
 		}
 
-		ImGui::SeparatorText("export");
-		ImGui::InputText("save path", settings.savePath, 512);
-		ImGui::InputText("export path", settings.exportPath, 512);
-		ImGui::Combo("export language", &settings.language, global.languageStr);
-		ImGui::SeparatorText("trajectories");
-		ImGui::SliderFloat("trajectory alpha", &settings.trajectoryOpac, 0.0f, 1.0f);
-
-		ImGui::SeparatorText("custom actions");
-
-		if (ImGui::Button("add"))
-			settingsActions.emplace_back();
-
-		static int selectedInd = 0;
-
-		unsigned long long i = 0;
-
-		for (CustomActionDef& def : settingsActions)
+		if (ImGui::BeginTabBar("tab bar"))
 		{
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
-									   ImGuiTreeNodeFlags_AllowOverlap |
-									   (i == selectedInd ? ImGuiTreeNodeFlags_Selected : 0);
-			bool opened = ImGui::TreeNodeEx((void*)i, flags, "%s", def.name);
-			if (ImGui::IsItemClicked())
-				selectedInd = i;
-
-			if (selectedInd == i)
+			if (ImGui::BeginTabItem("project settings"))
 			{
-				ImVec2 size = ImGui::GetItemRectSize();
-				ImGui::SameLine();
-				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 0));
-				if (ImGui::Button("^", ImVec2(size.y, size.y)))
+				ImGui::SeparatorText("trajectories");
+				if (ImGui::Combo("trajectory type", &projectSettings.pathType, "Pedro Pathing\0Road Runner\0"))
 				{
-					if (i > 0)
-					{
-						CustomActionDef a = settingsActions[i];
-						settingsActions[i] = settingsActions[i - 1];
-						settingsActions[i - 1] = a;
-						selectedInd--;
-					}
+					trajectoryType = projectSettings.pathType == 1 ? 0 : 1;
+					ImGui::OpenPopup("change trajectory type");
+					projectSettings.pathType = trajectoryType;
 				}
-				ImGui::SameLine();
-				if (ImGui::Button("v", ImVec2(size.y, size.y)))
+				ImGui::SeparatorText("robot preview");
+        ImGui::InputFloat("robot size x", &preview.sizeX);
+        ImGui::InputFloat("robot size y", &preview.sizeY);
+				ImGui::SeparatorText("custom actions");
+				if (ImGui::Button("add"))
+					settingsActions.emplace_back();
+
+				static int selectedInd = 0;
+
+				unsigned long long i = 0;
+
+				for (CustomActionDef& def : settingsActions)
 				{
-					if (i < settingsActions.size() - 1)
+					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+											   ImGuiTreeNodeFlags_AllowOverlap |
+											   (i == selectedInd ? ImGuiTreeNodeFlags_Selected : 0);
+					bool opened = ImGui::TreeNodeEx((void*)i, flags, "%s", def.name);
+					if (ImGui::IsItemClicked())
+						selectedInd = i;
+
+					if (selectedInd == i)
 					{
-						CustomActionDef a = settingsActions[i];
+						ImVec2 size = ImGui::GetItemRectSize();
+						ImGui::SameLine();
+						ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(6, 0));
+						if (ImGui::Button("^", ImVec2(size.y, size.y)))
+						{
+							if (i > 0)
+							{
+								CustomActionDef a = settingsActions[i];
+								settingsActions[i] = settingsActions[i - 1];
+								settingsActions[i - 1] = a;
+								selectedInd--;
+							}
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("v", ImVec2(size.y, size.y)))
+						{
+							if (i < settingsActions.size() - 1)
+							{
+								CustomActionDef a = settingsActions[i];
+								settingsActions[i] = settingsActions[i + 1];
+								settingsActions[i + 1] = a;
+								selectedInd++;
+							}
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("x", ImVec2(size.y, size.y)))
+							toRemove = i;
+						ImGui::PopStyleVar();
+					}
+					if (opened)
+					{
+						ImGui::InputText("name", def.name, 64);
+
+						drawFields(def, i == selectedInd);
+
+						ImGui::TreePop();
+					}
+					i++;
+				}
+
+				if (ImGui::Button("apply"))
+				{
+					applyCustomFields();
+				}
+
+				if (ImGui::BeginPopupModal("change trajectory type"))
+				{
+					ImGui::Text("Changing the trajectory type will clear all trajectories");
+					ImGui::Text("Are you sure you want to continue.");
+					if (ImGui::Button("confirm"))
+					{
+						for (Action* action : global.actions)
+						{
+							if (action->type == ACTION_TRAJECTORY)
+							{
+								if (trajectoryType == Trajectory_Pedro)
+								{
+									delete (PedroPathing::TrajectoryPedro*)action->data;
+									action->data = new RoadRunner::TrajectoryRR();
+								}
+								else if (trajectoryType == Trajectory_RR)
+								{
+									delete (RoadRunner::TrajectoryRR*)action->data;
+									action->data = new PedroPathing::TrajectoryPedro();
+								}
+							}
+						}
+						if (projectSettings.pathType == Trajectory_Pedro)
+							projectSettings.pathType = Trajectory_RR;
+						else if (projectSettings.pathType == Trajectory_RR)
+							projectSettings.pathType = Trajectory_Pedro;
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("cancel"))
+					{
+						projectSettings.pathType = trajectoryType;
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginPopupModal("apply removing used trajectory"))
+				{
+					ImGui::Text("Applying changes will delete an with a type '%s'", usedAction.c_str());
+					ImGui::Text("Are you sure you want to continue.");
+					if (ImGui::Button("confirm"))
+					{
+						applyCustomFields(true);
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("cancel"))
+						ImGui::CloseCurrentPopup();
+					ImGui::EndPopup();
+				}
+				if (toRemove != -1)
+				{
+					CustomActionDef& def = settingsActions[toRemove];
+
+					for (int i = toRemove; i < settingsActions.size() - 1; i++)
 						settingsActions[i] = settingsActions[i + 1];
-						settingsActions[i + 1] = a;
-						selectedInd++;
-					}
+					settingsActions.resize(i - 1);
+					if (i >= toRemove)
+						selectedInd--;
+					toRemove = -1;
 				}
-				ImGui::SameLine();
-				if (ImGui::Button("x", ImVec2(size.y, size.y)))
-					toRemove = i;
-				ImGui::PopStyleVar();
+				ImGui::EndTabItem();
 			}
-			if (opened)
+			if (ImGui::BeginTabItem("settings"))
 			{
-				ImGui::InputText("name", def.name, 64);
-
-				drawFields(def, i == selectedInd);
-
-				ImGui::TreePop();
+				ImGui::SeparatorText("export");
+				ImGui::InputText("save path", settings.savePath, 512);
+				ImGui::InputText("export path", settings.exportPath, 512);
+				ImGui::Combo("export language", &settings.language, global.languageStr);
+				ImGui::SeparatorText("trajectories");
+				ImGui::EndTabItem();
+				ImGui::SliderFloat("trajectory alpha", &settings.trajectoryOpac, 0.0f, 1.0f);
 			}
-			i++;
+			ImGui::EndTabBar();
 		}
-
-		if (ImGui::Button("apply"))
-		{
-			applyCustomFields();
-		}
-
-		if (ImGui::BeginPopupModal("apply removing used trajectory"))
-		{
-			ImGui::Text("Applying changes will delete an with a type '%s'", usedAction.c_str());
-			ImGui::Text("Are you sure you want to continue.");
-			if (ImGui::Button("confirm"))
-			{
-				applyCustomFields(true);
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("cancel"))
-				ImGui::CloseCurrentPopup();
-			ImGui::EndPopup();
-		}
-
 		ImGui::End();
-
-		if (toRemove != -1)
-		{
-			CustomActionDef& def = settingsActions[toRemove];
-
-			for (int i = toRemove; i < settingsActions.size() - 1; i++)
-				settingsActions[i] = settingsActions[i + 1];
-			settingsActions.resize(i - 1);
-			if (i >= toRemove)
-				selectedInd--;
-			toRemove = -1;
-		}
 	}
 }
 
@@ -165,11 +225,8 @@ static void drawFields(CustomActionDef& def, bool selected)
 		{
 			ImVec2 size = ImGui::GetItemRectSize();
 			ImGui::SameLine();
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 0));
-			if (ImGui::Button("-", ImVec2(0, size.y)))
-				toRemove = i;
-			ImGui::SameLine();
-			if (ImGui::Button("^", ImVec2(0, size.y)))
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(6, 0));
+			if (ImGui::Button("^", ImVec2(size.y, size.y)))
 			{
 				if (i > 0)
 				{
@@ -180,7 +237,7 @@ static void drawFields(CustomActionDef& def, bool selected)
 				}
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("v", ImVec2(0, size.y)))
+			if (ImGui::Button("v", ImVec2(size.y, size.y)))
 			{
 				if (i < settingsActions.size() - 1)
 				{
@@ -190,6 +247,9 @@ static void drawFields(CustomActionDef& def, bool selected)
 					selectedInd++;
 				}
 			}
+			ImGui::SameLine();
+			if (ImGui::Button("x", ImVec2(size.y, size.y)))
+				toRemove = i;
 			ImGui::PopStyleVar();
 		}
 		if (opened)

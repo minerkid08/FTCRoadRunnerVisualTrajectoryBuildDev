@@ -1,6 +1,8 @@
 #include "Renderer.hpp"
+#include "curve.hpp"
+#include "glm/ext/vector_float3.hpp"
+#include "glm/geometric.hpp"
 #include "glm/trigonometric.hpp"
-#include "imgui/imgui.h"
 #include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -100,59 +102,29 @@ void Renderer::drawNode(glm::vec3 pos, float heading, glm::vec4 color)
 
 void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startTan, float endTan, glm::vec4 color)
 {
-	endTan = endTan + 180.0f;
-	// glm::vec2 dif = end - start;
-	// glm::vec2 dif2 = glm::normalize(dif);
-	// dif2 = {dif2.x / 40, dif2.y / 40};
-
 	static float lineWidth = 0.02;
-	static float ctrlNodeDist = 12;
-
-	startTan = glm::radians(startTan);
-	endTan = glm::radians(endTan);
-	glm::vec2 ctrl1 = {sin(startTan) * ctrlNodeDist + start.x, cos(startTan) * ctrlNodeDist + start.y};
-	glm::vec2 ctrl2 = {sin(endTan) * ctrlNodeDist + end.x, cos(endTan) * ctrlNodeDist + end.y};
 
 	glm::vec4 verts[6];
 
 	verts[0] = {start.x / 72, start.y / 72, z, 1};
 	verts[5] = {end.x / 72, end.y / 72, z, 1};
 
-	verts[0].z = cos(startTan) * lineWidth;
-	verts[0].w = sin(startTan) * lineWidth;
-	verts[5].z = -cos(endTan) * lineWidth;
-	verts[5].w = -sin(endTan) * lineWidth;
+	float startTanRad = glm::radians(startTan);
+	float endTanRad = glm::radians(endTan + 180.0f);
+	verts[0].z = cos(startTanRad) * lineWidth;
+	verts[0].w = sin(startTanRad) * lineWidth;
+	verts[5].z = -cos(endTanRad) * lineWidth;
+	verts[5].w = -sin(endTanRad) * lineWidth;
 
 	for (int i = 0; i < 4; i++)
 	{
-		float l = i * 0.2 + 0.2;
-		// The Green Lines
-		float xa = lerp(start.x, ctrl1.x, l);
-		float ya = lerp(start.y, ctrl1.y, l);
-		float xb = lerp(ctrl1.x, ctrl2.x, l);
-		float yb = lerp(ctrl1.y, ctrl2.y, l);
-		float xc = lerp(ctrl2.x, end.x, l);
-		float yc = lerp(ctrl2.y, end.y, l);
+		float t = i * 0.2 + 0.2;
+    glm::vec3 pos = getPosRR(start, end, startTan, endTan, t); 
 
-		// The Blue Line
-		float xm = lerp(xa, xb, l);
-		float ym = lerp(ya, yb, l);
-		float xn = lerp(xb, xc, l);
-		float yn = lerp(yb, yc, l);
-
-		// The Black Dot
-		verts[i + 1].x = lerp(xm, xn, l);
-		verts[i + 1].y = lerp(ym, yn, l);
-
-		float x2 = lerp(xm, xn, l + 0.001) - verts[i + 1].x;
-		float y2 = lerp(ym, yn, l + 0.001) - verts[i + 1].y;
-
-		float tangent = atan2(y2, x2);
-
-		verts[i + 1].x /= 72;
-		verts[i + 1].y /= 72;
-		verts[i + 1].z = sin(tangent) * lineWidth;
-		verts[i + 1].w = cos(tangent) * lineWidth;
+		verts[i + 1].x = pos.x / 72;
+		verts[i + 1].y = pos.y / 72;
+		verts[i + 1].z = cos(pos.z) * lineWidth;
+		verts[i + 1].w = sin(pos.z) * lineWidth;
 	}
 
 	for (int i = 0; i < 5; i++)
@@ -166,10 +138,88 @@ void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startT
 		verts2[3] = {end.z + end.x, -end.w + end.y, z, 1};
 		draw(verts2, segmentTex, shader, color);
 	}
+}
 
-	// verts[0] = {dif2.y + start.x, -dif2.x + start.y, z, 1};
-	// verts[1] = {-dif2.y + start.x, dif2.x + start.y, z, 1};
-	// verts[2] = {dif2.y + start.x + dif.x, -dif2.x + dif.y + start.y, z, 1};
-	// verts[3] = {-dif2.y + start.x + dif.x, dif2.x + dif.y + start.y, z, 1};
-	// draw(verts, segmentTex, shader, color);
+#define nodeCount 10
+void Renderer::drawSegment(float z, const List<glm::vec2>& controlPoints, glm::vec4 color)
+{
+	static float lineWidth = 0.02;
+	glm::vec4 verts[nodeCount];
+
+	int l = controlPoints.count - 1;
+
+	verts[0] = {controlPoints.get(0)->x / 72, controlPoints.get(0)->y / 72, z, 1};
+	verts[nodeCount - 1] = {controlPoints.get(l)->x / 72, controlPoints.get(l)->y / 72, z, 1};
+
+	glm::vec2 tangent = bezierTangent(&controlPoints, 0.001f);
+	verts[0].z = tangent.y * lineWidth;
+	verts[0].w = tangent.x * lineWidth;
+
+	tangent = bezierTangent(&controlPoints, 0.999f);
+	verts[nodeCount - 1].z = tangent.y * lineWidth;
+	verts[nodeCount - 1].w = tangent.x * lineWidth;
+
+	for (int i = 0; i < nodeCount - 2; i++)
+	{
+		float t = i * (1.0f / (nodeCount - 1.0f)) + (1.0f / (nodeCount - 1.0f));
+		glm::vec2 p = bezierPosition(&controlPoints, t);
+
+		glm::vec2 tangent = bezierTangent(&controlPoints, t);
+		verts[i + 1].x = p.x / 72;
+		verts[i + 1].y = p.y / 72;
+		verts[i + 1].z = tangent.y * lineWidth;
+		verts[i + 1].w = tangent.x * lineWidth;
+	}
+
+	for (int i = 0; i < nodeCount - 1; i++)
+	{
+		glm::vec4 start = verts[i];
+		glm::vec4 end = verts[i + 1];
+		glm::vec4 verts2[4];
+		verts2[0] = {-start.z + start.x, start.w + start.y, z, 1};
+		verts2[1] = {start.z + start.x, -start.w + start.y, z, 1};
+		verts2[2] = {-end.z + end.x, end.w + end.y, z, 1};
+		verts2[3] = {end.z + end.x, -end.w + end.y, z, 1};
+		draw(verts2, segmentTex, shader, color);
+	}
+}
+
+void Renderer::drawControlPoints(const List<glm::vec2>& controlPoints, float z)
+{
+	for (int i = 1; i < controlPoints.count - 1; i++)
+	{
+		glm::vec2 pos = *controlPoints.get(i);
+		glm::vec4 verts[4] = {
+			glm::vec4(+0.03, +0.03, 0, 1),
+			glm::vec4(+0.03, -0.03, 0, 1),
+			glm::vec4(-0.03, +0.03, 0, 1),
+			glm::vec4(-0.03, -0.03, 0, 1),
+		};
+
+		pos.y /= 72;
+		pos.x /= 72;
+		for (int j = 0; j < 4; j++)
+			verts[j] = {pos.x + verts[j].x, pos.y + verts[j].y, z, 1};
+		draw(verts, ctrlPointTex, shader, {1.0f, 1.0f, 1.0f, 1.0f});
+	}
+}
+
+void Renderer::drawRobot(glm::vec3 curPos, float sizeX, float sizeY)
+{
+  sizeX = (sizeX / 72.0f) / 2.0f;
+  sizeY = (sizeY / 72.0f) / 2.0f;
+	glm::mat4 mat = glm::rotate(glm::mat4(1), -curPos.z, glm::vec3(0, 0, 1));
+	glm::vec4 verts[4] = {
+		glm::vec4(+sizeX, +sizeY, 0, 1) * mat,
+		glm::vec4(+sizeX, -sizeY, 0, 1) * mat,
+		glm::vec4(-sizeX, +sizeY, 0, 1) * mat,
+		glm::vec4(-sizeX, -sizeY, 0, 1) * mat,
+	};
+	curPos.y /= 72;
+	curPos.x /= 72;
+	for (int j = 0; j < 4; j++)
+	{
+		verts[j] = {curPos.x + verts[j].x, curPos.y + verts[j].y, 1.0f, 1};
+	}
+	draw(verts, robotTex, shader, {1.0f, 1.0f, 1.0f, 1.0f});
 }

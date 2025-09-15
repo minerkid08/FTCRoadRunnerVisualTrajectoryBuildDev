@@ -1,44 +1,38 @@
 #pragma once
 
-#include "List.hpp"
-#include "PathNode.hpp"
-#include "PathSegment.hpp"
 #include "renderer/Renderer.hpp"
 
-#define maxNodes 32
-#define maxSegs 32
-
-#define TypeNode 1
-#define TypeSegment 2
-
-struct Selected
-{
-	int ind = -1;
-	int type = 0;
-};
+#define Trajectory_RR 1
 
 class Trajectory
 {
   public:
-	List<PathNode> nodes;
-	List<PathSegment> segs;
-	Selected selected;
-	int mods = 0;
-	bool gridSnap = true;
+	int type = 0;
 	bool visible = false;
+	bool canDelete = false;
 
-	Trajectory();
-	~Trajectory();
-	void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods);
-	void mouseClick(int mouseX, int mouseY, int windowSize, int mods);
+	virtual ~Trajectory()
+	{
+	}
+	virtual void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods)
+	{
+	}
+	virtual void mouseClick(int mouseX, int mouseY, int windowSize, int mods)
+	{
+	}
 
-	void render(Renderer& renderer, float transparency, float z, bool showSelected);
+	virtual void render(Renderer& renderer, float transparency, float z, bool showSelected)
+	{
+	}
 
-	void resetNode(int i);
-	void resetSegment(int i);
+	virtual void flipVert()
+	{
+	}
+	virtual void flipHoriz()
+	{
+	}
 
-	void flipVert();
-	void flipHoriz();
-
-	void reset();
+	virtual void reset()
+	{
+	}
 };

@@ -1,11 +1,12 @@
+#include <cstring>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <iostream>
-#include <cstring>
 
 #include "actions/Action.hpp"
 #include "global.hpp"
 #include "imgui/imgui.h"
+#include "projectSettings.hpp"
 #include "renderer/FrameBuffer.hpp"
 #include "renderer/Renderer.hpp"
 #include "renderer/Shader.hpp"
@@ -17,6 +18,7 @@
 
 Globals global;
 Settings settings;
+ProjectSettings projectSettings;
 
 GLFWwindow* window;
 
@@ -40,6 +42,7 @@ WindowData windowData;
 
 int main(int argc, char** argv)
 {
+
 	glfwInit();
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 
@@ -70,12 +73,14 @@ int main(int argc, char** argv)
 
 	loadSettings();
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	generateActionNames();
 
-  //Without these 2 hints, nothing above OpenGL 2.1 is supported
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+
+	// Without these 2 hints, nothing above OpenGL 2.1 is supported
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	window = glfwCreateWindow(winSize * 2, winSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
@@ -184,9 +189,13 @@ int main(int argc, char** argv)
 	Texture tex("field.png");
 	Texture nodeTex("node.png");
 	Texture segTex("seg.png");
+	Texture ctrlPtTex("ctrlPt.png");
+	Texture robotTex("robot.png");
 	renderer.shader = &shader;
 	renderer.nodeTex = &nodeTex;
 	renderer.segmentTex = &segTex;
+	renderer.ctrlPointTex = &ctrlPtTex;
+	renderer.robotTex = &robotTex;
 
 	initUi();
 
@@ -255,12 +264,14 @@ int main(int argc, char** argv)
 
 	closeUi();
 
-  shader.del();
+	shader.del();
 	renderer.del();
-  tex.del();
-  nodeTex.del();
-  segTex.del();
-  framebuffer.del();
+	tex.del();
+	nodeTex.del();
+	segTex.del();
+	ctrlPtTex.del();
+  robotTex.del();
+	framebuffer.del();
 	glfwDestroyWindow(window);
 	glfwTerminate();
 

@@ -2,7 +2,10 @@
 #include "actions/Action.hpp"
 #include "actions/CustomAction.hpp"
 #include "global.hpp"
+#include "projectSettings.hpp"
 #include "trajectories/Trajectory.hpp"
+#include "trajectories/TrajectoryPedro.hpp"
+#include "trajectories/TrajectoryRR.hpp"
 #include "ui/ui.hpp"
 
 #include <fstream>
@@ -28,7 +31,11 @@ void save(const std::string& filename)
 	std::vector<Trajectory*> trajectories;
 	nlohmann::json json;
 	json["actions"] = {};
+	json["settings"] = {};
 	json["trajectories"] = {};
+
+  saveProjectSettings(json["settings"]);
+
 	int i = 0;
 	for (const Action* action : global.actions)
 	{
@@ -69,28 +76,18 @@ void save(const std::string& filename)
 		i++;
 	}
 	i = 0;
-	for (Trajectory* trajectory : trajectories)
+	for (Trajectory* traj : trajectories)
 	{
 		nlohmann::json& j = json["trajectories"][i];
-		j["nodes"] = {};
-		j["segments"] = {};
-		for (int i2 = 0; i2 < trajectory->nodes.count; i2++)
+		if (projectSettings.pathType == PathType_RR)
 		{
-			PathNode* node = trajectory->nodes.get(i2);
-			nlohmann::json& nodeJson = j["nodes"][i2];
-			nodeJson["x"] = node->pos.x;
-			nodeJson["y"] = node->pos.y;
-			nodeJson["h"] = node->heading;
+			RoadRunner::TrajectoryRR* trajectory = (RoadRunner::TrajectoryRR*)traj;
+			RoadRunner::saveTrajectory(trajectory, j);
 		}
-		for (int i2 = 0; i2 < trajectory->segs.count; i2++)
+		else if (projectSettings.pathType == PathType_Pedro)
 		{
-			PathSegment* segment = trajectory->segs.get(i2);
-			nlohmann::json& segmentJson = j["segments"][i2];
-			segmentJson["startNode"] = segment->startNode;
-			segmentJson["endNode"] = segment->endNode;
-			segmentJson["startTangent"] = segment->startTan;
-			segmentJson["endTangent"] = segment->endTan;
-			segmentJson["headingMode"] = segment->headingMode;
+			PedroPathing::TrajectoryPedro* trajectory = (PedroPathing::TrajectoryPedro*)traj;
+			PedroPathing::saveTrajectory(trajectory, j);
 		}
 		i++;
 	}
@@ -99,104 +96,22 @@ void save(const std::string& filename)
 	setNotif("saved " + filename);
 }
 
-#define tryGet(json, key, type2, out, err)                                                                             \
-	if (!json.contains(key))                                                                                           \
-	{                                                                                                                  \
-		std::cerr << "cant get key: " << key << '\n';                                                                  \
-		delete err;                                                                                                    \
-		return 0;                                                                                                      \
-	}                                                                                                                  \
-	if (!json[key].type2())                                                                                            \
-	{                                                                                                                  \
-		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
-		delete err;                                                                                                    \
-		return 0;                                                                                                      \
-	}                                                                                                                  \
-	out = json[key];
-
-#define tryGetc(json, key, type2, out, err, cast)                                                                      \
-	if (!json.contains(key))                                                                                           \
-	{                                                                                                                  \
-		std::cerr << "cant get key: " << key << '\n';                                                                  \
-		delete err;                                                                                                    \
-		return 0;                                                                                                      \
-	}                                                                                                                  \
-	if (!json[key].type2())                                                                                            \
-	{                                                                                                                  \
-		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
-		delete err;                                                                                                    \
-		return 0;                                                                                                      \
-	}                                                                                                                  \
-	out = cast json[key];
-
-#define typeCheck(json, key, type2, err)                                                                               \
-	if (!json.contains(key))                                                                                           \
-	{                                                                                                                  \
-		std::cerr << "cant get key: " << key << '\n';                                                                  \
-		delete err;                                                                                                    \
-		return 0;                                                                                                      \
-	}                                                                                                                  \
-	if (!json[key].type2())                                                                                            \
-	{                                                                                                                  \
-		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
-		delete err;                                                                                                    \
-		return 0;                                                                                                      \
-	}
-
-#define typeCheck2(json, key, type2)                                                                                   \
-	if (!json.contains(key))                                                                                           \
-	{                                                                                                                  \
-		std::cerr << "cant get key: " << key << '\n';                                                                  \
-		setErr("load failed");                                                                                         \
-		reset();                                                                                                       \
-		return;                                                                                                        \
-	}                                                                                                                  \
-	if (!json[key].type2())                                                                                            \
-	{                                                                                                                  \
-		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
-		setErr("load failed");                                                                                         \
-		reset();                                                                                                       \
-		return;                                                                                                        \
-	}
-
-Trajectory* parseTrajectory(const nlohmann::json& json, int ind)
-{
-	Trajectory* grid = new Trajectory();
-	const nlohmann::json& traj = json[ind];
-	typeCheck(traj, "nodes", is_array, grid);
-	typeCheck(traj, "segments", is_array, grid);
-	for (const nlohmann::json& jnode : traj["nodes"])
-	{
-		PathNode* node = grid->nodes.add();
-		tryGet(jnode, "x", is_number, node->pos.x, grid);
-		tryGet(jnode, "y", is_number, node->pos.y, grid);
-		tryGet(jnode, "h", is_number, node->heading, grid);
-	}
-
-	for (const nlohmann::json& segmentJson : traj["segments"])
-	{
-		PathSegment* segment = grid->segs.add();
-		tryGet(segmentJson, "startNode", is_number, segment->startNode, grid);
-		tryGet(segmentJson, "endNode", is_number, segment->endNode, grid);
-		tryGet(segmentJson, "startTangent", is_number, segment->startTan, grid);
-		tryGet(segmentJson, "endTangent", is_number, segment->endTan, grid);
-		tryGet(segmentJson, "headingMode", is_number, segment->headingMode, grid);
-	}
-	return grid;
-}
-
 Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectoryJson)
 {
 	Action* action = new Action();
-	tryGet(node, "type", is_number, action->type, action);
-	tryGetc(node, "parent", is_number, action->parrent, action, (Action*)(long long));
-	tryGetc(node, "next", is_number, action->next, action, (Action*)(long long));
-	tryGetc(node, "prev", is_number, action->prev, action, (Action*)(long long));
-	tryGetc(node, "actions", is_number, action->actions, action, (Action*)(long long));
+	tryGet(node, "type", is_number, action->type);
+	tryGetc(node, "parent", is_number, action->parrent, (Action*)(long long));
+	tryGetc(node, "next", is_number, action->next, (Action*)(long long));
+	tryGetc(node, "prev", is_number, action->prev, (Action*)(long long));
+	tryGetc(node, "actions", is_number, action->actions, (Action*)(long long));
 
 	if (action->type == ACTION_TRAJECTORY)
 	{
-		action->data = parseTrajectory(trajectoryJson, node["trajectory"]);
+		if (projectSettings.pathType == PathType_RR)
+			action->data = RoadRunner::parseTrajectory(trajectoryJson, node["trajectory"]);
+		else if (projectSettings.pathType == PathType_Pedro)
+			action->data = PedroPathing::parseTrajectory(trajectoryJson, node["trajectory"]);
+
 		if (action->data == 0)
 		{
 			delete action;
@@ -208,32 +123,32 @@ Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectory
 	{
 		initCustomAction(action);
 		std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
-		typeCheck(node, "fields", is_object, action);
+		typeCheck(node, "fields", is_object);
 		for (CustomActionField& field : *data)
 		{
 			switch (field.type)
 			{
 			case FIELDTYPE_INT: {
 				int v;
-				tryGet(node["fields"], field.name, is_number, v, action);
+				tryGet(node["fields"], field.name, is_number, v);
 				field.value.i = v;
 				break;
 			}
 			case FIELDTYPE_DOUBLE: {
 				float v;
-				tryGet(node["fields"], field.name, is_number, v, action);
+				tryGet(node["fields"], field.name, is_number, v);
 				field.value.f = v;
 				break;
 			}
 			case FIELDTYPE_BOOL: {
 				bool v;
-				tryGet(node["fields"], field.name, is_boolean, v, action);
+				tryGet(node["fields"], field.name, is_boolean, v);
 				field.value.b = v;
 				break;
 			}
 			case FIELDTYPE_STRING: {
 				std::string v;
-				tryGet(node["fields"], field.name, is_string, v, action);
+				tryGet(node["fields"], field.name, is_string, v);
 				strcpy(field.value.s, v.c_str());
 				break;
 			}
@@ -241,11 +156,14 @@ Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectory
 		}
 	}
 	return action;
+err:
+	delete action;
+	return 0;
 }
 
 void load(const std::string& filename)
 {
-  clearMsg();
+	clearMsg();
 	reset();
 	std::ifstream stream(filename);
 	nlohmann::json json;
@@ -259,44 +177,59 @@ void load(const std::string& filename)
 		return;
 	}
 
-	typeCheck2(json, "actions", is_array);
+	typeCheck(json, "settings", is_object);
+	typeCheck(json, "actions", is_array);
 
-	nlohmann::json& trajectoryJson = json["trajectories"];
-
-	for (const nlohmann::json& node : json["actions"])
 	{
-		Action* action = parseAction(node, trajectoryJson);
-		if (action == 0)
+	  int r = loadProjectSettings(json["settings"]);
+    if(r == 1)
+    {
+      setErr("load failed: can't load project settings");
+      return;
+    }
+
+		nlohmann::json& trajectoryJson = json["trajectories"];
+
+		for (const nlohmann::json& node : json["actions"])
 		{
-			setErr("load failed");
-			reset();
-			return;
+			Action* action = parseAction(node, trajectoryJson);
+			if (action == 0)
+			{
+				setErr("load failed");
+				reset();
+				return;
+			}
+			action->id = global.actions.size();
+			global.actions.push_back(action);
 		}
-		action->id = global.actions.size();
-		global.actions.push_back(action);
+		for (Action* action : global.actions)
+		{
+			if ((long long)action->parrent == -1)
+				action->parrent = nullptr;
+			else
+				action->parrent = global.actions[(long long)action->parrent];
+
+			if ((long long)action->prev == -1)
+				action->prev = nullptr;
+			else
+				action->prev = global.actions[(long long)action->prev];
+
+			if ((long long)action->next == -1)
+				action->next = nullptr;
+			else
+				action->next = global.actions[(long long)action->next];
+
+			if ((long long)action->actions == -1)
+				action->actions = nullptr;
+			else
+				action->actions = global.actions[(long long)action->actions];
+		}
+		global.rootAction = global.actions[0];
+		setNotif("loaded " + filename);
+		return;
 	}
-	for (Action* action : global.actions)
-	{
-		if ((long long)action->parrent == -1)
-			action->parrent = nullptr;
-		else
-			action->parrent = global.actions[(long long)action->parrent];
-
-		if ((long long)action->prev == -1)
-			action->prev = nullptr;
-		else
-			action->prev = global.actions[(long long)action->prev];
-
-		if ((long long)action->next == -1)
-			action->next = nullptr;
-		else
-			action->next = global.actions[(long long)action->next];
-
-		if ((long long)action->actions == -1)
-			action->actions = nullptr;
-		else
-			action->actions = global.actions[(long long)action->actions];
-	}
-	global.rootAction = global.actions[0];
-	setNotif("loaded" + filename);
+err:
+	setNotif("failed to load " + filename);
+	reset();
+	return;
 }

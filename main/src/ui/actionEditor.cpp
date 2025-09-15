@@ -1,4 +1,7 @@
 #include "actions/CustomAction.hpp"
+#include "projectSettings.hpp"
+#include "trajectories/TrajectoryPedro.hpp"
+#include "trajectories/TrajectoryRR.hpp"
 #include "ui.hpp"
 
 #include "actions/Action.hpp"
@@ -30,7 +33,12 @@ void drawActionEditor()
 		}
 		ImGui::Separator();
 		if (a->type == ACTION_TRAJECTORY)
-			drawTrajectoryEditor(a->data);
+		{
+			if (projectSettings.pathType == PathType_RR)
+				drawTrajectoryEditorRR((RoadRunner::TrajectoryRR*)a->data);
+			if (projectSettings.pathType == PathType_Pedro)
+				drawTrajectoryEditorPedro((PedroPathing::TrajectoryPedro*)a->data);
+		}
 		else if (a->type > 2)
 		{
 			std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)a->data;

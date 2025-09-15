@@ -1,5 +1,6 @@
 #include "renderer/FrameBuffer.hpp"
-#include "trajectories/Trajectory.hpp"
+#include "trajectories/TrajectoryPedro.hpp"
+#include "trajectories/TrajectoryRR.hpp"
 
 void setNotif(const std::string& str);
 void setWarn(const std::string& str);
@@ -13,7 +14,8 @@ void renderUi(FrameBuffer& framebuffer);
 void drawAboutWindow();
 void drawActionList();
 void drawActionEditor();
-void drawTrajectoryEditor(Trajectory* grid);
+void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid);
+void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid);
 void drawSettingsMenu();
 
 void openSettings();

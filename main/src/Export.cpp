@@ -3,9 +3,7 @@
 #include "actions/CustomAction.hpp"
 #include "global.hpp"
 #include "settings.hpp"
-#include "trajectories/Trajectory.hpp"
-#include "trajectories/PathNode.hpp"
-#include "trajectories/PathSegment.hpp"
+#include "trajectories/TrajectoryRR.hpp"
 #include "ui/ui.hpp"
 #include "utils.hpp"
 #include "json/json.hpp"
@@ -18,13 +16,13 @@
 
 #define rot(a) (-(a) - 90)
 
-static bool exportTrajectory(Trajectory* grid, std::string* string, int level, nlohmann::json& lang)
+static bool exportTrajectoryRR(RoadRunner::TrajectoryRR* grid, std::string* string, int level, nlohmann::json& lang)
 {
 	uint8_t* segUsage = new uint8_t[grid->nodes.count];
 	memset(segUsage, 0, grid->nodes.count);
 	for (int i = 0; i < grid->segs.count; i++)
 	{
-		PathSegment* s = grid->segs.get(i);
+    RoadRunner::PathSegment* s = grid->segs.get(i);
 		segUsage[s->startNode] |= 1;
 		segUsage[s->endNode] |= 2;
 	}
@@ -68,7 +66,7 @@ static bool exportTrajectory(Trajectory* grid, std::string* string, int level, n
 		int foundInd = 0;
 		for (int i = 0; i < grid->segs.count; i++)
 		{
-			PathSegment* seg = grid->segs.get(i);
+      RoadRunner::PathSegment* seg = grid->segs.get(i);
 			if (seg->startNode == targetInd)
 			{
 				if (foundNode)
@@ -84,7 +82,7 @@ static bool exportTrajectory(Trajectory* grid, std::string* string, int level, n
 		targetInd = foundInd;
 	}
 
-	PathNode* node = grid->nodes.get(startInd);
+  RoadRunner::PathNode* node = grid->nodes.get(startInd);
 
 	nlohmann::json& actionLang = lang["trajectory"];
 
@@ -98,7 +96,7 @@ static bool exportTrajectory(Trajectory* grid, std::string* string, int level, n
 	*string += '\n';
 	for (int i = 0; i < segments.size(); i++)
 	{
-		PathSegment* seg = grid->segs.get(segments[i]);
+    RoadRunner::PathSegment* seg = grid->segs.get(segments[i]);
 		node = grid->nodes.get(seg->endNode);
 		for (int j = 0; j < level; j++)
 			*string += '\t';
@@ -152,7 +150,7 @@ static void intExportAction(const Action* action, std::string* string, int level
 
 		if (a->type == ACTION_TRAJECTORY)
 		{
-			if (exportTrajectory(a->data, string, level + 1, lang))
+			if (exportTrajectoryRR((RoadRunner::TrajectoryRR*)a->data, string, level + 1, lang))
 				return;
 		}
 		else if (a->type > 2)

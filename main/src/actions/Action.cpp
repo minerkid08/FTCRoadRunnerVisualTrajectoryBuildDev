@@ -1,6 +1,9 @@
 #include "Action.hpp"
 #include "global.hpp"
+#include "projectSettings.hpp"
 #include "trajectories/Trajectory.hpp"
+#include "trajectories/TrajectoryPedro.hpp"
+#include "trajectories/TrajectoryRR.hpp"
 #include "ui/popup.hpp"
 #include <cstring>
 
@@ -154,10 +157,10 @@ void moveActionDown(Action* action)
 	Action* prev = action->prev;
 	Action* next = action2->next;
 
-  if(next != nullptr)
-	  next->prev = action;
-  if(prev != nullptr)
-	  prev->next= action2;
+	if (next != nullptr)
+		next->prev = action;
+	if (prev != nullptr)
+		prev->next = action2;
 
 	action->next = action2->next;
 	action2->prev = action->prev;
@@ -177,10 +180,10 @@ void moveActionUp(Action* action)
 	Action* prev = action2->prev;
 	Action* next = action->next;
 
-  if(next != nullptr)
-	  next->prev = action2;
-  if(prev != nullptr)
-	  prev->next= action;
+	if (next != nullptr)
+		next->prev = action2;
+	if (prev != nullptr)
+		prev->next = action;
 	action2->next = action->next;
 	action->prev = action2->prev;
 	action->next = action2;
@@ -230,7 +233,7 @@ void tryDelete(Action* action)
 	if (action->type == ACTION_TRAJECTORY)
 	{
 		Trajectory* traj = (Trajectory*)action->data;
-		if (traj->nodes.count > 0)
+		if (traj->canDelete)
 		{
 			openDeleteTrajectory();
 			return;
@@ -255,7 +258,7 @@ void tryChangeType(Action* action, int newType)
 	if (action->type == ACTION_TRAJECTORY)
 	{
 		Trajectory* traj = (Trajectory*)action->data;
-		if (traj->nodes.count > 0)
+		if (traj->canDelete)
 		{
 			openChangeFromTrajectory();
 			return;
@@ -317,7 +320,12 @@ void confermAction()
 		}
 		action->type = newtype;
 		if (newtype == ACTION_TRAJECTORY)
-			action->data = new Trajectory();
+		{
+			if (projectSettings.pathType == PathType_RR)
+				action->data = new RoadRunner::TrajectoryRR();
+			if (projectSettings.pathType == PathType_Pedro)
+				action->data = new PedroPathing::TrajectoryPedro();
+		}
 		else if (newtype > 2)
 			initCustomAction(action);
 	}
