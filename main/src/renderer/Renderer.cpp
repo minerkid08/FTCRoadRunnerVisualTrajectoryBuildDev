@@ -1,8 +1,8 @@
 #include "Renderer.hpp"
 #include "curve.hpp"
 #include "glm/ext/vector_float3.hpp"
-#include "glm/geometric.hpp"
 #include "glm/trigonometric.hpp"
+#include <array>
 #include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -119,7 +119,7 @@ void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startT
 	for (int i = 0; i < 4; i++)
 	{
 		float t = i * 0.2 + 0.2;
-    glm::vec3 pos = getPosRR(start, end, startTan, endTan, t); 
+		glm::vec3 pos = getPosRR(start, end, startTan, endTan, t);
 
 		verts[i + 1].x = pos.x / 72;
 		verts[i + 1].y = pos.y / 72;
@@ -141,30 +141,30 @@ void Renderer::drawSegment(glm::vec2 start, glm::vec2 end, float z, float startT
 }
 
 #define nodeCount 10
-void Renderer::drawSegment(float z, const List<glm::vec2>& controlPoints, glm::vec4 color)
+void Renderer::drawSegment(float z, const std::array<glm::vec2, maxCtrlPts>& controlPoints, int count, glm::vec4 color)
 {
 	static float lineWidth = 0.02;
 	glm::vec4 verts[nodeCount];
 
-	int l = controlPoints.count - 1;
+	int l = count - 1;
 
-	verts[0] = {controlPoints.get(0)->x / 72, controlPoints.get(0)->y / 72, z, 1};
-	verts[nodeCount - 1] = {controlPoints.get(l)->x / 72, controlPoints.get(l)->y / 72, z, 1};
+	verts[0] = {controlPoints[0].x / 72, controlPoints[0].y / 72, z, 1};
+	verts[nodeCount - 1] = {controlPoints[l].x / 72, controlPoints[l].y / 72, z, 1};
 
-	glm::vec2 tangent = bezierTangent(&controlPoints, 0.001f);
+	glm::vec2 tangent = bezierTangent<maxCtrlPts>(controlPoints, count, 0.001f);
 	verts[0].z = tangent.y * lineWidth;
 	verts[0].w = tangent.x * lineWidth;
 
-	tangent = bezierTangent(&controlPoints, 0.999f);
+	tangent = bezierTangent<maxCtrlPts>(controlPoints, count, 0.999f);
 	verts[nodeCount - 1].z = tangent.y * lineWidth;
 	verts[nodeCount - 1].w = tangent.x * lineWidth;
 
 	for (int i = 0; i < nodeCount - 2; i++)
 	{
 		float t = i * (1.0f / (nodeCount - 1.0f)) + (1.0f / (nodeCount - 1.0f));
-		glm::vec2 p = bezierPosition(&controlPoints, t);
+		glm::vec2 p = bezierPosition<maxCtrlPts>(controlPoints, count, t);
 
-		glm::vec2 tangent = bezierTangent(&controlPoints, t);
+		glm::vec2 tangent = bezierTangent<maxCtrlPts>(controlPoints, count, t);
 		verts[i + 1].x = p.x / 72;
 		verts[i + 1].y = p.y / 72;
 		verts[i + 1].z = tangent.y * lineWidth;
@@ -184,11 +184,11 @@ void Renderer::drawSegment(float z, const List<glm::vec2>& controlPoints, glm::v
 	}
 }
 
-void Renderer::drawControlPoints(const List<glm::vec2>& controlPoints, float z)
+void Renderer::drawControlPoints(const std::array<glm::vec2, maxCtrlPts>& controlPoints, int count, float z)
 {
-	for (int i = 1; i < controlPoints.count - 1; i++)
+	for (int i = 1; i < count - 1; i++)
 	{
-		glm::vec2 pos = *controlPoints.get(i);
+		glm::vec2 pos = controlPoints[i];
 		glm::vec4 verts[4] = {
 			glm::vec4(+0.03, +0.03, 0, 1),
 			glm::vec4(+0.03, -0.03, 0, 1),
@@ -206,9 +206,9 @@ void Renderer::drawControlPoints(const List<glm::vec2>& controlPoints, float z)
 
 void Renderer::drawRobot(glm::vec3 curPos, float sizeX, float sizeY)
 {
-  sizeX = (sizeX / 72.0f) / 2.0f;
-  sizeY = (sizeY / 72.0f) / 2.0f;
-	glm::mat4 mat = glm::rotate(glm::mat4(1), -curPos.z, glm::vec3(0, 0, 1));
+	sizeX = (sizeX / 72.0f) / 2.0f;
+	sizeY = (sizeY / 72.0f) / 2.0f;
+	glm::mat4 mat = glm::rotate(glm::mat4(1), curPos.z, glm::vec3(0, 0, 1));
 	glm::vec4 verts[4] = {
 		glm::vec4(+sizeX, +sizeY, 0, 1) * mat,
 		glm::vec4(+sizeX, -sizeY, 0, 1) * mat,

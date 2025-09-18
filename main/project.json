@@ -3,7 +3,7 @@
 	"build": [],
 	"type": "program",
 	"out": "trajectoryBuilder",
-  "libs": ["imgui", "glfw", "glad", "stb", "glm", "json"],
+  "libs": ["imgui", "glfw", "glad", "stb", "glm", "json", "lua"],
   "targetArgs": {
     "debug": "-DDEBUG"
   }

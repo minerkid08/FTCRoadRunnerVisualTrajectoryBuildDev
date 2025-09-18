@@ -8,10 +8,6 @@
 
 namespace PedroPathing
 {
-PathSegment::PathSegment() : controlPoints(8)
-{
-}
-
 TrajectoryPedro::TrajectoryPedro() : nodes(maxNodes), segs(maxSegs)
 {
 }
@@ -27,11 +23,17 @@ void TrajectoryPedro::render(Renderer& renderer, float a, float z, bool showSele
 		for (int i = 0; i < segs.count; i++)
 		{
 			PathSegment* seg = segs.get(i);
+			PedroPathing::PathNode* startNode = nodes.get(seg->startNode);
+			PedroPathing::PathNode* endNode = nodes.get(seg->endNode);
+			std::array<glm::vec2, maxCtrlPts>& ctrlPts = seg->controlPoints;
+
+			ctrlPts[0] = startNode->pos;
+			ctrlPts[seg->controlPointsCount - 1] = endNode->pos;
 			bool s = (selected.type == TypeSegment && selected.ind == i && showSelected);
-			renderer.drawSegment(z + zoff(s), seg->controlPoints,
+			renderer.drawSegment(z + zoff(s), seg->controlPoints, seg->controlPointsCount,
 								 s ? glm::vec4(1.0, 0.0, 0.0, a) : glm::vec4(0.5, 0.5, 0.5, a));
-      if(s)
-        renderer.drawControlPoints(seg->controlPoints, zoff(s) + 0.1);
+			if (s)
+				renderer.drawControlPoints(seg->controlPoints, seg->controlPointsCount, zoff(s) + 0.1);
 		}
 	}
 
@@ -42,18 +44,17 @@ void TrajectoryPedro::render(Renderer& renderer, float a, float z, bool showSele
 		renderer.drawNode({node->pos.x, node->pos.y, s ? 1 : 0}, node->heading,
 						  s ? glm::vec4(1.0, 0.0, 0.0, a) : glm::vec4(1.0, 1.0, 1.0, a));
 	}
-  if(preview.active && preview.running)
-    drawPreview(renderer);
+	if (preview.active)
+		drawPreview(renderer);
 }
 
-void TrajectoryPedro::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods)
+void TrajectoryPedro::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods, float dt)
 {
-  preview.running = (selected.type == TypeSegment);
-	if(selected.type == TypeSegment && preview.active)
+	preview.running = (selected.type == TypeSegment);
+	if (preview.active)
   {
-    PathSegment* seg = segs.get(selected.ind);
-    preview.ctrlPts = &seg->controlPoints;
-    updatePreview();
+    preview.dt = dt;
+		updatePreview();
   }
 	if (selected.ind >= (selected.type == TypeNode ? nodes.count : segs.count))
 		selected.ind = nodes.count - 1;
@@ -151,8 +152,9 @@ void TrajectoryPedro::mouseClick(int mouseX, int mouseY, int windowSize, int mod
 
 				PathNode* start = nodes.get(seg->startNode);
 				PathNode* end = nodes.get(seg->endNode);
-				*seg->controlPoints.add() = start->pos;
-				*seg->controlPoints.add() = end->pos;
+				seg->controlPointsCount = 2;
+				seg->controlPoints[0] = start->pos;
+				seg->controlPoints[1] = end->pos;
 
 				selected.ind = closestInd;
 				selected.type = TypeNode;

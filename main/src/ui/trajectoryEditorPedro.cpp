@@ -6,6 +6,7 @@
 #include "ui.hpp"
 
 #include "imgui/imgui.h"
+#include <array>
 #include <vector>
 
 void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
@@ -16,13 +17,26 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 	if (ImGui::TreeNode("RobotPreview"))
 	{
 		ImGui::Checkbox("active", &preview.active);
-		if (!preview.active)
-			ImGui::BeginDisabled();
+		ImGui::BeginDisabled(!preview.active);
 		ImGui::SliderFloat("t", &preview.t, 0, 1);
+		if (ImGui::Button("|>"))
+			preview.playing = true;
+		ImGui::SameLine();
+		if (ImGui::Button("||"))
+			preview.playing = false;
+
+		ImGui::InputFloat("playback length", &preview.playbackLength);
+		if (ImGui::Checkbox("single segment", &preview.useSingleSegment))
+			preview.trajectory.pedro = grid;
+		else
+			ImGui::InputInt("segment id", &preview.singleSegmentId);
+
+		if (ImGui::Button("generate path"))
+			generatePathPedro(grid);
+
 		ImGui::Text("robot position: x %.2f, y %.2f, h %.2f", preview.curPos.x, preview.curPos.y,
 					glm::degrees(preview.curPos.z));
-		if (!preview.active)
-			ImGui::EndDisabled();
+		ImGui::EndDisabled();
 		ImGui::TreePop();
 	}
 
@@ -162,10 +176,10 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 			PedroPathing::PathSegment* seg = grid->segs.get(grid->selected.ind);
 			PedroPathing::PathNode* startNode = grid->nodes.get(seg->startNode);
 			PedroPathing::PathNode* endNode = grid->nodes.get(seg->endNode);
-			List<glm::vec2>* ctrlPts = &seg->controlPoints;
+			std::array<glm::vec2, maxCtrlPts>& ctrlPts = seg->controlPoints;
 
-			*ctrlPts->get(0) = startNode->pos;
-			*ctrlPts->get(ctrlPts->count - 1) = endNode->pos;
+			ctrlPts[0] = startNode->pos;
+			ctrlPts[seg->controlPointsCount - 1] = endNode->pos;
 
 			ImGui::Text("segment: %d", grid->selected.ind);
 			if (ImGui::Button("remove##X"))
@@ -184,27 +198,29 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 			ImGui::SeparatorText("control points");
 			if (ImGui::Button("add"))
 			{
-				glm::vec2* newPoint = ctrlPts->get(ctrlPts->count - 1);
-				glm::vec2* endPoint = ctrlPts->add();
-				if (endPoint != nullptr)
+				if (seg->controlPointsCount < maxCtrlPts - 1)
 				{
-					*endPoint = *newPoint;
-					*newPoint = {0, 0};
+					glm::vec2 newPoint = ctrlPts[seg->controlPointsCount - 1];
+					ctrlPts[seg->controlPointsCount] = newPoint;
+					ctrlPts[seg->controlPointsCount - 1] = {0, 0};
+					seg->controlPointsCount++;
 				}
 			}
 			if (ImGui::Button("remove"))
 			{
-				glm::vec2* oldPoint = ctrlPts->get(ctrlPts->count - 1);
-				glm::vec2* endPoint = ctrlPts->get(ctrlPts->count - 2);
-				*endPoint = *oldPoint;
-				ctrlPts->count--;
+				if (seg->controlPointsCount > 2)
+				{
+					glm::vec2 oldPoint = ctrlPts[seg->controlPointsCount - 1];
+					ctrlPts[seg->controlPointsCount - 2] = oldPoint;
+					seg->controlPointsCount--;
+				}
 			}
-			if (ctrlPts->count > 2)
+			if (seg->controlPointsCount > 2)
 			{
-				for (int i = 1; i < ctrlPts->count - 1; i++)
+				for (int i = 1; i < seg->controlPointsCount - 1; i++)
 				{
 					ImGui::PushID(i);
-					ImGui::InputFloat2("", glm::value_ptr(*ctrlPts->get(i)));
+					ImGui::InputFloat2("", glm::value_ptr(ctrlPts[i]));
 					ImGui::PopID();
 				}
 			}

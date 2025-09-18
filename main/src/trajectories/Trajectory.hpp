@@ -14,7 +14,7 @@ class Trajectory
 	virtual ~Trajectory()
 	{
 	}
-	virtual void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods)
+	virtual void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods, float dt)
 	{
 	}
 	virtual void mouseClick(int mouseX, int mouseY, int windowSize, int mods)

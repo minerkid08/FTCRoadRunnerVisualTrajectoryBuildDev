@@ -2,8 +2,8 @@
 #include "Save.hpp"
 #include "actions/CustomAction.hpp"
 #include "global.hpp"
+#include "preview.hpp"
 #include "json/json.hpp"
-#include <iostream>
 #include <vector>
 
 extern std::vector<CustomActionDef> settingsActions;
@@ -12,70 +12,81 @@ int loadProjectSettings(const nlohmann::json& json)
 {
 	{
 		tryGet(json, "trajectoryType", is_number, projectSettings.pathType);
+		tryGet(json, "robotSizeX", is_number, preview.sizeX);
+		tryGet(json, "robotSizeY", is_number, preview.sizeY);
 
-		typeCheck(json, "customActions", is_array);
-		nlohmann::json customActionJson = json["customActions"];
 		global.customActionDefs.clear();
-		int i = 0;
-		for (const nlohmann::json& action : customActionJson)
-		{
-			global.customActionDefs.emplace_back();
-			CustomActionDef& a = global.customActionDefs[i];
-			std::string name;
-			tryGet(action, "name", is_string, name);
-			strcpy(a.name, name.c_str());
-			int j = 0;
-			typeCheck(action, "fields", is_array);
-			for (const nlohmann::json& field : action["fields"])
-			{
-				if (!field.is_object())
-				{
-					std::cerr << "custom action field is not an object";
-					goto err;
-				}
-				a.fields.emplace_back();
-				CustomActionField& f = a.fields[j];
-				std::string name;
-				tryGet(field, "name", is_string, name);
-				strcpy(f.name, name.c_str());
-				f.type = field["type"];
-				tryGet(field, "type", is_number, f.type);
 
-				switch (f.type)
+		if (!json.contains("customActions"))
+		{
+			std::cerr << "custom actions no exist\n";
+			goto err;
+		}
+
+		if (json["customActions"].is_array())
+		{
+			nlohmann::json customActionJson = json["customActions"];
+			int i = 0;
+			for (const nlohmann::json& action : customActionJson)
+			{
+				global.customActionDefs.emplace_back();
+				CustomActionDef& a = global.customActionDefs[i];
+				std::string name;
+				tryGet(action, "name", is_string, name);
+				strcpy(a.name, name.c_str());
+				int j = 0;
+				typeCheck(action, "fields", is_array);
+				for (const nlohmann::json& field : action["fields"])
 				{
-				case FIELDTYPE_INT: {
-					tryGet(field, "min", is_number, f.min.i);
-					tryGet(field, "max", is_number, f.max.i);
-					tryGet(field, "value", is_number, f.value.i);
-					tryGet(field, "rangeChecks", is_boolean, f.rangeChecks);
-					break;
+					if (!field.is_object())
+					{
+						std::cerr << "custom action field is not an object";
+						goto err;
+					}
+					a.fields.emplace_back();
+					CustomActionField& f = a.fields[j];
+					std::string name;
+					tryGet(field, "name", is_string, name);
+					strcpy(f.name, name.c_str());
+					f.type = field["type"];
+					tryGet(field, "type", is_number, f.type);
+
+					switch (f.type)
+					{
+					case FIELDTYPE_INT: {
+						tryGet(field, "min", is_number, f.min.i);
+						tryGet(field, "max", is_number, f.max.i);
+						tryGet(field, "value", is_number, f.value.i);
+						tryGet(field, "rangeChecks", is_boolean, f.rangeChecks);
+						break;
+					}
+					case FIELDTYPE_DOUBLE: {
+						tryGet(field, "min", is_number, f.min.f);
+						tryGet(field, "max", is_number, f.max.f);
+						tryGet(field, "value", is_number, f.value.f);
+						tryGet(field, "rangeChecks", is_boolean, f.rangeChecks);
+						break;
+					}
+					case FIELDTYPE_BOOL: {
+						tryGet(field, "value", is_number, f.value.b);
+						break;
+					}
+					case FIELDTYPE_STRING: {
+						std::string v;
+						tryGet(field, "value", is_string, v);
+						f.value.s = (char*)malloc(64);
+						strcpy(f.value.s, v.c_str());
+						break;
+					}
+					}
+					j++;
 				}
-				case FIELDTYPE_DOUBLE: {
-					tryGet(field, "min", is_number, f.min.f);
-					tryGet(field, "max", is_number, f.max.f);
-					tryGet(field, "value", is_number, f.value.f);
-					tryGet(field, "rangeChecks", is_boolean, f.rangeChecks);
-					break;
-				}
-				case FIELDTYPE_BOOL: {
-					tryGet(field, "value", is_number, f.value.b);
-					break;
-				}
-				case FIELDTYPE_STRING: {
-					std::string v;
-					tryGet(field, "value", is_string, v);
-					f.value.s = (char*)malloc(64);
-					strcpy(f.value.s, v.c_str());
-					break;
-				}
-				}
-				j++;
+				i++;
 			}
-			i++;
 		}
 	}
 	settingsActions = global.customActionDefs;
-  generateActionNames();
+	generateActionNames();
 	return 0;
 err:
 	return 1;
@@ -83,7 +94,7 @@ err:
 
 void generateActionNames()
 {
-	const char* sequentional = "sequentional";
+	const char* sequentional = "sequential";
 	const char* parallel = "parallel";
 	const char* trajectory = "trajectory";
 
@@ -120,6 +131,8 @@ void saveProjectSettings(nlohmann::json& json)
 {
 	json["customActions"] = {};
 	json["trajectoryType"] = projectSettings.pathType;
+	json["robotSizeX"] = preview.sizeX;
+	json["robotSizeY"] = preview.sizeY;
 	nlohmann::json& customActions = json["customActions"];
 	for (int i = 0; i < global.customActionDefs.size(); i++)
 	{

@@ -28,7 +28,7 @@ struct Globals
 	std::string filename;
 	int explorerMode;
 
-	std::vector<const char*> actionTypes = {"sequentional", "parallel", "trajectory"};
+	std::vector<const char*> actionTypes = {"sequential", "parallel", "trajectory"};
 	char* actionTypeStr;
 
 	const char* languageStr;

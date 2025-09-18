@@ -1,4 +1,5 @@
 #include "glm/gtc/type_ptr.hpp"
+#include "preview.hpp"
 #include "trajectories/TrajectoryRR.hpp"
 #include "ui.hpp"
 
@@ -7,8 +8,30 @@
 
 void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid)
 {
-  if(grid == nullptr)
-    return;
+	if (grid == nullptr)
+		return;
+
+	if (ImGui::TreeNode("RobotPreview"))
+	{
+		ImGui::Checkbox("active", &preview.active);
+		if (!preview.active)
+			ImGui::BeginDisabled();
+		ImGui::SliderFloat("t", &preview.t, 0, 1);
+    if(ImGui::Button("|>"))
+      preview.playing = true;
+    ImGui::SameLine();
+    if(ImGui::Button("||"))
+      preview.playing = false;
+		if (ImGui::Button("generate path"))
+			generatePathRR(grid);
+    ImGui::InputFloat("playback length", &preview.playbackLength);
+		ImGui::Text("robot position: x %.2f, y %.2f, h %.2f", preview.curPos.x, preview.curPos.y,
+					glm::degrees(preview.curPos.z));
+		if (!preview.active)
+			ImGui::EndDisabled();
+		ImGui::TreePop();
+	}
+
 	if (ImGui::Button("flipHoriz"))
 		grid->flipHoriz();
 	ImGui::SameLine();
@@ -50,7 +73,7 @@ void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid)
 	{
 		for (int i = 0; i < grid->nodes.count; i++)
 		{
-      RoadRunner::PathNode* node = grid->nodes.get(i);
+			RoadRunner::PathNode* node = grid->nodes.get(i);
 
 			ImVec4 tint(0.25f, 0.25f, 0.25f, 1);
 			if (grid->selected.ind == i && grid->selected.type == TypeNode)
@@ -81,7 +104,7 @@ void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid)
 	{
 		for (int i = 0; i < grid->segs.count; i++)
 		{
-      RoadRunner::PathSegment* seg = grid->segs.get(i);
+			RoadRunner::PathSegment* seg = grid->segs.get(i);
 
 			ImVec4 tint(0.25f, 0.25f, 0.25f, 1);
 			if (grid->selected.ind == i && grid->selected.type == TypeSegment)
@@ -113,7 +136,7 @@ void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid)
 	{
 		if (grid->selected.ind > -1 && grid->selected.ind < grid->nodes.count)
 		{
-      RoadRunner::PathNode* node = grid->nodes.get(grid->selected.ind);
+			RoadRunner::PathNode* node = grid->nodes.get(grid->selected.ind);
 			ImGui::Text("node: %d", grid->selected.ind);
 			if (ImGui::Button("remove"))
 			{
@@ -121,7 +144,7 @@ void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid)
 				std::vector<int> toRemove;
 				for (int i = 0; i < grid->segs.count; i++)
 				{
-          RoadRunner::PathSegment* seg = grid->segs.get(i);
+					RoadRunner::PathSegment* seg = grid->segs.get(i);
 					if (seg->startNode == grid->selected.ind || seg->endNode == grid->selected.ind)
 						toRemove.push_back(i);
 					if (seg->startNode > grid->selected.ind)
@@ -142,7 +165,7 @@ void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid)
 	{
 		if (grid->selected.ind > -1 && grid->selected.ind < grid->segs.count)
 		{
-      RoadRunner::PathSegment* seg = grid->segs.get(grid->selected.ind);
+			RoadRunner::PathSegment* seg = grid->segs.get(grid->selected.ind);
 			ImGui::Text("segment: %d", grid->selected.ind);
 			if (ImGui::Button("remove"))
 				grid->segs.remove(grid->selected.ind);

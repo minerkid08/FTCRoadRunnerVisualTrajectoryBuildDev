@@ -3,6 +3,7 @@
 #include "trajectories/TrajectoryPedro.hpp"
 #include "trajectories/TrajectoryRR.hpp"
 #include "json/json.hpp"
+#include <iostream>
 #include <string>
 
 void save(const std::string& filename);
@@ -12,12 +13,12 @@ namespace RoadRunner
 {
 void saveTrajectory(const TrajectoryRR* trajectory, nlohmann::json& j);
 TrajectoryRR* parseTrajectory(const nlohmann::json& json, int ind);
-}
+} // namespace RoadRunner
 namespace PedroPathing
 {
 void saveTrajectory(const TrajectoryPedro* trajectory, nlohmann::json& j);
 TrajectoryPedro* parseTrajectory(const nlohmann::json& json, int ind);
-}
+} // namespace PedroPathing
 
 #define tryGet(json, key, type2, out)                                                                                  \
 	if (!json.contains(key))                                                                                           \

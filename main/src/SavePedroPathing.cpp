@@ -26,9 +26,9 @@ void saveTrajectory(const TrajectoryPedro* trajectory, nlohmann::json& j)
 		segmentJson["endNode"] = segment->endNode;
 		segmentJson["headingMode"] = segment->headingMode;
 		segmentJson["ctrlPoints"] = {};
-		for (int i3 = 0; i3 < segment->controlPoints.count; i3++)
+		for (int i3 = 0; i3 < segment->controlPointsCount; i3++)
 		{
-			glm::vec2 pos = *segment->controlPoints.get(i3);
+			glm::vec2 pos = segment->controlPoints[i3];
 			segmentJson["ctrlPoints"][i3] = {};
 			segmentJson["ctrlPoints"][i3]["x"] = pos.x;
 			segmentJson["ctrlPoints"][i3]["y"] = pos.y;
@@ -64,7 +64,7 @@ TrajectoryPedro* parseTrajectory(const nlohmann::json& json, int ind)
         std::cerr << "ctrlPoint is not object\n";
         goto err;
       }
-			glm::vec2* pos = segment->controlPoints.add();
+			glm::vec2* pos = &segment->controlPoints[segment->controlPointsCount++];
 			tryGet(ctrlPoint, "x", is_number, pos->x);
 			tryGet(ctrlPoint, "y", is_number, pos->y);
 		}

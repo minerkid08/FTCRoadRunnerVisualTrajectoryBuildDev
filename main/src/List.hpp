@@ -16,12 +16,27 @@ template <typename T> class List
 		delete[] arr;
 	}
 
+	List(const List& other)
+  {
+    max = other.max;
+    count = other.count;
+    arr = new T[max];
+  }
+
+	List(const List&& other)
+	{
+		max = other.max;
+		count = other.count;
+		arr = other.arr;
+	}
+
 	T* add()
 	{
 		if (count >= max)
 			return nullptr;
 		return arr + count++;
 	}
+
 	void remove(int ind)
 	{
 		for (int i = ind; i < count - 1; i++)
@@ -31,7 +46,7 @@ template <typename T> class List
 		}
 		count--;
 	}
-  
+
 	T* get(int ind)
 	{
 		return &(arr[ind]);

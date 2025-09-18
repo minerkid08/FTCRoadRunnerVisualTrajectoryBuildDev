@@ -229,6 +229,7 @@ int main(int argc, char** argv)
 		double deltaTime = now - lastUpdateTime;
 		if (now - lastFrameTime >= fpsLimit)
 		{
+			double dt = now - lastFrameTime;
 			framebuffer.bind();
 			glClearColor(0.1, 0.1, 0.1, 1);
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -248,7 +249,7 @@ int main(int argc, char** argv)
 			if (global.currentAction != nullptr)
 			{
 				if (global.currentAction->type == ACTION_TRAJECTORY)
-					global.currentAction->data->update(renderer, mouseX, mouseY, framebuffer.spec.width, mods);
+					global.currentAction->data->update(renderer, mouseX, mouseY, framebuffer.spec.width, mods, dt);
 			}
 			framebuffer.unbind();
 
@@ -270,7 +271,7 @@ int main(int argc, char** argv)
 	nodeTex.del();
 	segTex.del();
 	ctrlPtTex.del();
-  robotTex.del();
+	robotTex.del();
 	framebuffer.del();
 	glfwDestroyWindow(window);
 	glfwTerminate();

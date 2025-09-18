@@ -47,7 +47,7 @@ class TrajectoryRR : public Trajectory
 
 	TrajectoryRR();
 	~TrajectoryRR();
-	void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods);
+	void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods, float dt);
 	void mouseClick(int mouseX, int mouseY, int windowSize, int mods);
 
 	void render(Renderer& renderer, float transparency, float z, bool showSelected);

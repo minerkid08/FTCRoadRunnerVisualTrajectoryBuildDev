@@ -174,6 +174,8 @@ void renderUi(FrameBuffer& framebuffer)
 	endDockspace();
 }
 
+void exportProject(const Action* action);
+
 void drawMenuBar()
 {
 	ImGui::BeginMenuBar();
@@ -200,7 +202,7 @@ void drawMenuBar()
 		global.explorerMode = 2;
 	}
 	if (ImGui::MenuItem("export"))
-		exportAction(global.rootAction);
+		exportProject(global.rootAction);
 	if (ImGui::MenuItem("help"))
 		std::cout << "get gud\n";
 	if (ImGui::MenuItem("settings"))

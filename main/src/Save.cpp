@@ -9,7 +9,6 @@
 #include "ui/ui.hpp"
 
 #include <fstream>
-#include <iostream>
 #include <json/json.hpp>
 #include <vector>
 

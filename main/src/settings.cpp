@@ -13,12 +13,15 @@ void loadSettings()
 {
 	int languageStrLen = 0;
 
-	for (std::filesystem::path p : std::filesystem::directory_iterator("lang"))
+	for (const std::filesystem::path& p : std::filesystem::directory_iterator("lang"))
 	{
+    if(std::filesystem::is_directory(p))
+      continue;
+    int extLen = p.extension().string().length() - 1;
 		std::string filename = p.filename().string();
-		char* name = (char*)malloc(filename.length() - 4);
-		memcpy(name, filename.c_str(), filename.length() - 5);
-		name[filename.length() - 5] = 0;
+		char* name = (char*)malloc(filename.length() - extLen);
+		memcpy(name, filename.c_str(), filename.length() - extLen - 1);
+		name[filename.length() - extLen - 1] = 0;
 		languageStrLen += strlen(name) + 1;
 		global.languages.emplace_back(name);
 	}

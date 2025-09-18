@@ -4,18 +4,20 @@
 #include "glm/ext/vector_float2.hpp"
 #include "renderer/Renderer.hpp"
 #include "trajectories/Trajectory.hpp"
+#include <array>
 
 #define Trajectory_Pedro 0
 
 #define maxNodes 32
 #define maxSegs 32
+#define maxCtrlPts 8
 
 #define TypeNode 1
 #define TypeSegment 2
 
 #define HeadingModeConstant 2
-#define HeadingModeLinear 2
-#define HeadingModeTangent 2
+#define HeadingModeLinear 1
+#define HeadingModeTangent 0
 
 namespace PedroPathing
 {
@@ -31,8 +33,8 @@ struct PathSegment
 	int startNode;
 	int endNode;
 	int headingMode;
-	List<glm::vec2> controlPoints;
-  PathSegment();
+  int controlPointsCount = 0;
+  std::array<glm::vec2, maxCtrlPts> controlPoints;
 };
 
 struct Selected
@@ -52,7 +54,7 @@ class TrajectoryPedro : public Trajectory
 
 	TrajectoryPedro();
 	~TrajectoryPedro();
-	void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods);
+	void update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods, float dt);
 	void mouseClick(int mouseX, int mouseY, int windowSize, int mods);
 
 	void render(Renderer& renderer, float transparency, float z, bool showSelected);
