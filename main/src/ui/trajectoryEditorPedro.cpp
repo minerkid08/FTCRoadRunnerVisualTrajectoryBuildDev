@@ -28,11 +28,21 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 		ImGui::InputFloat("playback length", &preview.playbackLength);
 		if (ImGui::Checkbox("single segment", &preview.useSingleSegment))
 			preview.trajectory.pedro = grid;
+		if (preview.useSingleSegment)
+		{
+			if (ImGui::InputInt("segment id", &preview.singleSegmentId))
+			{
+				if (preview.singleSegmentId < 0)
+					preview.singleSegmentId = 0;
+				if (preview.singleSegmentId >= grid->segs.count)
+					preview.singleSegmentId = grid->segs.count - 1;
+			}
+		}
 		else
-			ImGui::InputInt("segment id", &preview.singleSegmentId);
-
-		if (ImGui::Button("generate path"))
-			generatePathPedro(grid);
+		{
+			if (ImGui::Button("generate path"))
+				generatePathPedro(grid);
+		}
 
 		ImGui::Text("robot position: x %.2f, y %.2f, h %.2f", preview.curPos.x, preview.curPos.y,
 					glm::degrees(preview.curPos.z));

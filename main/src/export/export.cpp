@@ -10,7 +10,14 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+
+#ifdef standalone
+#include "lua/lauxlib.h"
+#include "lua/lualib.h"
+#include <lua/lua.h>
+#else
 #include <lua/lua.hpp>
+#endif
 
 static bool raisedErr = false;
 

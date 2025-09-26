@@ -199,15 +199,29 @@ void generatePathRR(RoadRunner::TrajectoryRR* trajectory)
 void updatePedro(PedroPathing::PathSegment* seg, float t)
 {
 	glm::vec2 pos = bezierPosition<maxCtrlPts>(seg->controlPoints, seg->controlPointsCount, t);
+	PedroPathing::PathNode* node = preview.trajectory.pedro->nodes.get(seg->startNode);
 	float heading;
 	if (seg->headingMode == HeadingModeTangent)
 	{
-		glm::vec2 tangent = bezierTangent<maxCtrlPts>(seg->controlPoints, seg->controlPointsCount, t);
+		glm::vec2 tangent;
+		tangent = bezierTangent<maxCtrlPts>(seg->controlPoints, seg->controlPointsCount, 0.00000000001f);
+		float startHeading = -atan2(tangent.y, tangent.x) + (3.14159265f / 2.0f);
+		if (t < 0.0001f)
+			tangent = bezierTangent<maxCtrlPts>(seg->controlPoints, seg->controlPointsCount, 0.00000000001f);
+		else
+			tangent = bezierTangent<maxCtrlPts>(seg->controlPoints, seg->controlPointsCount, t);
+
 		heading = -atan2(tangent.y, tangent.x) + (3.14159265f / 2.0f);
+
+		if (heading != heading)
+		{
+			tangent = bezierTangent<maxCtrlPts>(seg->controlPoints, seg->controlPointsCount, t - 0.0001);
+			heading = -atan2(tangent.y, tangent.x) + (3.14159265f / 2.0f);
+		}
+		heading += glm::radians(node->heading) - startHeading;
 	}
 	else
 	{
-		PedroPathing::PathNode* node = preview.trajectory.pedro->nodes.get(seg->startNode);
 		if (seg->headingMode == HeadingModeConstant)
 			heading = glm::radians(node->heading);
 		if (seg->headingMode == HeadingModeLinear)
@@ -224,6 +238,8 @@ void updateRR(RoadRunner::PathSegment* seg, float t)
 	RoadRunner::PathNode* start = preview.trajectory.rr->nodes.get(seg->startNode);
 	RoadRunner::PathNode* end = preview.trajectory.rr->nodes.get(seg->endNode);
 	preview.curPos = getPosRR(start->pos, end->pos, seg->startTan, seg->endTan, t);
+	if (seg->headingMode == HeadingModeTangent)
+		preview.curPos.z += glm::radians(start->heading);
 	if (seg->headingMode == HeadingModeConstant)
 		preview.curPos.z = glm::radians(start->heading);
 	if (seg->headingMode == HeadingModeLinear)
