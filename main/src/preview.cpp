@@ -15,6 +15,7 @@ RobotPreview preview;
 
 void generatePathPedro(PedroPathing::TrajectoryPedro* trajectory)
 {
+  clearMsg();
 	uint8_t* segUsage = new uint8_t[trajectory->nodes.count];
 	memset(segUsage, 0, trajectory->nodes.count);
 	for (int i = 0; i < trajectory->segs.count; i++)
@@ -106,6 +107,7 @@ void generatePathPedro(PedroPathing::TrajectoryPedro* trajectory)
 
 void generatePathRR(RoadRunner::TrajectoryRR* trajectory)
 {
+  clearMsg();
 	uint8_t* segUsage = new uint8_t[trajectory->nodes.count];
 	memset(segUsage, 0, trajectory->nodes.count);
 	for (int i = 0; i < trajectory->segs.count; i++)
