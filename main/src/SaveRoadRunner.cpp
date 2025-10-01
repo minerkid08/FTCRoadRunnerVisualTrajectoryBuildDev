@@ -1,7 +1,6 @@
+#include "Save.hpp"
 #include "trajectories/TrajectoryRR.hpp"
 #include "json/json.hpp"
-#include <iostream>
-#include "Save.hpp"
 namespace RoadRunner
 {
 void saveTrajectory(const TrajectoryRR* trajectory, nlohmann::json& j)
@@ -31,25 +30,31 @@ TrajectoryRR* parseTrajectory(const nlohmann::json& json, int ind)
 {
 	TrajectoryRR* grid = new TrajectoryRR();
 	const nlohmann::json& traj = json[ind];
-	typeCheck(traj, "nodes", is_array);
-	typeCheck(traj, "segments", is_array);
-	for (const nlohmann::json& jnode : traj["nodes"])
+	if (traj.contains("nodes"))
 	{
-		PathNode* node = grid->nodes.add();
-		tryGet(jnode, "x", is_number, node->pos.x);
-		tryGet(jnode, "y", is_number, node->pos.y);
-		tryGet(jnode, "h", is_number, node->heading);
-	}
+		if (traj["nodes"].is_null())
+			goto end;
+		typeCheck(traj, "nodes", is_array);
+		typeCheck(traj, "segments", is_array);
+		for (const nlohmann::json& jnode : traj["nodes"])
+		{
+			PathNode* node = grid->nodes.add();
+			tryGet(jnode, "x", is_number, node->pos.x);
+			tryGet(jnode, "y", is_number, node->pos.y);
+			tryGet(jnode, "h", is_number, node->heading);
+		}
 
-	for (const nlohmann::json& segmentJson : traj["segments"])
-	{
-		PathSegment* segment = grid->segs.add();
-		tryGet(segmentJson, "startNode", is_number, segment->startNode);
-		tryGet(segmentJson, "endNode", is_number, segment->endNode);
-		tryGet(segmentJson, "startTangent", is_number, segment->startTan);
-		tryGet(segmentJson, "endTangent", is_number, segment->endTan);
-		tryGet(segmentJson, "headingMode", is_number, segment->headingMode);
+		for (const nlohmann::json& segmentJson : traj["segments"])
+		{
+			PathSegment* segment = grid->segs.add();
+			tryGet(segmentJson, "startNode", is_number, segment->startNode);
+			tryGet(segmentJson, "endNode", is_number, segment->endNode);
+			tryGet(segmentJson, "startTangent", is_number, segment->startTan);
+			tryGet(segmentJson, "endTangent", is_number, segment->endTan);
+			tryGet(segmentJson, "headingMode", is_number, segment->headingMode);
+		}
 	}
+end:
 	return grid;
 err:
 	delete grid;

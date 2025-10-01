@@ -40,35 +40,41 @@ TrajectoryPedro* parseTrajectory(const nlohmann::json& json, int ind)
 {
 	TrajectoryPedro* grid = new TrajectoryPedro();
 	const nlohmann::json& traj = json[ind];
-	typeCheck(traj, "nodes", is_array);
-	typeCheck(traj, "segments", is_array);
-	for (const nlohmann::json& jnode : traj["nodes"])
+	if (traj.contains("nodes"))
 	{
-		PathNode* node = grid->nodes.add();
-		tryGet(jnode, "x", is_number, node->pos.x);
-		tryGet(jnode, "y", is_number, node->pos.y);
-		tryGet(jnode, "h", is_number, node->heading);
-	}
-
-	for (const nlohmann::json& segmentJson : traj["segments"])
-	{
-		PathSegment* segment = grid->segs.add();
-		tryGet(segmentJson, "startNode", is_number, segment->startNode);
-		tryGet(segmentJson, "endNode", is_number, segment->endNode);
-		tryGet(segmentJson, "headingMode", is_number, segment->headingMode);
-		typeCheck(segmentJson, "ctrlPoints", is_array);
-		for (const nlohmann::json& ctrlPoint : segmentJson["ctrlPoints"])
+		if (traj["nodes"].is_null())
+			goto end;
+		typeCheck(traj, "nodes", is_array);
+		typeCheck(traj, "segments", is_array);
+		for (const nlohmann::json& jnode : traj["nodes"])
 		{
-      if(!ctrlPoint.is_object())
-      {
-        std::cerr << "ctrlPoint is not object\n";
-        goto err;
-      }
-			glm::vec2* pos = &segment->controlPoints[segment->controlPointsCount++];
-			tryGet(ctrlPoint, "x", is_number, pos->x);
-			tryGet(ctrlPoint, "y", is_number, pos->y);
+			PathNode* node = grid->nodes.add();
+			tryGet(jnode, "x", is_number, node->pos.x);
+			tryGet(jnode, "y", is_number, node->pos.y);
+			tryGet(jnode, "h", is_number, node->heading);
+		}
+
+		for (const nlohmann::json& segmentJson : traj["segments"])
+		{
+			PathSegment* segment = grid->segs.add();
+			tryGet(segmentJson, "startNode", is_number, segment->startNode);
+			tryGet(segmentJson, "endNode", is_number, segment->endNode);
+			tryGet(segmentJson, "headingMode", is_number, segment->headingMode);
+			typeCheck(segmentJson, "ctrlPoints", is_array);
+			for (const nlohmann::json& ctrlPoint : segmentJson["ctrlPoints"])
+			{
+				if (!ctrlPoint.is_object())
+				{
+					std::cerr << "ctrlPoint is not object\n";
+					goto err;
+				}
+				glm::vec2* pos = &segment->controlPoints[segment->controlPointsCount++];
+				tryGet(ctrlPoint, "x", is_number, pos->x);
+				tryGet(ctrlPoint, "y", is_number, pos->y);
+			}
 		}
 	}
+end:
 	return grid;
 err:
 	delete grid;

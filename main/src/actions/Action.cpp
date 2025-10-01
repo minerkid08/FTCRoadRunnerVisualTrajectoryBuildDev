@@ -71,10 +71,6 @@ void deleteAction(Action* action)
 	if (action->prev != nullptr)
 	{
 		action->prev->next = action->next;
-		if (action->next == nullptr)
-		{
-			action->parrent->actions = action->prev;
-		}
 	}
 
 	if (action->next == nullptr && action->prev == nullptr)
