@@ -27,7 +27,7 @@ processAction(tree);
 ---@param trajectory Trajectory
 ---@param indent string
 local function printTrajectoryPedro(trajectory, indent)
-  file.write(indent .. "follower.pathBuilder()\n");
+  file.write(indent .. "path.chain()\n");
   local segments = processTrajectory(trajectory);
   for _, seg in ipairs(segments) do
     local startNode = trajectory.nodes[seg.startNode];
@@ -35,25 +35,28 @@ local function printTrajectoryPedro(trajectory, indent)
     if (#seg.controlPoints == 2) then
       local a = seg.controlPoints[1];
       local b = seg.controlPoints[2];
-      file.write(indent .. (".addPath(BezierLine(Pose(%.2f, %.2f), Pose(%.2f, %.2f)))\n"):format(a.x + 72, a.y + 72, b.x + 72, b.y + 72));
+      file.write(indent .. (":add(path.line(%.2f, %.2f, %.2f, %.2f))\n"):format(a.x + 72, a.y + 72, b.x + 72, b.y + 72));
     else
-      file.write(indent .. ".addPath(BezierCurve(\n");
-      for _, p in ipairs(seg.controlPoints) do
-        file.write(indent .. ("  Pose(%.2f, %.2f)\n"):format(p.x + 72, p.y + 72));
+      if (#seg.controlPoints == 3) then
+        local p1 = seg.controlPoints[1];
+        local p2 = seg.controlPoints[2];
+        local p3 = seg.controlPoints[3];
+        file.write(indent ..
+        (":add(path.curve3(%.2f, %.2f, %.2f, %.2f, %.2f, %.2f))\n"):format(p1.x + 72, p1.y + 72, p2.x + 72, p2.y + 72,
+          p3.x + 72, p3.y + 72));
       end
-      file.write(indent .. "))\n");
     end
     if (seg.heading == HeadingMode.Linear) then
       file.write(indent ..
-        (".setLinearHeadingInterpolation(Math.toRadians(%.2f), Math.toRadians(%.2f))\n"):format(-startNode.heading,
-        -endNode.heading));
+        (":linearHeading(%.2f, %.2f)\n"):format(-startNode.heading + 90,
+          -endNode.heading + 90));
     end
     if (seg.heading == HeadingMode.Constant) then
       file.write(indent ..
-        (".setConstantHeadingInterpolation(Math.toRadians(%.2f))\n"):format(-startNode.heading));
+        (":constantHeading(%.2f)\n"):format(-startNode.heading + 90));
     end
   end
-  file.write(indent .. ".build()\n");
+  file.write(indent .. ":build()\n");
 end
 
 ---@param trajectory Trajectory
@@ -94,11 +97,11 @@ end
 ---@param trailingComma boolean
 local function printAction(action, indent, trailingComma)
   if (action.name == "sequential") then
-    file.write(indent .. "SequentialAction(\n");
+    file.write(indent .. "SeqAction.new(\n");
   elseif (action.name == "parallel") then
-    file.write(indent .. "ParallelAction(\n");
+    file.write(indent .. "ParallelAction.new(\n");
   elseif (action.name == "trajectory") then
-    file.write(indent .. "PathAction(\n");
+    file.write(indent .. "PathAction.new(\n");
     if (rr == nil) then
       printTrajectoryPedro(action.trajectory, indent .. "    ");
     else
