@@ -5,15 +5,13 @@
 
 #include "actions/CustomAction.hpp"
 #include "global.hpp"
+#include "preview.hpp"
 #include "projectSettings.hpp"
 #include "settings.hpp"
-#include "preview.hpp"
 
 #include "imgui/imgui.h"
 #include <cstring>
 #include <vector>
-
-static bool open = false;
 
 std::vector<CustomActionDef> settingsActions;
 static int toRemove = -1;
@@ -26,15 +24,13 @@ static void applyCustomFields(bool force = false);
 static std::string usedAction;
 
 static int trajectoryType;
-void drawSettingsMenu()
+void drawSettingsMenu(bool* open)
 {
-	if (open)
+	if (*open)
 	{
-		ImGui::Begin("settings", &open, ImGuiWindowFlags_NoDocking);
-		if (!open)
-		{
+		ImGui::Begin("settings", open, ImGuiWindowFlags_NoDocking);
+		if (!*open)
 			saveSettings();
-		}
 
 		if (ImGui::BeginTabBar("tab bar"))
 		{
@@ -48,8 +44,8 @@ void drawSettingsMenu()
 					projectSettings.pathType = trajectoryType;
 				}
 				ImGui::SeparatorText("robot preview");
-        ImGui::InputFloat("robot size x", &preview.sizeX);
-        ImGui::InputFloat("robot size y", &preview.sizeY);
+				ImGui::InputFloat("robot size x", &preview.sizeX);
+				ImGui::InputFloat("robot size y", &preview.sizeY);
 				ImGui::SeparatorText("custom actions");
 				if (ImGui::Button("add"))
 					settingsActions.emplace_back();
@@ -191,13 +187,6 @@ void drawSettingsMenu()
 		}
 		ImGui::End();
 	}
-}
-
-void openSettings()
-{
-	open = !open;
-	if (open == false)
-		saveSettings();
 }
 
 static void drawFields(CustomActionDef& def, bool selected)

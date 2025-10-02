@@ -1,3 +1,4 @@
+#include <ctime>
 #include <imgui/imgui.h>
 #include <string>
 #include <vector>
@@ -24,12 +25,17 @@ void clearLog()
 
 void addLog(int level, const std::string& msg)
 {
+  time_t rawTime;
+  time(&rawTime);
+  struct tm* curTime = localtime(&rawTime);
+  std::string timeStr = std::string("[") + std::to_string(curTime->tm_hour) + ':' + std::to_string(curTime->tm_min) + ':' + std::to_string(curTime->tm_sec) + ']';
+
 	if (level == LEVEL_INFO)
-		elements.emplace_back("[info] " + msg, level);
+		elements.emplace_back(timeStr + " [info] " + msg, level);
 	if (level == LEVEL_WARN)
-		elements.emplace_back("[warn] " + msg, level);
+		elements.emplace_back(timeStr + " [warn] " + msg, level);
 	if (level == LEVEL_ERROR)
-		elements.emplace_back("[error] " + msg, level);
+		elements.emplace_back(timeStr + " [error] " + msg, level);
 }
 
 void drawLog(bool* open)

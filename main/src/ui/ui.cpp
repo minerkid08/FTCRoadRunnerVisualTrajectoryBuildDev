@@ -12,6 +12,7 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "ui/popup.hpp"
+#include <cstddef>
 #include <filesystem>
 
 GLFWwindow* getWindow();
@@ -20,6 +21,10 @@ static int level;
 static std::string msg;
 
 static bool logOpen = false;
+static bool viewportOpen = true;
+static bool actionEditorOpen = true;
+static bool actionListOpen = true;
+static bool settingsOpen = false;
 
 void setNotif(const std::string& str)
 {
@@ -147,10 +152,13 @@ void renderUi(FrameBuffer& framebuffer, bool shouldClose)
 	beginDockspace();
 
 	drawMenuBar(shouldClose);
-	drawViewport(framebuffer);
-	drawActionEditor();
-	drawActionList();
-	drawSettingsMenu();
+	if (viewportOpen)
+		drawViewport(framebuffer);
+	if (actionEditorOpen)
+		drawActionEditor();
+	if (actionListOpen)
+		drawActionList();
+	drawSettingsMenu(&settingsOpen);
 	drawAboutWindow();
 	drawLog(&logOpen);
 
@@ -182,32 +190,43 @@ void drawMenuBar(bool shouldClose)
 		openQuitPopup();
 	if (ImGui::MenuItem("quit"))
 		openQuitPopup();
-	if (ImGui::MenuItem("new"))
-		reset();
-	if (ImGui::MenuItem("save"))
-		save(global.filename);
-	if (ImGui::MenuItem("save as"))
+	if (ImGui::BeginMenu("file"))
 	{
-		if (!std::filesystem::exists(settings.savePath))
-			std::filesystem::create_directories(settings.savePath);
-		global.explorerMode = 1;
-		explorerSetPath(settings.savePath);
-		explorerReset(FileExplorerFlags_MakeFile);
+		if (ImGui::MenuItem("new"))
+			reset();
+		if (ImGui::MenuItem("save"))
+			save(global.filename);
+		if (ImGui::MenuItem("save as"))
+		{
+			if (!std::filesystem::exists(settings.savePath))
+				std::filesystem::create_directories(settings.savePath);
+			global.explorerMode = 1;
+			explorerSetPath(settings.savePath);
+			explorerReset(FileExplorerFlags_MakeFile);
+		}
+		if (ImGui::MenuItem("load"))
+		{
+			if (!std::filesystem::exists(settings.savePath))
+				std::filesystem::create_directories(settings.savePath);
+			explorerSetPath(settings.savePath);
+			explorerReset();
+			global.explorerMode = 2;
+		}
+		if (ImGui::MenuItem("export"))
+			exportProject(global.rootAction);
+		ImGui::EndMenu();
 	}
-	if (ImGui::MenuItem("load"))
+	if (ImGui::BeginMenu("window"))
 	{
-		if (!std::filesystem::exists(settings.savePath))
-			std::filesystem::create_directories(settings.savePath);
-		explorerSetPath(settings.savePath);
-		explorerReset();
-		global.explorerMode = 2;
+		ImGui::MenuItem("logs", NULL, &logOpen);
+		ImGui::MenuItem("settings", NULL, &settingsOpen);
+		ImGui::MenuItem("viewport", NULL, &viewportOpen);
+		ImGui::MenuItem("action editor", NULL, &actionEditorOpen);
+		ImGui::MenuItem("action list", NULL, &actionListOpen);
+		ImGui::EndMenu();
 	}
-	if (ImGui::MenuItem("export"))
-		exportProject(global.rootAction);
 	if (ImGui::MenuItem("settings"))
-		openSettings();
-	if (ImGui::MenuItem("logs"))
-		logOpen = true;
+		settingsOpen = true;
 	if (ImGui::MenuItem("about"))
 		openAboutWindow();
 

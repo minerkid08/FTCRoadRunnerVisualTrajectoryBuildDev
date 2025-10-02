@@ -22,8 +22,7 @@ void drawActionList();
 void drawActionEditor();
 void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid);
 void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid);
-void drawSettingsMenu();
+void drawSettingsMenu(bool* open);
 void drawLog(bool* open);
 
-void openSettings();
 void openAboutWindow();
