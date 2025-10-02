@@ -5,10 +5,8 @@
 
 #define lerp(a, b, t) ((a) + (((b) - (a)) * (t)))
 
-
 glm::vec3 getPosRR(glm::vec2 start, glm::vec2 end, float startTan, float endTan, float t)
 {
-
 	static float ctrlNodeDist = 12;
 	endTan = endTan + 180.0f;
 

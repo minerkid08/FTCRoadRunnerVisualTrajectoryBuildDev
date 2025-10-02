@@ -7,7 +7,6 @@
 #include "trajectories/TrajectoryPedro.hpp"
 #include "trajectories/TrajectoryRR.hpp"
 #include "ui/ui.hpp"
-#include <cstdio>
 
 #define lerp(a, b, t) ((a) + (((b) - (a)) * (t)))
 
@@ -15,7 +14,7 @@ RobotPreview preview;
 
 void generatePathPedro(PedroPathing::TrajectoryPedro* trajectory)
 {
-  clearMsg();
+	clearMsg();
 	uint8_t* segUsage = new uint8_t[trajectory->nodes.count];
 	memset(segUsage, 0, trajectory->nodes.count);
 	for (int i = 0; i < trajectory->segs.count; i++)
@@ -37,6 +36,7 @@ void generatePathPedro(PedroPathing::TrajectoryPedro* trajectory)
 			else
 			{
 				setErr("path generation failed: path has multiple start nodes");
+				delete[] segUsage;
 				return;
 			}
 		}
@@ -46,11 +46,10 @@ void generatePathPedro(PedroPathing::TrajectoryPedro* trajectory)
 		}
 	}
 	if (emptyNodes)
-	{
 		setWarn("warning: path has unused nodes");
-	}
 	if (startInd == -1)
 	{
+		delete[] segUsage;
 		setErr("path generation failed: no start node found");
 		return;
 	}
@@ -70,16 +69,17 @@ void generatePathPedro(PedroPathing::TrajectoryPedro* trajectory)
 				if (foundNode)
 				{
 					setErr("path generation error: fork found at node " + std::to_string((int)seg->startNode));
+					delete[] segUsage;
 					return;
 				}
 				foundNode = true;
 				foundInd = seg->endNode;
 				segments.push_back(i);
-				printf("found seg %d\n", i);
 			}
 		}
 		targetInd = foundInd;
 	}
+	delete[] segUsage;
 
 	preview.segments.resize(segments.size());
 
@@ -103,11 +103,12 @@ void generatePathPedro(PedroPathing::TrajectoryPedro* trajectory)
 		seg.tMul = len / seg.length;
 	}
 	preview.trajectory.pedro = trajectory;
+	setNotif("path generation sucessful");
 }
 
 void generatePathRR(RoadRunner::TrajectoryRR* trajectory)
 {
-  clearMsg();
+	clearMsg();
 	uint8_t* segUsage = new uint8_t[trajectory->nodes.count];
 	memset(segUsage, 0, trajectory->nodes.count);
 	for (int i = 0; i < trajectory->segs.count; i++)
@@ -129,6 +130,7 @@ void generatePathRR(RoadRunner::TrajectoryRR* trajectory)
 			else
 			{
 				setErr("path generation failed: path has multiple start nodes");
+				delete[] segUsage;
 				return;
 			}
 		}
@@ -138,12 +140,11 @@ void generatePathRR(RoadRunner::TrajectoryRR* trajectory)
 		}
 	}
 	if (emptyNodes)
-	{
 		setWarn("warning: path has unused nodes");
-	}
 	if (startInd == -1)
 	{
 		setErr("path generation failed: no start node found");
+		delete[] segUsage;
 		return;
 	}
 
@@ -162,6 +163,7 @@ void generatePathRR(RoadRunner::TrajectoryRR* trajectory)
 				if (foundNode)
 				{
 					setErr("path generation error: fork found at node " + std::to_string((int)seg->startNode));
+					delete[] segUsage;
 					return;
 				}
 				foundNode = true;
@@ -171,6 +173,7 @@ void generatePathRR(RoadRunner::TrajectoryRR* trajectory)
 		}
 		targetInd = foundInd;
 	}
+	delete[] segUsage;
 
 	preview.segments.resize(segments.size());
 
@@ -193,9 +196,9 @@ void generatePathRR(RoadRunner::TrajectoryRR* trajectory)
 		i += seg.length;
 		seg.tEnd = i / len;
 		seg.tMul = len / seg.length;
-		printf("seg: len %.2f, tStart %.2f, tEnd %.2f, tMul %.2f\n", seg.length, seg.tStart, seg.tEnd, seg.tMul);
 	}
 	preview.trajectory.rr = trajectory;
+	setNotif("path generation sucessful");
 }
 
 void updatePedro(PedroPathing::PathSegment* seg, float t)

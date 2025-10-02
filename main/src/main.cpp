@@ -27,6 +27,8 @@ GLFWwindow* getWindow()
 	return window;
 }
 
+static bool close = false;
+
 int mouseX = 0;
 int mouseY = 0;
 
@@ -223,7 +225,7 @@ int main(int argc, char** argv)
 	double lastUpdateTime = 0;
 	double fpsLimit = 1.0 / 30.0;
 
-	while (windowData.running)
+	while (!close)
 	{
 		double now = glfwGetTime();
 		double deltaTime = now - lastUpdateTime;
@@ -253,7 +255,8 @@ int main(int argc, char** argv)
 			}
 			framebuffer.unbind();
 
-			renderUi(framebuffer);
+			renderUi(framebuffer, !windowData.running);
+      windowData.running = true;
 
 			glfwSwapBuffers(window);
 
@@ -282,5 +285,5 @@ int main(int argc, char** argv)
 void quit()
 {
 	saveSettings();
-	windowData.running = false;
+  close = true;
 }

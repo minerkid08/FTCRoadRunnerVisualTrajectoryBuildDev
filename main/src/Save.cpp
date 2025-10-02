@@ -228,7 +228,7 @@ void load(const std::string& filename)
 		return;
 	}
 err:
-	setNotif("failed to load " + filename);
+	setErr("failed to load " + filename);
 	reset();
 	return;
 }

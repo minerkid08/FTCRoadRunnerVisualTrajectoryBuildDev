@@ -134,3 +134,4 @@ local function printAction(action, indent, trailingComma)
 end
 
 printAction(tree, "", false);
+log.info("export sucessful");

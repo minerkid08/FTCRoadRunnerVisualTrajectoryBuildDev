@@ -50,12 +50,14 @@ static int err(lua_State* l)
 	luaL_error(l, c);
 	return 0;
 }
+
 static int warn(lua_State* l)
 {
 	const char* c = lua_tostring(l, 1);
 	setWarn(c);
 	return 0;
 }
+
 static int info(lua_State* l)
 {
 	const char* c = lua_tostring(l, 1);

@@ -1,6 +1,5 @@
 #include "ui.hpp"
 
-#include "Export.hpp"
 #include "FileExplorer.hpp"
 #include "Save.hpp"
 #include "global.hpp"
@@ -14,20 +13,17 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "ui/popup.hpp"
 #include <filesystem>
-#include <iostream>
 
 GLFWwindow* getWindow();
-
-#define LEVEL_NONE -1
-#define LEVEL_INFO 0
-#define LEVEL_WARN 1
-#define LEVEL_ERROR 2
 
 static int level;
 static std::string msg;
 
+static bool logOpen = false;
+
 void setNotif(const std::string& str)
 {
+	addLog(LEVEL_INFO, str);
 	if (level < LEVEL_INFO)
 	{
 		level = LEVEL_INFO;
@@ -37,6 +33,7 @@ void setNotif(const std::string& str)
 
 void setWarn(const std::string& str)
 {
+	addLog(LEVEL_WARN, str);
 	if (level < LEVEL_WARN)
 	{
 		level = LEVEL_WARN;
@@ -46,6 +43,7 @@ void setWarn(const std::string& str)
 
 void setErr(const std::string& str)
 {
+	addLog(LEVEL_ERROR, str);
 	if (level < LEVEL_ERROR)
 	{
 		level = LEVEL_ERROR;
@@ -141,19 +139,20 @@ void endDockspace()
 	}
 }
 
-void drawMenuBar();
+void drawMenuBar(bool shouldClose);
 void drawViewport(FrameBuffer& framebuffer);
 
-void renderUi(FrameBuffer& framebuffer)
+void renderUi(FrameBuffer& framebuffer, bool shouldClose)
 {
 	beginDockspace();
 
-	drawMenuBar();
+	drawMenuBar(shouldClose);
 	drawViewport(framebuffer);
 	drawActionEditor();
 	drawActionList();
 	drawSettingsMenu();
-  drawAboutWindow();
+	drawAboutWindow();
+	drawLog(&logOpen);
 
 	if (global.explorerMode)
 	{
@@ -176,9 +175,11 @@ void renderUi(FrameBuffer& framebuffer)
 
 void exportProject(const Action* action);
 
-void drawMenuBar()
+void drawMenuBar(bool shouldClose)
 {
 	ImGui::BeginMenuBar();
+	if (shouldClose)
+		openQuitPopup();
 	if (ImGui::MenuItem("quit"))
 		openQuitPopup();
 	if (ImGui::MenuItem("new"))
@@ -203,10 +204,10 @@ void drawMenuBar()
 	}
 	if (ImGui::MenuItem("export"))
 		exportProject(global.rootAction);
-	if (ImGui::MenuItem("help"))
-		std::cout << "get gud\n";
 	if (ImGui::MenuItem("settings"))
 		openSettings();
+	if (ImGui::MenuItem("logs"))
+		logOpen = true;
 	if (ImGui::MenuItem("about"))
 		openAboutWindow();
 
