@@ -90,6 +90,7 @@ void TrajectoryRR::mouseClick(int mouseX, int mouseY, int windowSize, int mods)
 	}
 	if (mods == 1)
 	{
+    canDelete = true;
 		PathNode* node = nodes.add();
 		if (node == nullptr)
 		{

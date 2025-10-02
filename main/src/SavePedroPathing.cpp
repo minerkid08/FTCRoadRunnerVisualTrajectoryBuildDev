@@ -74,6 +74,7 @@ TrajectoryPedro* parseTrajectory(const nlohmann::json& json, int ind)
 			}
 		}
 	}
+  grid->canDelete = (grid->nodes.count > 0);
 end:
 	return grid;
 err:

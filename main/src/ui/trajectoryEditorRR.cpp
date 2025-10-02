@@ -155,6 +155,8 @@ void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid)
 				int j = 0;
 				for (int i : toRemove)
 					grid->segs.remove(i - j++);
+        if(grid->nodes.count == 0)
+          grid->canDelete = false;
 				return;
 			}
 			ImGui::InputFloat2("pos", glm::value_ptr(node->pos));

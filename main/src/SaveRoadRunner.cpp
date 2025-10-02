@@ -54,6 +54,7 @@ TrajectoryRR* parseTrajectory(const nlohmann::json& json, int ind)
 			tryGet(segmentJson, "headingMode", is_number, segment->headingMode);
 		}
 	}
+	grid->canDelete = (grid->nodes.count > 0);
 end:
 	return grid;
 err:

@@ -58,7 +58,7 @@ end
 ---@param angle number
 ---@return number
 function rot(angle)
-  return -angle - 90;
+  return angle;
 end
 
 ---@enum HeadingMode

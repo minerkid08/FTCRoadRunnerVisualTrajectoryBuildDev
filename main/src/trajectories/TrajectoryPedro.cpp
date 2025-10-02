@@ -96,6 +96,7 @@ void TrajectoryPedro::mouseClick(int mouseX, int mouseY, int windowSize, int mod
 	}
 	if (mods == 1)
 	{
+    canDelete = true;
 		PathNode* node = nodes.add();
 		if (node == nullptr)
 		{

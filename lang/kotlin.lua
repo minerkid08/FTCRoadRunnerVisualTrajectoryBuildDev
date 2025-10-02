@@ -35,22 +35,22 @@ local function printTrajectoryPedro(trajectory, indent)
     if (#seg.controlPoints == 2) then
       local a = seg.controlPoints[1];
       local b = seg.controlPoints[2];
-      file.write(indent .. (".addPath(BezierLine(Pose(%.2f, %.2f), Pose(%.2f, %.2f)))\n"):format(a.x, a.y, b.x, b.y));
+      file.write(indent .. (".addPath(BezierLine(Pose(%.2f, %.2f), Pose(%.2f, %.2f)))\n"):format(a.y + 72, a.x + 72, b.y + 72, b.x + 72));
     else
       file.write(indent .. ".addPath(BezierCurve(\n");
       for _, p in ipairs(seg.controlPoints) do
-        file.write(indent .. ("  Pose(%.2f, %.2f)\n"):format(p.x, p.y));
+        file.write(indent .. ("  Pose(%.2f, %.2f)\n"):format(p.y + 72, p.x + 72));
       end
       file.write(indent .. "))\n");
     end
     if (seg.heading == HeadingMode.Linear) then
       file.write(indent ..
-        (".setLinearHeadingInterpolation(Math.toRadians(%.2f), Math.toRadians(%.2f))\n"):format(rot(startNode.heading),
-          rot(endNode.heading)));
+        (".setLinearHeadingInterpolation(Math.toRadians(%.2f), Math.toRadians(%.2f))\n"):format(-startNode.heading,
+        -endNode.heading));
     end
     if (seg.heading == HeadingMode.Constant) then
       file.write(indent ..
-        (".setConstantHeadingInterpolation(Math.toRadians(%.2f))\n"):format(rot(startNode.heading)));
+        (".setConstantHeadingInterpolation(Math.toRadians(%.2f))\n"):format(-startNode.heading));
     end
   end
   file.write(indent .. ".build()\n");
@@ -62,7 +62,8 @@ local function printTrajectoryRR(trajectory, indent)
   local segments = processTrajectory(trajectory);
   local startNode = trajectory.nodes[segments[1].startNode];
   file.write(indent ..
-  ("drive.actionBuilder(Pose2d(%.2f, %.2f, Math.toRadians(%.2f)))\n"):format(startNode.x, startNode.y, rot(startNode.heading)));
+    ("drive.actionBuilder(Pose2d(%.2f, %.2f, Math.toRadians(%.2f)))\n"):format(startNode.x, startNode.y,
+      rot(startNode.heading)));
   local prevTangent = 0.0;
   for _, seg in ipairs(segments) do
     local endNode = trajectory.nodes[seg.endNode];
