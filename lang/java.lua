@@ -24,114 +24,58 @@ local tree = actions[1];
 
 processAction(tree);
 
----@param trajectory Trajectory
----@param indent string
-local function printTrajectoryPedro(trajectory, indent)
-  file.write(indent .. "follower.pathBuilder()\n");
-  local segments = processTrajectory(trajectory);
-  for _, seg in ipairs(segments) do
-    local startNode = trajectory.nodes[seg.startNode];
-    local endNode = trajectory.nodes[seg.endNode];
-    if (#seg.controlPoints == 2) then
-      local a = seg.controlPoints[1];
-      local b = seg.controlPoints[2];
-      file.write(indent .. (".addPath(new BezierLine(new Pose(%.2f, %.2f), new Pose(%.2f, %.2f)))\n"):format(a.x, a.y, b.x, b.y));
-    else
+---@type Config
+local cfg = {
+  pedro = {
+    start = "follower.pathBuilder()",
+    build = ".build()",
+    curveFun = function(points, indent)
       file.write(indent .. ".addPath(new BezierCurve(\n");
-      for _, p in ipairs(seg.controlPoints) do
-        file.write(indent .. ("  new Pose(%.2f, %.2f)\n"):format(p.x, p.y));
+      for _, p in ipairs(points) do
+        file.write(indent .. ("  new Pose(%.2f, %.2f)\n"):format(p.x + 72, p.y + 72));
       end
       file.write(indent .. "))\n");
-    end
-    if (seg.heading == HeadingMode.Linear) then
-      file.write(indent ..
-        (".setLinearHeadingInterpolation(Math.toRadians(%.2f), Math.toRadians(%.2f))\n"):format(rot(startNode.heading),
-          rot(endNode.heading)));
-    end
-    if (seg.heading == HeadingMode.Constant) then
-      file.write(indent ..
-        (".setConstantHeadingInterpolation(Math.toRadians(%.2f))\n"):format(rot(startNode.heading)));
-    end
-  end
-  file.write(indent .. ".build()\n");
-end
+    end,
+    line = {
+      str = ".addPath(new BezierLine(new Pose(%.2f, %.2f), new Pose(%.2f, %.2f)))",
+      args = { "x1", "y1", "x2", "y2" }
+    },
+    constantHeading = {
+      str = ".setConstantHeadingInterpolation(Math.toRadians(%.2f))",
+      args = { "h" }
+    },
+    linearHeading = {
+      str = ".setLinearHeadingInterpolation(Math.toRadians(%.2f), Math.toRadians(%.2f))",
+      args = { "h1", "h2" }
+    }
+  },
+  rr = {
+    start = {
+      str = "drive.actionBuilder(new Pose2d(%.2f, %.2f, Math.toRadians(%.2f)))",
+      args = { "x", "y", "h" },
+    },
+    build = ".build()",
+    setTan = {
+      str = ".setTangent(Math.toRadians(%.2f))",
+      args = { "t" }
+    },
+    splineConstant = {
+      str = ".splineToConstantHeading(new Vector2d(%.2f, %.2f), Math.toRadians(%.2f))",
+      args = { "x", "y", "t" }
+    },
+    splineLinear = {
+      str = ".splineLinearHeadingTo(new Pose2d(%.2f, %.2f, Math.toRadians(%.2f)), Math.toRadians(%.2f))",
+      args = { "x", "y", "h", "y" }
+    },
+    splineTo = {
+      str = ".splineTo(new Vector2d(%.2f, %.2f), Math.toRadians(%.2f))",
+      args = { "x", "y", "t" }
+    }
+  },
+  parallel = "new ParallelAction",
+  sequential = "new SeqAction",
+  trajectory = "new PathAction",
+  custom = function(name) return "new " .. name end
+};
 
----@param trajectory Trajectory
----@param indent string
-local function printTrajectoryRR(trajectory, indent)
-  local segments = processTrajectory(trajectory);
-  local startNode = trajectory.nodes[segments[1].startNode];
-  file.write(indent ..
-  ("drive.actionBuilder(new Pose2d(%.2f, %.2f, Math.toRadians(%.2f)))\n"):format(startNode.x, startNode.y, rot(startNode.heading)));
-  local prevTangent = 0.0;
-  for _, seg in ipairs(segments) do
-    local endNode = trajectory.nodes[seg.endNode];
-    if (prevTangent ~= seg.startTan) then
-      file.write(indent .. (".setTangent(%d)\n"):format(rot(seg.startTan)));
-    end
-    if (seg.heading == HeadingMode.None) then
-      file.write(indent ..
-        (".splineTo(new Vector2d(%.2f, %.2f), Math.toRadians(%.2f))\n"):format(endNode.x, endNode.y, rot(seg.endTan + 180)));
-    end
-    if (seg.heading == HeadingMode.None) then
-      file.write(indent ..
-        (".splineLinearHeadingTo(new Pose2d(%.2f, %.2f, Math.toRadians(%.2f)), Math.toRadians(%.2f))\n"):format(endNode.x,
-          endNode.y, rot(endNode.heading), rot(seg.endTan + 180)));
-    end
-    if (seg.heading == HeadingMode.None) then
-      file.write(indent ..
-        (".splineToConstantHeading(new Vector2d(%.2f, %.2f), Math.toRadians(%.2f))\n"):format(endNode.x, endNode.y,
-          rot(seg.endTan + 180)));
-    end
-    prevTangent = seg.endTan;
-  end
-  file.write(indent .. ".build()\n");
-end
-
----@param action Action
----@param indent string
----@param trailingComma boolean
-local function printAction(action, indent, trailingComma)
-  if (action.name == "sequential") then
-    file.write(indent .. "new SequentialAction(\n");
-  elseif (action.name == "parallel") then
-    file.write(indent .. "new ParallelAction(\n");
-  elseif (action.name == "trajectory") then
-    file.write(indent .. "new PathAction(\n");
-    if (rr == nil) then
-      printTrajectoryPedro(action.trajectory, indent .. "  ");
-    else
-      printTrajectoryRR(action.trajectory, indent .. "  ");
-    end
-  end
-  if (action.tree ~= nil) then
-    local i = #action.tree;
-    for k, v in ipairs(action.tree) do
-      printAction(v, indent .. "  ", i > k);
-    end
-  end
-  if (action.name == "sequential" or action.name == "parallel" or action.name == "trajectory") then
-    if (trailingComma) then
-      file.write(indent .. "),\n");
-    else
-      file.write(indent .. ")\n");
-    end
-  else
-    file.write(indent .. "new " .. action.name .. "(");
-    local i = #action.fields;
-    for k, v in ipairs(action.fields) do
-      file.write(tostring(v.value));
-      if (i > k) then
-        file.write(", ");
-      end
-    end
-    if (trailingComma) then
-      file.write("),\n");
-    else
-      file.write(")\n");
-    end
-  end
-end
-
-printAction(tree, "", false);
-log.info("export sucessful");
+exportAction(tree, cfg);
