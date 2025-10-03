@@ -5,6 +5,7 @@ namespace RoadRunner
 {
 void saveTrajectory(const TrajectoryRR* trajectory, nlohmann::json& j)
 {
+  j["globalVisibility"] = trajectory->visible;
 	j["nodes"] = {};
 	j["segments"] = {};
 	for (int i2 = 0; i2 < trajectory->nodes.count; i2++)
@@ -30,6 +31,8 @@ TrajectoryRR* parseTrajectory(const nlohmann::json& json, int ind)
 {
 	TrajectoryRR* grid = new TrajectoryRR();
 	const nlohmann::json& traj = json[ind];
+  if(traj.contains("globalVisibility"))
+    grid->visible = traj["globalVisibility"];
 	if (traj.contains("nodes"))
 	{
 		if (traj["nodes"].is_null())

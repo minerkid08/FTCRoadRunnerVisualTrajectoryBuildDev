@@ -253,7 +253,7 @@ void drawViewport(FrameBuffer& framebuffer)
 	ImGui::End();
 #endif
 	ImGui::Begin("viewport");
-	global.onViewport = ImGui::IsWindowFocused() && ImGui::IsWindowHovered();
+	global.onViewport = ImGui::IsWindowHovered();
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	glm::vec2 glmSize = {viewportPanelSize.x, viewportPanelSize.y};
 	int framebufferSize = glmSize.x > glmSize.y ? glmSize.y : glmSize.x;
