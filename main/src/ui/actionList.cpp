@@ -19,7 +19,7 @@ static void drawAction(Action* action)
 	bool opened;
 	if (action->type == ACTION_TRAJECTORY)
 	{
-		Trajectory* grid = action->data;
+		Trajectory* grid = action->traj;
 		if (grid->visible)
 			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 120, 255, 255));
 		opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);

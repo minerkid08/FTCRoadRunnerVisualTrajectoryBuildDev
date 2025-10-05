@@ -30,7 +30,7 @@ void addAction(Action* parent)
 	action->prev = nullptr;
 	action->next = nullptr;
 	action->actions = nullptr;
-	action->data = nullptr;
+	action->traj = nullptr;
 	action->type = 0;
 
 	if (parent->actions)
@@ -53,11 +53,11 @@ void addAction(Action* parent)
 void deleteAction(Action* action)
 {
 	if (action->type == ACTION_TRAJECTORY)
-		delete action->data;
+		delete action->traj;
 	if (action->type < ACTION_TRAJECTORY)
 		deleteActionList(action->actions);
 	if (action->type > ACTION_TRAJECTORY)
-		delete (std::vector<CustomActionField>*)action->data;
+		delete action->fields;
 
 	if (action->next != nullptr)
 	{
@@ -99,7 +99,7 @@ void reset()
 	{
 		if (action->type == ACTION_TRAJECTORY)
 		{
-			delete action->data;
+			delete action->traj;
 		}
 		delete action;
 	}
@@ -191,8 +191,8 @@ void moveActionUp(Action* action)
 
 void initCustomAction(Action* action)
 {
-	std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
-	if (action->data != nullptr)
+	std::vector<CustomActionField>* data = action->fields;
+	if (action->fields != nullptr)
 		data->resize(0);
 	else
 		data = new std::vector<CustomActionField>;
@@ -219,7 +219,7 @@ void initCustomAction(Action* action)
 		else
 			fb->value = fa->value;
 	}
-	action->data = (Trajectory*)data;
+	action->fields = data;
 }
 
 void tryDelete(Action* action)
@@ -228,7 +228,7 @@ void tryDelete(Action* action)
 	global.toChange.toDo = ToDo_Delete;
 	if (action->type == ACTION_TRAJECTORY)
 	{
-		Trajectory* traj = (Trajectory*)action->data;
+		Trajectory* traj = action->traj;
 		if (traj->canDelete)
 		{
 			openDeleteTrajectory();
@@ -253,7 +253,7 @@ void tryChangeType(Action* action, int newType)
 	global.toChange.arg = newType;
 	if (action->type == ACTION_TRAJECTORY)
 	{
-		Trajectory* traj = (Trajectory*)action->data;
+		Trajectory* traj = action->traj;
 		if (traj->canDelete)
 		{
 			openChangeFromTrajectory();
@@ -284,14 +284,14 @@ void confermAction()
 		}
 		else if (action->type == ACTION_TRAJECTORY)
 		{
-			delete action->data;
-			action->data = nullptr;
+			delete action->traj;
+			action->traj = nullptr;
 		}
 		else if (action->type > 2)
 		{
-			std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
+			std::vector<CustomActionField>* data = action->fields;
 			delete data;
-			action->data = nullptr;
+			action->fields = nullptr;
 		}
 		deleteAction(action);
 	}
@@ -300,8 +300,8 @@ void confermAction()
 		int newtype = global.toChange.arg;
 		if (action->type == ACTION_TRAJECTORY)
 		{
-			delete action->data;
-			action->data = nullptr;
+			delete action->traj;
+			action->traj = nullptr;
 		}
 		else if (action->type < 2 && newtype > 1)
 		{
@@ -310,17 +310,17 @@ void confermAction()
 		}
 		else if (action->type > 2 && newtype <= 2)
 		{
-			std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
+			std::vector<CustomActionField>* data = action->fields;
 			delete data;
-			action->data = nullptr;
+			action->fields = nullptr;
 		}
 		action->type = newtype;
 		if (newtype == ACTION_TRAJECTORY)
 		{
 			if (projectSettings.pathType == PathType_RR)
-				action->data = new RoadRunner::TrajectoryRR();
+				action->traj = new RoadRunner::TrajectoryRR();
 			if (projectSettings.pathType == PathType_Pedro)
-				action->data = new PedroPathing::TrajectoryPedro();
+				action->traj = new PedroPathing::TrajectoryPedro();
 		}
 		else if (newtype > 2)
 			initCustomAction(action);

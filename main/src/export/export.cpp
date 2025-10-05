@@ -185,7 +185,7 @@ void exportProject(const Action* action)
 		if (action->type > ACTION_TRAJECTORY)
 		{
 			lua_newtable(l);
-			std::vector<CustomActionField>* fields = (std::vector<CustomActionField>*)action->data;
+			std::vector<CustomActionField>* fields = action->fields;
 			int i2 = 1;
 			for (const CustomActionField& field : *fields)
 			{
@@ -216,12 +216,12 @@ void exportProject(const Action* action)
 		{
 			if (projectSettings.pathType == PathType_Pedro)
 			{
-				PedroPathing::TrajectoryPedro* trajectory = (PedroPathing::TrajectoryPedro*)action->data;
+				PedroPathing::TrajectoryPedro* trajectory = (PedroPathing::TrajectoryPedro*)action->traj;
 				processTrajectoryPedro(l, trajectory);
 			}
 			else
 			{
-				RoadRunner::TrajectoryRR* trajectory = (RoadRunner::TrajectoryRR*)action->data;
+				RoadRunner::TrajectoryRR* trajectory = (RoadRunner::TrajectoryRR*)action->traj;
 				processTrajectoryRR(l, trajectory);
 			}
 			lua_setfield(l, -2, "trajectory");

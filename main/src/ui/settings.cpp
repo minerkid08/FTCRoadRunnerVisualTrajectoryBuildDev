@@ -122,13 +122,13 @@ void drawSettingsMenu(bool* open)
 							{
 								if (trajectoryType == Trajectory_Pedro)
 								{
-									delete (PedroPathing::TrajectoryPedro*)action->data;
-									action->data = new RoadRunner::TrajectoryRR();
+									delete (PedroPathing::TrajectoryPedro*)action->traj;
+									action->traj = new RoadRunner::TrajectoryRR();
 								}
 								else if (trajectoryType == Trajectory_RR)
 								{
-									delete (RoadRunner::TrajectoryRR*)action->data;
-									action->data = new PedroPathing::TrajectoryPedro();
+									delete (RoadRunner::TrajectoryRR*)action->traj;
+									action->traj = new PedroPathing::TrajectoryPedro();
 								}
 							}
 						}
@@ -409,7 +409,7 @@ static void applyCustomFields(bool force)
 		{
 			if (strcmp(def.name, def2->name) == 0)
 			{
-				customActionReload((std::vector<CustomActionField>*)action->data, *def2);
+				customActionReload(action->fields, *def2);
 				found = true;
 				break;
 			}

@@ -35,13 +35,13 @@ void drawActionEditor()
 		if (a->type == ACTION_TRAJECTORY)
 		{
 			if (projectSettings.pathType == PathType_RR)
-				drawTrajectoryEditorRR((RoadRunner::TrajectoryRR*)a->data);
+				drawTrajectoryEditorRR((RoadRunner::TrajectoryRR*)a->traj);
 			if (projectSettings.pathType == PathType_Pedro)
-				drawTrajectoryEditorPedro((PedroPathing::TrajectoryPedro*)a->data);
+				drawTrajectoryEditorPedro((PedroPathing::TrajectoryPedro*)a->traj);
 		}
 		else if (a->type > 2)
 		{
-			std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)a->data;
+			std::vector<CustomActionField>* data = a->fields;
 			for (CustomActionField& field : *data)
 			{
 				switch (field.type)

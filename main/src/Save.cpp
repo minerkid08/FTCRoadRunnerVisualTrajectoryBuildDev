@@ -47,12 +47,12 @@ void save(const std::string& filename)
 		if (action->type == ACTION_TRAJECTORY)
 		{
 			j["trajectory"] = trajectories.size();
-			trajectories.push_back(action->data);
+			trajectories.push_back(action->traj);
 		}
 		if (action->type > 2)
 		{
 			j["fields"] = {};
-			std::vector<CustomActionField>* fields = (std::vector<CustomActionField>*)action->data;
+			std::vector<CustomActionField>* fields = action->fields;
 			for (CustomActionField& f : *fields)
 			{
 				switch (f.type)
@@ -107,11 +107,11 @@ Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectory
 	if (action->type == ACTION_TRAJECTORY)
 	{
 		if (projectSettings.pathType == PathType_RR)
-			action->data = RoadRunner::parseTrajectory(trajectoryJson, node["trajectory"]);
+			action->traj= RoadRunner::parseTrajectory(trajectoryJson, node["trajectory"]);
 		else if (projectSettings.pathType == PathType_Pedro)
-			action->data = PedroPathing::parseTrajectory(trajectoryJson, node["trajectory"]);
+			action->traj= PedroPathing::parseTrajectory(trajectoryJson, node["trajectory"]);
 
-		if (action->data == 0)
+		if (action->traj== 0)
 		{
 			delete action;
 			return 0;
@@ -121,7 +121,7 @@ Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectory
 	if (action->type > 2)
 	{
 		initCustomAction(action);
-		std::vector<CustomActionField>* data = (std::vector<CustomActionField>*)action->data;
+		std::vector<CustomActionField>* data = action->fields;
 		typeCheck(node, "fields", is_object);
 		for (CustomActionField& field : *data)
 		{

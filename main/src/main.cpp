@@ -114,14 +114,10 @@ int main(int argc, char** argv)
 			WindowData* data = (WindowData*)glfwGetWindowUserPointer(window);
 			if (mouseX <= data->framebuffer->spec.width && mouseY <= data->framebuffer->spec.width)
 			{
-				if (global.onViewport)
+				if (global.onViewport && global.currentAction)
 				{
-					if (global.currentAction)
-					{
-						if (global.currentAction->type == ACTION_TRAJECTORY)
-							((Trajectory*)global.currentAction->data)
-								->mouseClick(mouseX, mouseY, data->framebuffer->spec.width, mods);
-					}
+					if (global.currentAction->type == ACTION_TRAJECTORY)
+						global.currentAction->traj->mouseClick(mouseX, mouseY, data->framebuffer->spec.width, mods);
 				}
 			}
 		}
@@ -241,22 +237,24 @@ int main(int argc, char** argv)
 
 			for (Action* action : global.actions)
 			{
-				if (action->type == ACTION_TRAJECTORY && action->data != nullptr)
+				if (action == global.currentAction)
+					continue;
+				if (action->type == ACTION_TRAJECTORY && action->traj != nullptr)
 				{
-					if (action->data->visible)
-						action->data->render(renderer, settings.trajectoryOpac, 0, false);
+					if (action->traj->visible)
+						action->traj->render(renderer, settings.trajectoryOpac, 0, false);
 				}
 			}
 
 			if (global.currentAction != nullptr)
 			{
 				if (global.currentAction->type == ACTION_TRAJECTORY)
-					global.currentAction->data->update(renderer, mouseX, mouseY, framebuffer.spec.width, mods, dt);
+					global.currentAction->traj->update(renderer, mouseX, mouseY, framebuffer.spec.width, mods, dt);
 			}
 			framebuffer.unbind();
 
 			renderUi(framebuffer, !windowData.running);
-      windowData.running = true;
+			windowData.running = true;
 
 			glfwSwapBuffers(window);
 
@@ -285,5 +283,5 @@ int main(int argc, char** argv)
 void quit()
 {
 	saveSettings();
-  close = true;
+	close = true;
 }

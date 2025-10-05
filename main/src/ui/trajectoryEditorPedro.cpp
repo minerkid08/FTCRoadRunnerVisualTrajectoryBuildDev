@@ -19,11 +19,16 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 		ImGui::Checkbox("active", &preview.active);
 		ImGui::BeginDisabled(!preview.active);
 		ImGui::SliderFloat("t", &preview.t, 0, 1);
-		if (ImGui::Button("|>"))
-			preview.playing = true;
-		ImGui::SameLine();
-		if (ImGui::Button("||"))
-			preview.playing = false;
+		if (!preview.playing)
+		{
+			if (ImGui::Button("|>"))
+				preview.playing = true;
+		}
+		else
+		{
+			if (ImGui::Button("||"))
+				preview.playing = false;
+		}
 
 		ImGui::InputFloat("playback length", &preview.playbackLength);
 		if (ImGui::Checkbox("single segment", &preview.useSingleSegment))
@@ -173,8 +178,8 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 				int j = 0;
 				for (int i : toRemove)
 					grid->segs.remove(i - j++);
-        if(grid->nodes.count == 0)
-          grid->canDelete = false;
+				if (grid->nodes.count == 0)
+					grid->canDelete = false;
 				return;
 			}
 			ImGui::InputFloat2("pos", glm::value_ptr(node->pos));
