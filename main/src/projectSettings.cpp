@@ -35,51 +35,54 @@ int loadProjectSettings(const nlohmann::json& json)
 				tryGet(action, "name", is_string, name);
 				strcpy(a.name, name.c_str());
 				int j = 0;
-				typeCheck(action, "fields", is_array);
-				for (const nlohmann::json& field : action["fields"])
+				if (action["fields"].is_array())
 				{
-					if (!field.is_object())
+					typeCheck(action, "fields", is_array);
+					for (const nlohmann::json& field : action["fields"])
 					{
-						std::cerr << "custom action field is not an object";
-						goto err;
-					}
-					a.fields.emplace_back();
-					CustomActionField& f = a.fields[j];
-					std::string name;
-					tryGet(field, "name", is_string, name);
-					strcpy(f.name, name.c_str());
-					f.type = field["type"];
-					tryGet(field, "type", is_number, f.type);
+						if (!field.is_object())
+						{
+							std::cerr << "custom action field is not an object";
+							goto err;
+						}
+						a.fields.emplace_back();
+						CustomActionField& f = a.fields[j];
+						std::string name;
+						tryGet(field, "name", is_string, name);
+						strcpy(f.name, name.c_str());
+						f.type = field["type"];
+						tryGet(field, "type", is_number, f.type);
 
-					switch (f.type)
-					{
-					case FIELDTYPE_INT: {
-						tryGet(field, "min", is_number, f.min.i);
-						tryGet(field, "max", is_number, f.max.i);
-						tryGet(field, "value", is_number, f.value.i);
-						tryGet(field, "rangeChecks", is_boolean, f.rangeChecks);
-						break;
+						switch (f.type)
+						{
+						case FIELDTYPE_INT: {
+							tryGet(field, "min", is_number, f.min.i);
+							tryGet(field, "max", is_number, f.max.i);
+							tryGet(field, "value", is_number, f.value.i);
+							tryGet(field, "rangeChecks", is_boolean, f.rangeChecks);
+							break;
+						}
+						case FIELDTYPE_DOUBLE: {
+							tryGet(field, "min", is_number, f.min.f);
+							tryGet(field, "max", is_number, f.max.f);
+							tryGet(field, "value", is_number, f.value.f);
+							tryGet(field, "rangeChecks", is_boolean, f.rangeChecks);
+							break;
+						}
+						case FIELDTYPE_BOOL: {
+							tryGet(field, "value", is_number, f.value.b);
+							break;
+						}
+						case FIELDTYPE_STRING: {
+							std::string v;
+							tryGet(field, "value", is_string, v);
+							f.value.s = (char*)malloc(64);
+							strcpy(f.value.s, v.c_str());
+							break;
+						}
+						}
+						j++;
 					}
-					case FIELDTYPE_DOUBLE: {
-						tryGet(field, "min", is_number, f.min.f);
-						tryGet(field, "max", is_number, f.max.f);
-						tryGet(field, "value", is_number, f.value.f);
-						tryGet(field, "rangeChecks", is_boolean, f.rangeChecks);
-						break;
-					}
-					case FIELDTYPE_BOOL: {
-						tryGet(field, "value", is_number, f.value.b);
-						break;
-					}
-					case FIELDTYPE_STRING: {
-						std::string v;
-						tryGet(field, "value", is_string, v);
-						f.value.s = (char*)malloc(64);
-						strcpy(f.value.s, v.c_str());
-						break;
-					}
-					}
-					j++;
 				}
 				i++;
 			}

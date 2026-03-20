@@ -48,6 +48,7 @@ void addAction(Action* parent)
 	}
 	else
 		parent->actions = action;
+	memset(action->label, 0, sizeof(action->label));
 }
 
 void deleteAction(Action* action)

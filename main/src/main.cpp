@@ -13,6 +13,7 @@
 #include "settings.hpp"
 #include "trajectories/Trajectory.hpp"
 #include "ui/ui.hpp"
+#include "preview.hpp"
 
 #include <math.h>
 
@@ -251,6 +252,7 @@ int main(int argc, char** argv)
 				if (global.currentAction->type == ACTION_TRAJECTORY)
 					global.currentAction->traj->update(renderer, mouseX, mouseY, framebuffer.spec.width, mods, dt);
 			}
+			drawPreview(renderer);
 			framebuffer.unbind();
 
 			renderUi(framebuffer, !windowData.running);

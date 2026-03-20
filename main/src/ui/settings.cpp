@@ -28,26 +28,26 @@ void drawSettingsMenu(bool* open)
 {
 	if (*open)
 	{
-		ImGui::Begin("settings", open, ImGuiWindowFlags_NoDocking);
+		ImGui::Begin("Settings", open, ImGuiWindowFlags_NoDocking);
 		if (!*open)
 			saveSettings();
 
 		if (ImGui::BeginTabBar("tab bar"))
 		{
-			if (ImGui::BeginTabItem("project settings"))
+			if (ImGui::BeginTabItem("Project Settings"))
 			{
-				ImGui::SeparatorText("trajectories");
-				if (ImGui::Combo("trajectory type", &projectSettings.pathType, "Pedro Pathing\0Road Runner\0"))
+				ImGui::SeparatorText("Trajectories");
+				if (ImGui::Combo("Trajectory type", &projectSettings.pathType, "Pedro Pathing\0Road Runner\0"))
 				{
 					trajectoryType = projectSettings.pathType == 1 ? 0 : 1;
-					ImGui::OpenPopup("change trajectory type");
+					ImGui::OpenPopup("Change trajectory type");
 					projectSettings.pathType = trajectoryType;
 				}
-				ImGui::SeparatorText("robot preview");
-				ImGui::InputFloat("robot size x", &preview.sizeX);
-				ImGui::InputFloat("robot size y", &preview.sizeY);
-				ImGui::SeparatorText("custom actions");
-				if (ImGui::Button("add"))
+				ImGui::SeparatorText("Robot Preview");
+				ImGui::InputFloat("Robot size x", &preview.sizeX);
+				ImGui::InputFloat("Robot size y", &preview.sizeY);
+				ImGui::SeparatorText("Custom Actions");
+				if (ImGui::Button("Add"))
 					settingsActions.emplace_back();
 
 				static int selectedInd = 0;
@@ -96,7 +96,7 @@ void drawSettingsMenu(bool* open)
 					}
 					if (opened)
 					{
-						ImGui::InputText("name", def.name, 64);
+						ImGui::InputText("Name", def.name, 64);
 
 						drawFields(def, i == selectedInd);
 
@@ -105,16 +105,16 @@ void drawSettingsMenu(bool* open)
 					i++;
 				}
 
-				if (ImGui::Button("apply"))
+				if (ImGui::Button("Apply"))
 				{
 					applyCustomFields();
 				}
 
-				if (ImGui::BeginPopupModal("change trajectory type"))
+				if (ImGui::BeginPopupModal("Change trajectory type"))
 				{
 					ImGui::Text("Changing the trajectory type will clear all trajectories");
 					ImGui::Text("Are you sure you want to continue.");
-					if (ImGui::Button("confirm"))
+					if (ImGui::Button("Confirm"))
 					{
 						for (Action* action : global.actions)
 						{
@@ -139,24 +139,24 @@ void drawSettingsMenu(bool* open)
 						ImGui::CloseCurrentPopup();
 					}
 					ImGui::SameLine();
-					if (ImGui::Button("cancel"))
+					if (ImGui::Button("Cancel"))
 					{
 						projectSettings.pathType = trajectoryType;
 						ImGui::CloseCurrentPopup();
 					}
 					ImGui::EndPopup();
 				}
-				if (ImGui::BeginPopupModal("apply removing used trajectory"))
+				if (ImGui::BeginPopupModal("Apply removing used trajectory"))
 				{
 					ImGui::Text("Applying changes will delete an with a type '%s'", usedAction.c_str());
 					ImGui::Text("Are you sure you want to continue.");
-					if (ImGui::Button("confirm"))
+					if (ImGui::Button("Confirm"))
 					{
 						applyCustomFields(true);
 						ImGui::CloseCurrentPopup();
 					}
 					ImGui::SameLine();
-					if (ImGui::Button("cancel"))
+					if (ImGui::Button("Cancel"))
 						ImGui::CloseCurrentPopup();
 					ImGui::EndPopup();
 				}
@@ -173,15 +173,15 @@ void drawSettingsMenu(bool* open)
 				}
 				ImGui::EndTabItem();
 			}
-			if (ImGui::BeginTabItem("settings"))
+			if (ImGui::BeginTabItem("Settings"))
 			{
-				ImGui::SeparatorText("export");
-				ImGui::InputText("save path", settings.savePath, 512);
-				ImGui::InputText("export path", settings.exportPath, 512);
-				ImGui::Combo("export language", &settings.language, global.languageStr);
-				ImGui::SeparatorText("trajectories");
+				ImGui::SeparatorText("Export");
+				ImGui::InputText("Save path", settings.savePath, 512);
+				ImGui::InputText("Export path", settings.exportPath, 512);
+				ImGui::Combo("Export language", &settings.language, global.languageStr);
+				ImGui::SeparatorText("Trajectories");
 				ImGui::EndTabItem();
-				ImGui::SliderFloat("trajectory alpha", &settings.trajectoryOpac, 0.0f, 1.0f);
+				ImGui::SliderFloat("Trajectory alpha", &settings.trajectoryOpac, 0.0f, 1.0f);
 			}
 			ImGui::EndTabBar();
 		}
@@ -191,8 +191,8 @@ void drawSettingsMenu(bool* open)
 
 static void drawFields(CustomActionDef& def, bool selected)
 {
-	ImGui::SeparatorText("fields");
-	if (ImGui::Button("add"))
+	ImGui::SeparatorText("Fields");
+	if (ImGui::Button("Add"))
 		def.fields.emplace_back();
 
 	static int selectedInd = 0;
@@ -243,9 +243,9 @@ static void drawFields(CustomActionDef& def, bool selected)
 		}
 		if (opened)
 		{
-			ImGui::InputText("name", field.name, 64);
+			ImGui::InputText("Name", field.name, 64);
 			int oldValue = field.type;
-			if (ImGui::Combo("type", &field.type, str))
+			if (ImGui::Combo("Type", &field.type, str))
 			{
 				if (oldValue != field.type)
 				{
@@ -262,27 +262,27 @@ static void drawFields(CustomActionDef& def, bool selected)
 			switch (field.type)
 			{
 			case FIELDTYPE_STRING:
-				ImGui::InputText("default value", field.value.s, 64);
+				ImGui::InputText("Default value", field.value.s, 64);
 				break;
 			case FIELDTYPE_INT:
-				ImGui::InputInt("default value", &field.value.i);
-				ImGui::Checkbox("min/max", &field.rangeChecks);
+				ImGui::InputInt("Default value", &field.value.i);
+				ImGui::Checkbox("Min/Max", &field.rangeChecks);
 
 				ImGui::BeginDisabled(!field.rangeChecks);
-				ImGui::InputInt("min value", &field.min.i);
-				ImGui::InputInt("max value", &field.max.i);
+				ImGui::InputInt("Min value", &field.min.i);
+				ImGui::InputInt("Max value", &field.max.i);
 				ImGui::EndDisabled();
 				break;
 			case FIELDTYPE_BOOL:
-				ImGui::Checkbox("default value", &field.value.b);
+				ImGui::Checkbox("Default value", &field.value.b);
 				break;
 			case FIELDTYPE_DOUBLE:
-				ImGui::InputFloat("default value", &field.value.f);
-				ImGui::Checkbox("min/max", &field.rangeChecks);
+				ImGui::InputFloat("Default value", &field.value.f);
+				ImGui::Checkbox("Min/Max", &field.rangeChecks);
 
 				ImGui::BeginDisabled(!field.rangeChecks);
-				ImGui::InputFloat("min value", &field.min.f);
-				ImGui::InputFloat("max value", &field.max.f);
+				ImGui::InputFloat("Min value", &field.min.f);
+				ImGui::InputFloat("Max value", &field.max.f);
 				ImGui::EndDisabled();
 				break;
 			}
@@ -326,7 +326,7 @@ static void applyCustomFields(bool force)
 			if (found)
 				continue;
 			usedAction = def2->name;
-			ImGui::OpenPopup("apply removing used trajectory");
+			ImGui::OpenPopup("Apply removing used trajectory");
 			return;
 		}
 	}
@@ -365,9 +365,9 @@ static void applyCustomFields(bool force)
 	for (CustomActionDef& def : global.customActionDefs)
 		global.actionTypes.push_back(def.name);
 
-	const char* sequentional = "sequentional";
-	const char* parallel = "parallel";
-	const char* trajectory = "trajectory";
+	const char* sequentional = "Sequentional";
+	const char* parallel = "Parallel";
+	const char* trajectory = "Trajectory";
 
 	free(global.actionTypeStr);
 	int len = 0;

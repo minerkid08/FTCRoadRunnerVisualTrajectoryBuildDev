@@ -1,6 +1,6 @@
 #include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "glm/trigonometric.hpp"
+#include "global.hpp"
 #include "preview.hpp"
 #include "trajectories/TrajectoryPedro.hpp"
 #include "ui.hpp"
@@ -14,54 +14,13 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 	if (grid == nullptr)
 		return;
 
-	if (ImGui::TreeNode("RobotPreview"))
-	{
-		ImGui::Checkbox("active", &preview.active);
-		ImGui::BeginDisabled(!preview.active);
-		ImGui::SliderFloat("t", &preview.t, 0, 1);
-		if (!preview.playing)
-		{
-			if (ImGui::Button("|>"))
-				preview.playing = true;
-		}
-		else
-		{
-			if (ImGui::Button("||"))
-				preview.playing = false;
-		}
-
-		ImGui::InputFloat("playback length", &preview.playbackLength);
-		if (ImGui::Checkbox("single segment", &preview.useSingleSegment))
-			preview.trajectory.pedro = grid;
-		if (preview.useSingleSegment)
-		{
-			if (ImGui::InputInt("segment id", &preview.singleSegmentId))
-			{
-				if (preview.singleSegmentId < 0)
-					preview.singleSegmentId = 0;
-				if (preview.singleSegmentId >= grid->segs.count)
-					preview.singleSegmentId = grid->segs.count - 1;
-			}
-		}
-		else
-		{
-			if (ImGui::Button("generate path"))
-				generatePathPedro(grid);
-		}
-
-		ImGui::Text("robot position: x %.2f, y %.2f, h %.2f", preview.curPos.x, preview.curPos.y,
-					glm::degrees(preview.curPos.z));
-		ImGui::EndDisabled();
-		ImGui::TreePop();
-	}
-
-	if (ImGui::Button("flipHoriz"))
+	if (ImGui::Button("Flip horizontally"))
 		grid->flipHoriz();
 	ImGui::SameLine();
-	if (ImGui::Button("flipVert"))
+	if (ImGui::Button("Flip vertically"))
 		grid->flipVert();
-	ImGui::Checkbox("grid snap", &(grid->gridSnap));
-	ImGui::Checkbox("globally visible", &(grid->visible));
+	ImGui::Checkbox("Grid snap", &(grid->gridSnap));
+	ImGui::Checkbox("Globally visible", &(grid->visible));
 	if (ImGui::Button("^"))
 	{
 		if (grid->selected.type == TypeNode)
@@ -76,7 +35,7 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 		}
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("v"))
+	if (ImGui::Button("V"))
 	{
 		if (grid->selected.type == TypeNode)
 		{
@@ -90,7 +49,7 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 		}
 	}
 	int id = 0;
-	ImGui::Text("nodes: %d/%d", grid->nodes.count, maxNodes);
+	ImGui::Text("Nodes: %d/%d", grid->nodes.count, maxNodes);
 	int j = 0;
 	if (grid->nodes.count > 0)
 	{
@@ -121,7 +80,7 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 		}
 	}
 
-	ImGui::Text("segments: %d/%d", grid->segs.count, maxSegs);
+	ImGui::Text("Segments: %d/%d", grid->segs.count, maxSegs);
 	j = 0;
 	if (grid->segs.count > 0)
 	{
@@ -160,8 +119,8 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 		if (grid->selected.ind > -1 && grid->selected.ind < grid->nodes.count)
 		{
 			PedroPathing::PathNode* node = grid->nodes.get(grid->selected.ind);
-			ImGui::Text("node: %d", grid->selected.ind);
-			if (ImGui::Button("remove"))
+			ImGui::Text("Node: %d", grid->selected.ind);
+			if (ImGui::Button("Remove"))
 			{
 				grid->nodes.remove(grid->selected.ind);
 				std::vector<int> toRemove;
@@ -182,8 +141,8 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 					grid->canDelete = false;
 				return;
 			}
-			ImGui::InputFloat2("pos", glm::value_ptr(node->pos));
-			ImGui::InputFloat("heading", &node->heading);
+			ImGui::InputFloat2("Position", glm::value_ptr(node->pos));
+			ImGui::InputFloat("Heading", &node->heading);
 		}
 	}
 	else
@@ -198,12 +157,12 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 			ctrlPts[0] = startNode->pos;
 			ctrlPts[seg->controlPointsCount - 1] = endNode->pos;
 
-			ImGui::Text("segment: %d", grid->selected.ind);
-			if (ImGui::Button("remove##X"))
+			ImGui::Text("Segment: %d", grid->selected.ind);
+			if (ImGui::Button("Remove##X"))
 				grid->segs.remove(grid->selected.ind);
-			static const char* headingModes[] = {"none", "linear", "constant", nullptr};
+			static const char* headingModes[] = {"None", "Linear", "Constant", nullptr};
 
-			if (ImGui::BeginCombo("heading mode", headingModes[seg->headingMode]))
+			if (ImGui::BeginCombo("Heading mode", headingModes[seg->headingMode]))
 			{
 				for (int i = 0; i < 3; i++)
 				{
@@ -212,8 +171,8 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 				}
 				ImGui::EndCombo();
 			}
-			ImGui::SeparatorText("control points");
-			if (ImGui::Button("add"))
+			ImGui::SeparatorText("Control points");
+			if (ImGui::Button("+"))
 			{
 				if (seg->controlPointsCount < maxCtrlPts - 1)
 				{
@@ -223,7 +182,7 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 					seg->controlPointsCount++;
 				}
 			}
-			if (ImGui::Button("remove"))
+			if (ImGui::Button("-"))
 			{
 				if (seg->controlPointsCount > 2)
 				{

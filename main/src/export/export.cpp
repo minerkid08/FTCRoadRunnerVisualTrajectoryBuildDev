@@ -174,6 +174,8 @@ void exportProject(const Action* action)
 		lua_newtable(l);
 		lua_pushstring(l, global.actionTypes[action->type]);
 		lua_setfield(l, -2, "name");
+		lua_pushstring(l, action->label);
+		lua_setfield(l, -2, "label");
 		lua_pushnumber(l, indexOfAction(action->next));
 		lua_setfield(l, -2, "next");
 		lua_pushnumber(l, indexOfAction(action->prev));

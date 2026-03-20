@@ -1,5 +1,6 @@
 ---@class Action
 ---@field name string
+---@field label string 
 ---@field next integer
 ---@field prev integer
 ---@field actions integer
@@ -53,5 +54,6 @@
 ---@field rr TrajConfigRR?
 ---@field trajectory string
 ---@field sequential string
+---@field sequentialLabel string?
 ---@field parallel string
 ---@field custom fun(name: string): string

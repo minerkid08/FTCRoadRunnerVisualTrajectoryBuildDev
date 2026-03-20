@@ -11,27 +11,6 @@ void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid)
 	if (grid == nullptr)
 		return;
 
-	if (ImGui::TreeNode("RobotPreview"))
-	{
-		ImGui::Checkbox("active", &preview.active);
-		if (!preview.active)
-			ImGui::BeginDisabled();
-		ImGui::SliderFloat("t", &preview.t, 0, 1);
-    if(ImGui::Button("|>"))
-      preview.playing = true;
-    ImGui::SameLine();
-    if(ImGui::Button("||"))
-      preview.playing = false;
-		if (ImGui::Button("generate path"))
-			generatePathRR(grid);
-    ImGui::InputFloat("playback length", &preview.playbackLength);
-		ImGui::Text("robot position: x %.2f, y %.2f, h %.2f", preview.curPos.x, preview.curPos.y,
-					glm::degrees(preview.curPos.z));
-		if (!preview.active)
-			ImGui::EndDisabled();
-		ImGui::TreePop();
-	}
-
 	if (ImGui::Button("flipHoriz"))
 		grid->flipHoriz();
 	ImGui::SameLine();

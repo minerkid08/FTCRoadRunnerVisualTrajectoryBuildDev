@@ -8,6 +8,7 @@
 #include "trajectories/TrajectoryRR.hpp"
 #include "ui/ui.hpp"
 
+#include <cstring>
 #include <fstream>
 #include <json/json.hpp>
 #include <vector>
@@ -33,13 +34,14 @@ void save(const std::string& filename)
 	json["settings"] = {};
 	json["trajectories"] = {};
 
-  saveProjectSettings(json["settings"]);
+	saveProjectSettings(json["settings"]);
 
 	int i = 0;
 	for (const Action* action : global.actions)
 	{
 		nlohmann::json& j = json["actions"][i];
 		j["type"] = action->type;
+		j["label"] = action->label;
 		j["parent"] = indexOfAction(action->parrent);
 		j["next"] = indexOfAction(action->next);
 		j["prev"] = indexOfAction(action->prev);
@@ -104,14 +106,23 @@ Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectory
 	tryGetc(node, "prev", is_number, action->prev, (Action*)(long long));
 	tryGetc(node, "actions", is_number, action->actions, (Action*)(long long));
 
+	if(node.contains("label"))
+	{
+		if(node["label"].is_string())
+		{
+			std::string label = node["label"];
+			strncpy(action->label, label.c_str(), sizeof(action->label));
+		}
+	}
+
 	if (action->type == ACTION_TRAJECTORY)
 	{
 		if (projectSettings.pathType == PathType_RR)
-			action->traj= RoadRunner::parseTrajectory(trajectoryJson, node["trajectory"]);
+			action->traj = RoadRunner::parseTrajectory(trajectoryJson, node["trajectory"]);
 		else if (projectSettings.pathType == PathType_Pedro)
-			action->traj= PedroPathing::parseTrajectory(trajectoryJson, node["trajectory"]);
+			action->traj = PedroPathing::parseTrajectory(trajectoryJson, node["trajectory"]);
 
-		if (action->traj== 0)
+		if (action->traj == 0)
 		{
 			delete action;
 			return 0;
@@ -122,35 +133,38 @@ Action* parseAction(const nlohmann::json& node, const nlohmann::json& trajectory
 	{
 		initCustomAction(action);
 		std::vector<CustomActionField>* data = action->fields;
-		typeCheck(node, "fields", is_object);
-		for (CustomActionField& field : *data)
+		if (!node["fields"].is_null())
 		{
-			switch (field.type)
+			typeCheck(node, "fields", is_object);
+			for (CustomActionField& field : *data)
 			{
-			case FIELDTYPE_INT: {
-				int v;
-				tryGet(node["fields"], field.name, is_number, v);
-				field.value.i = v;
-				break;
-			}
-			case FIELDTYPE_DOUBLE: {
-				float v;
-				tryGet(node["fields"], field.name, is_number, v);
-				field.value.f = v;
-				break;
-			}
-			case FIELDTYPE_BOOL: {
-				bool v;
-				tryGet(node["fields"], field.name, is_boolean, v);
-				field.value.b = v;
-				break;
-			}
-			case FIELDTYPE_STRING: {
-				std::string v;
-				tryGet(node["fields"], field.name, is_string, v);
-				strcpy(field.value.s, v.c_str());
-				break;
-			}
+				switch (field.type)
+				{
+				case FIELDTYPE_INT: {
+					int v;
+					tryGet(node["fields"], field.name, is_number, v);
+					field.value.i = v;
+					break;
+				}
+				case FIELDTYPE_DOUBLE: {
+					float v;
+					tryGet(node["fields"], field.name, is_number, v);
+					field.value.f = v;
+					break;
+				}
+				case FIELDTYPE_BOOL: {
+					bool v;
+					tryGet(node["fields"], field.name, is_boolean, v);
+					field.value.b = v;
+					break;
+				}
+				case FIELDTYPE_STRING: {
+					std::string v;
+					tryGet(node["fields"], field.name, is_string, v);
+					strcpy(field.value.s, v.c_str());
+					break;
+				}
+				}
 			}
 		}
 	}
@@ -180,12 +194,12 @@ void load(const std::string& filename)
 	typeCheck(json, "actions", is_array);
 
 	{
-	  int r = loadProjectSettings(json["settings"]);
-    if(r == 1)
-    {
-      setErr("load failed: can't load project settings");
-      return;
-    }
+		int r = loadProjectSettings(json["settings"]);
+		if (r == 1)
+		{
+			setErr("load failed: can't load project settings");
+			return;
+		}
 
 		nlohmann::json& trajectoryJson = json["trajectories"];
 

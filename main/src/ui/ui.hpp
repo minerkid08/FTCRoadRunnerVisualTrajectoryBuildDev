@@ -24,5 +24,9 @@ void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid);
 void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid);
 void drawSettingsMenu(bool* open);
 void drawLog(bool* open);
+void drawPreviewWindow(bool* open);
 
 void openAboutWindow();
+void openPreviewWindow();
+
+void helpMarker(const char* text);

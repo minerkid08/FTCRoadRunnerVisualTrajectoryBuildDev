@@ -13,22 +13,23 @@
 
 void drawActionEditor()
 {
-	ImGui::Begin("actionEditor");
+	ImGui::Begin("Action Editor");
 	if (global.currentAction != nullptr)
 	{
 		Action* a = global.currentAction;
 		int newtype = a->type;
 		ImGui::BeginDisabled(a == global.rootAction);
-		if (ImGui::Combo("type", &newtype, global.actionTypeStr))
+		if (ImGui::Combo("Type", &newtype, global.actionTypeStr))
 		{
 			if (newtype != a->type)
 				tryChangeType(a, newtype);
 		}
+		ImGui::InputText("Label", a->label, sizeof(a->label));
 		drawChangeFromPopups();
 		ImGui::EndDisabled();
 		if (a->type < 2)
 		{
-			if (ImGui::Button("addAction"))
+			if (ImGui::Button("Add action"))
 				addAction(a);
 		}
 		ImGui::Separator();

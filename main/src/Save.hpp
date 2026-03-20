@@ -28,7 +28,7 @@ TrajectoryPedro* parseTrajectory(const nlohmann::json& json, int ind);
 	}                                                                                                                  \
 	if (!json[key].type2())                                                                                            \
 	{                                                                                                                  \
-		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
+		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << ", " << __LINE__ << ", " << __FILE__ << '\n';                   \
 		goto err;                                                                                                      \
 	}                                                                                                                  \
 	out = json[key];
@@ -54,6 +54,6 @@ TrajectoryPedro* parseTrajectory(const nlohmann::json& json, int ind);
 	}                                                                                                                  \
 	if (!json[key].type2())                                                                                            \
 	{                                                                                                                  \
-		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << '\n';                   \
+		std::cerr << "wrong type for key: " << key << " expected " << json[key].type_name() << ", " << __LINE__ << ", " << __FILE__ << '\n';                   \
 		goto err;                                                                                                      \
 	}

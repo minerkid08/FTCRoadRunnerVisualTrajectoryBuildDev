@@ -25,10 +25,11 @@ void clearLog()
 
 void addLog(int level, const std::string& msg)
 {
-  time_t rawTime;
-  time(&rawTime);
-  struct tm* curTime = localtime(&rawTime);
-  std::string timeStr = std::string("[") + std::to_string(curTime->tm_hour) + ':' + std::to_string(curTime->tm_min) + ':' + std::to_string(curTime->tm_sec) + ']';
+	time_t rawTime;
+	time(&rawTime);
+	struct tm* curTime = localtime(&rawTime);
+	std::string timeStr = std::string("[") + std::to_string(curTime->tm_hour) + ':' + std::to_string(curTime->tm_min) +
+						  ':' + std::to_string(curTime->tm_sec) + ']';
 
 	if (level == LEVEL_INFO)
 		elements.emplace_back(timeStr + " [info] " + msg, level);
@@ -42,12 +43,12 @@ void drawLog(bool* open)
 {
 	if (*open == false)
 		return;
-	ImGui::Begin("logs", open);
+	ImGui::Begin("Logs", open);
 
 	// Main window
-	bool clear = ImGui::Button("clear");
+	bool clear = ImGui::Button("Clear");
 	ImGui::SameLine();
-	filter.Draw("filter", -100.0f);
+	filter.Draw("Filter", -100.0f);
 
 	ImGui::Separator();
 
@@ -97,7 +98,7 @@ void drawLog(bool* open)
 
 		if (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
 			ImGui::SetScrollHereY(1.0f);
-    ImGui::EndChild();
 	}
+	ImGui::EndChild();
 	ImGui::End();
 }

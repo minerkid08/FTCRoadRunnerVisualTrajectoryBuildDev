@@ -44,18 +44,16 @@ void TrajectoryPedro::render(Renderer& renderer, float a, float z, bool showSele
 		renderer.drawNode({node->pos.x, node->pos.y, s ? 1 : 0}, node->heading,
 						  s ? glm::vec4(1.0, 0.0, 0.0, a) : glm::vec4(1.0, 1.0, 1.0, a));
 	}
-	if (preview.active)
-		drawPreview(renderer);
 }
 
 void TrajectoryPedro::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods, float dt)
 {
 	preview.running = (selected.type == TypeSegment);
 	if (preview.active)
-  {
-    preview.dt = dt;
+	{
+		preview.dt = dt;
 		updatePreview();
-  }
+	}
 	if (selected.ind >= (selected.type == TypeNode ? nodes.count : segs.count))
 		selected.ind = nodes.count - 1;
 	render(renderer, 1.0f, 0.9f, true);
@@ -96,7 +94,7 @@ void TrajectoryPedro::mouseClick(int mouseX, int mouseY, int windowSize, int mod
 	}
 	if (mods == 1)
 	{
-    canDelete = true;
+		canDelete = true;
 		PathNode* node = nodes.add();
 		if (node == nullptr)
 		{
@@ -178,6 +176,10 @@ void TrajectoryPedro::flipVert()
 		node->heading *= -1;
 		node->heading -= 90;
 	});
+	segs.foreach ([](int ind, PathSegment* node) {
+		for (int i = 0; i < node->controlPointsCount; i++)
+			node->controlPoints[i].y *= -1;
+	});
 }
 
 void TrajectoryPedro::flipHoriz()
@@ -185,6 +187,10 @@ void TrajectoryPedro::flipHoriz()
 	nodes.foreach ([](int ind, PathNode* node) {
 		node->pos.x *= -1;
 		node->heading *= -1;
+	});
+	segs.foreach ([](int ind, PathSegment* node) {
+		for (int i = 0; i < node->controlPointsCount; i++)
+			node->controlPoints[i].x *= -1;
 	});
 }
 

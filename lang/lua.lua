@@ -54,6 +54,7 @@ local cfg = {
   },
   parallel = "ParallelAction.new",
   sequential = "SeqAction.new",
+  sequentialLabel = "SeqAction.newl",
   trajectory = "PathAction.new",
   custom = function(name) return name .. ".new" end
 };

@@ -7,6 +7,7 @@
 #include "trajectories/TrajectoryPedro.hpp"
 #include "trajectories/TrajectoryRR.hpp"
 #include "ui/ui.hpp"
+#include <iterator>
 
 #define lerp(a, b, t) ((a) + (((b) - (a)) * (t)))
 
@@ -300,5 +301,6 @@ void updatePreview()
 
 void drawPreview(Renderer& renderer)
 {
-	renderer.drawRobot(preview.curPos, preview.sizeX, preview.sizeY);
+	if (preview.active && preview.trajectory.pedro != nullptr)
+		renderer.drawRobot(preview.curPos, preview.sizeX, preview.sizeY);
 }

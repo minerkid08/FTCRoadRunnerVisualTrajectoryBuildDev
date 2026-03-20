@@ -22,12 +22,22 @@ static void drawAction(Action* action)
 		Trajectory* grid = action->traj;
 		if (grid->visible)
 			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 120, 255, 255));
-		opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
+		if (action->label[0])
+			opened =
+				ImGui::TreeNodeEx((void*)action->id, flags, "%s (%s)", global.actionTypes[action->type], action->label);
+		else
+			opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
 		if (grid->visible)
 			ImGui::PopStyleColor();
 	}
 	else
-		opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
+	{
+		if (action->label[0])
+			opened =
+				ImGui::TreeNodeEx((void*)action->id, flags, "%s (%s)", global.actionTypes[action->type], action->label);
+		else
+			opened = ImGui::TreeNodeEx((void*)action->id, flags, "%s", global.actionTypes[action->type]);
+	}
 	ImVec2 size = ImGui::GetItemRectSize();
 	if (ImGui::IsItemClicked())
 		global.currentAction = action;
@@ -93,7 +103,7 @@ void drawActionList()
 		if (global.currentAction->parrent == nullptr && global.currentAction != global.rootAction)
 			global.currentAction = nullptr;
 	}
-	ImGui::Begin("actionList");
+	ImGui::Begin("Action List");
 	if (global.rootAction == nullptr)
 	{
 		global.rootAction = new Action();

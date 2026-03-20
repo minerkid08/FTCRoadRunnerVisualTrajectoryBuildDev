@@ -25,6 +25,7 @@ static bool viewportOpen = true;
 static bool actionEditorOpen = true;
 static bool actionListOpen = true;
 static bool settingsOpen = false;
+static bool previewOpen = false;
 
 void setNotif(const std::string& str)
 {
@@ -161,6 +162,7 @@ void renderUi(FrameBuffer& framebuffer, bool shouldClose)
 	drawSettingsMenu(&settingsOpen);
 	drawAboutWindow();
 	drawLog(&logOpen);
+	drawPreviewWindow(&previewOpen);
 
 	if (global.explorerMode)
 	{
@@ -223,6 +225,7 @@ void drawMenuBar(bool shouldClose)
 		ImGui::MenuItem("viewport", NULL, &viewportOpen);
 		ImGui::MenuItem("action editor", NULL, &actionEditorOpen);
 		ImGui::MenuItem("action list", NULL, &actionListOpen);
+		ImGui::MenuItem("robot preview", NULL, &previewOpen);
 		ImGui::EndMenu();
 	}
 	if (ImGui::MenuItem("settings"))
@@ -252,7 +255,7 @@ void drawViewport(FrameBuffer& framebuffer)
 	ImGui::ShowStyleEditor();
 	ImGui::End();
 #endif
-	ImGui::Begin("viewport");
+	ImGui::Begin("Viewport");
 	global.onViewport = ImGui::IsWindowHovered();
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	glm::vec2 glmSize = {viewportPanelSize.x, viewportPanelSize.y};
@@ -268,4 +271,16 @@ void drawViewport(FrameBuffer& framebuffer)
 	ImGui::Image((void*)(intptr_t)framebuffer.getColor(), ImVec2{(float)framebufferSize, (float)framebufferSize},
 				 ImVec2{0, 1}, ImVec2{1, 0});
 	ImGui::End();
+}
+
+void helpMarker(const char* desc)
+{
+	ImGui::TextDisabled("(?)");
+	if (ImGui::BeginItemTooltip())
+	{
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted(desc);
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
 }

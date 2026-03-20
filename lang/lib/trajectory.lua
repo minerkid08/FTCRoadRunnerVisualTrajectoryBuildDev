@@ -101,8 +101,8 @@ function exportTrajectoryPedro(trajectory, indent, config)
         end
         local ids = {}
         for k, v in ipairs(seg.controlPoints) do
-          ids["x" .. tostring(k)] = v.x;
-          ids["y" .. tostring(k)] = v.y;
+          ids["x" .. tostring(k)] = v.x + 72;
+          ids["y" .. tostring(k)] = v.y + 72;
         end
         local args = {};
         for k, v in ipairs(config.curve[i].args) do
