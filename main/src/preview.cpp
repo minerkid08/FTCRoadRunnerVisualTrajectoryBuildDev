@@ -7,7 +7,6 @@
 #include "trajectories/TrajectoryPedro.hpp"
 #include "trajectories/TrajectoryRR.hpp"
 #include "ui/ui.hpp"
-#include <iterator>
 
 #define lerp(a, b, t) ((a) + (((b) - (a)) * (t)))
 
@@ -276,7 +275,7 @@ void updatePreview()
 			updateRR(seg, t);
 		}
 	}
-	else
+	else if(preview.t != preview.prevt)
 	{
 		for (PreviewPathSegment& segment : preview.segments)
 		{
@@ -297,6 +296,7 @@ void updatePreview()
 			}
 		}
 	}
+	preview.prevt = preview.t;
 }
 
 void drawPreview(Renderer& renderer)

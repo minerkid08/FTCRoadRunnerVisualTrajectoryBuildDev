@@ -22,19 +22,20 @@ struct PreviewPathSegment
 struct RobotPreview
 {
   bool active;
-  bool running;
 
 	float sizeX = 12.0f;
 	float sizeY = 12.0f;
   glm::vec3 curPos;
 	float t = 0.0f;
+	float prevt = 0.0f;
 
   float dt;
-  float playbackLength;
+  float playbackLength = 5.0f;
   bool playing;
 
   bool useSingleSegment;
   int singleSegmentId;
+
   Traj<RoadRunner::PathSegment*,PedroPathing::PathSegment*> singleSegment;
 
   Traj<RoadRunner::TrajectoryRR*,PedroPathing::TrajectoryPedro*> trajectory;

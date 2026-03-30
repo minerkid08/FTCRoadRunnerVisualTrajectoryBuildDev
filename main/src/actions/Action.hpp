@@ -15,7 +15,7 @@ struct Action
 	int type = 0;
   char flags = 0;
   unsigned long long id = 0;
-	char label[20];
+	char label[45];
   union
   {
     Trajectory* traj;

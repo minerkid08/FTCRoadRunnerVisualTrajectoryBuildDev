@@ -10,6 +10,7 @@ class Trajectory
 	int type = 0;
 	bool visible = false;
 	bool canDelete = false;
+	char label[20];
 
 	virtual ~Trajectory()
 	{

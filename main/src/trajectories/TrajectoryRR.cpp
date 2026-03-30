@@ -44,7 +44,6 @@ void TrajectoryRR::render(Renderer& renderer, float a, float z, bool showSelecte
 
 void TrajectoryRR::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods, float dt)
 {
-	preview.running = (selected.type == TypeSegment);
 	if (preview.active)
 	{
     preview.dt = dt;

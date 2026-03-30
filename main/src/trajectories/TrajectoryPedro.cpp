@@ -48,7 +48,6 @@ void TrajectoryPedro::render(Renderer& renderer, float a, float z, bool showSele
 
 void TrajectoryPedro::update(Renderer& renderer, int mouseX, int mouseY, int windowSize, int mods, float dt)
 {
-	preview.running = (selected.type == TypeSegment);
 	if (preview.active)
 	{
 		preview.dt = dt;
