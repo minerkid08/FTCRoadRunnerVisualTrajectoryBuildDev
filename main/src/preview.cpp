@@ -301,6 +301,13 @@ void updatePreview()
 
 void drawPreview(Renderer& renderer)
 {
-	if (preview.active && preview.trajectory.pedro != nullptr)
+	if (preview.active)
 		renderer.drawRobot(preview.curPos, preview.sizeX, preview.sizeY);
+}
+
+void resetPreview()
+{
+	preview.playing = false;
+	preview.trajectory.pedro = nullptr;
+	preview.trajectory.rr = nullptr;
 }

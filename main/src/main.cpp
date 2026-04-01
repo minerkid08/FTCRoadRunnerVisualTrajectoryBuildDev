@@ -6,6 +6,7 @@
 #include "actions/Action.hpp"
 #include "global.hpp"
 #include "imgui/imgui.h"
+#include "preview.hpp"
 #include "projectSettings.hpp"
 #include "renderer/FrameBuffer.hpp"
 #include "renderer/Renderer.hpp"
@@ -13,7 +14,6 @@
 #include "settings.hpp"
 #include "trajectories/Trajectory.hpp"
 #include "ui/ui.hpp"
-#include "preview.hpp"
 
 #include <math.h>
 
@@ -219,50 +219,46 @@ int main(int argc, char** argv)
 	}
 
 	double lastFrameTime = 0;
-	double lastUpdateTime = 0;
-	double fpsLimit = 1.0 / 30.0;
+
+	glfwSwapInterval(1);
 
 	while (!close)
 	{
 		double now = glfwGetTime();
-		double deltaTime = now - lastUpdateTime;
-		if (now - lastFrameTime >= fpsLimit)
+		double dt = now - lastFrameTime;
+		framebuffer.bind();
+		glClearColor(0.1, 0.1, 0.1, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		shader.use();
+		renderer.draw(verts, &tex, &shader, glm::vec4(1, 1, 1, 1));
+
+		for (Action* action : global.actions)
 		{
-			double dt = now - lastFrameTime;
-			framebuffer.bind();
-			glClearColor(0.1, 0.1, 0.1, 1);
-			glClear(GL_COLOR_BUFFER_BIT);
-
-			shader.use();
-			renderer.draw(verts, &tex, &shader, glm::vec4(1, 1, 1, 1));
-
-			for (Action* action : global.actions)
+			if (action == global.currentAction)
+				continue;
+			if (action->type == ACTION_TRAJECTORY && action->traj != nullptr)
 			{
-				if (action == global.currentAction)
-					continue;
-				if (action->type == ACTION_TRAJECTORY && action->traj != nullptr)
-				{
-					if (action->traj->visible)
-						action->traj->render(renderer, settings.trajectoryOpac, 0, false);
-				}
+				if (action->traj->visible)
+					action->traj->render(renderer, settings.trajectoryOpac, 0, false);
 			}
-
-			if (global.currentAction != nullptr)
-			{
-				if (global.currentAction->type == ACTION_TRAJECTORY)
-					global.currentAction->traj->update(renderer, mouseX, mouseY, framebuffer.spec.width, mods, dt);
-			}
-			drawPreview(renderer);
-			framebuffer.unbind();
-
-			renderUi(framebuffer, !windowData.running);
-			windowData.running = true;
-
-			glfwSwapBuffers(window);
-
-			lastFrameTime = now;
 		}
-		lastUpdateTime = now;
+
+		if (global.currentAction != nullptr)
+		{
+			if (global.currentAction->type == ACTION_TRAJECTORY)
+				global.currentAction->traj->update(renderer, mouseX, mouseY, framebuffer.spec.width, mods, dt);
+		}
+		drawPreview(renderer);
+		framebuffer.unbind();
+
+		renderUi(framebuffer, !windowData.running);
+		windowData.running = true;
+
+		glfwSwapBuffers(window);
+
+		lastFrameTime = now;
+
 		glfwPollEvents();
 	}
 

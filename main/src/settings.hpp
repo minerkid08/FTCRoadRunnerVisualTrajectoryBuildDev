@@ -6,6 +6,8 @@ struct Settings
   char* exportPath;
   float trajectoryOpac = 0.5f;
 
+	float targetFPS = 30.0f;
+
   int language;
 };
 

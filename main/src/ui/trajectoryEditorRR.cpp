@@ -138,8 +138,8 @@ void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid)
           grid->canDelete = false;
 				return;
 			}
-			ImGui::InputFloat2("pos", glm::value_ptr(node->pos));
-			ImGui::InputFloat("heading", &node->heading);
+			ImGui::DragFloat2("pos", glm::value_ptr(node->pos));
+			ImGui::DragFloat("heading", &node->heading);
 		}
 	}
 	else
@@ -161,8 +161,8 @@ void drawTrajectoryEditorRR(RoadRunner::TrajectoryRR* grid)
 				}
 				ImGui::EndCombo();
 			}
-			ImGui::InputFloat("start tangent", &seg->startTan);
-			ImGui::InputFloat("end tangent", &seg->endTan);
+			ImGui::DragFloat("start tangent", &seg->startTan);
+			ImGui::DragFloat("end tangent", &seg->endTan);
 		}
 	}
 }

@@ -3,9 +3,10 @@
 
 #define FileExplorerFlags_None 0
 #define FileExplorerFlags_MakeFile 1
-#define FileExplorerFlags_DontShowFolders 1 << 1
-#define FileExplorerFlags_DontShowFiles 1 << 2
-#define FileExplorerFlags_AlwaysShowBack 1 << 3
+#define FileExplorerFlags_DontShowFolders (1 << 1)
+#define FileExplorerFlags_DontShowFiles (1 << 2)
+#define FileExplorerFlags_AlwaysShowBack (1 << 3)
+#define FileExplorerFlags_Save (1 << 4)
 
 #define FileExplorerUpdate_Normal 0
 #define FileExplorerUpdate_PathSelected 1

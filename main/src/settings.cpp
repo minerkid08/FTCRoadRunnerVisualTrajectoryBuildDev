@@ -6,8 +6,16 @@
 #include <filesystem>
 #include <fstream>
 #include <json/json.hpp>
+#include <set>
 #include <sstream>
 #include <vector>
+
+extern bool logOpen;
+extern bool viewportOpen;
+extern bool actionEditorOpen;
+extern bool actionListOpen;
+extern bool settingsOpen;
+extern bool previewOpen;
 
 void loadSettings()
 {
@@ -15,9 +23,9 @@ void loadSettings()
 
 	for (const std::filesystem::path& p : std::filesystem::directory_iterator("lang"))
 	{
-    if(std::filesystem::is_directory(p))
-      continue;
-    int extLen = p.extension().string().length() - 1;
+		if (std::filesystem::is_directory(p))
+			continue;
+		int extLen = p.extension().string().length() - 1;
 		std::string filename = p.filename().string();
 		char* name = (char*)malloc(filename.length() - extLen);
 		memcpy(name, filename.c_str(), filename.length() - extLen - 1);
@@ -54,6 +62,13 @@ void loadSettings()
 		strcpy(settings.exportPath, ((std::string)settingsJson["exportPath"]).c_str());
 		settings.language = settingsJson["exportLanguage"];
 		settings.trajectoryOpac = settingsJson["trajectoryAlpha"];
+		nlohmann::json windowJson = settingsJson["windows"];
+
+		logOpen = windowJson["log"];
+		viewportOpen = windowJson["viewport"];
+		actionEditorOpen = windowJson["editor"];
+		actionListOpen = windowJson["list"];
+		previewOpen = windowJson["preview"];
 	}
 	else
 	{
@@ -70,6 +85,14 @@ void saveSettings()
 	settingsJson["exportLanguage"] = settings.language;
 	settingsJson["trajectoryAlpha"] = settings.trajectoryOpac;
 
+	nlohmann::json windowJson;
+	windowJson["log"] = logOpen;
+	windowJson["viewport"] = viewportOpen;
+	windowJson["editor"] = actionEditorOpen;
+	windowJson["list"] = actionListOpen;
+	windowJson["preview"] = previewOpen;
+
+	settingsJson["windows"] = windowJson;
 	std::ofstream ofstream("settings.json");
 	ofstream << settingsJson.dump(2);
 	ofstream.close();

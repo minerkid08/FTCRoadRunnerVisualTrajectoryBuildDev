@@ -4,6 +4,7 @@
 #include "Save.hpp"
 #include "global.hpp"
 #include "main.hpp"
+#include "preview.hpp"
 #include "renderer/FrameBuffer.hpp"
 #include "settings.hpp"
 
@@ -20,12 +21,12 @@ GLFWwindow* getWindow();
 static int level;
 static std::string msg;
 
-static bool logOpen = false;
-static bool viewportOpen = true;
-static bool actionEditorOpen = true;
-static bool actionListOpen = true;
-static bool settingsOpen = false;
-static bool previewOpen = false;
+bool logOpen = false;
+bool viewportOpen = true;
+bool actionEditorOpen = true;
+bool actionListOpen = true;
+bool settingsOpen = false;
+bool previewOpen = false;
 
 void setNotif(const std::string& str)
 {
@@ -195,7 +196,10 @@ void drawMenuBar(bool shouldClose)
 	if (ImGui::BeginMenu("file"))
 	{
 		if (ImGui::MenuItem("new"))
+		{
+			resetPreview();
 			reset();
+		}
 		if (ImGui::MenuItem("save"))
 			save(global.filename);
 		if (ImGui::MenuItem("save as"))
@@ -204,7 +208,7 @@ void drawMenuBar(bool shouldClose)
 				std::filesystem::create_directories(settings.savePath);
 			global.explorerMode = 1;
 			explorerSetPath(settings.savePath);
-			explorerReset(FileExplorerFlags_MakeFile);
+			explorerReset(FileExplorerFlags_MakeFile | FileExplorerFlags_Save);
 		}
 		if (ImGui::MenuItem("load"))
 		{

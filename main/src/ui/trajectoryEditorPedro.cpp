@@ -141,8 +141,8 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 					grid->canDelete = false;
 				return;
 			}
-			ImGui::InputFloat2("Position", glm::value_ptr(node->pos));
-			ImGui::InputFloat("Heading", &node->heading);
+			ImGui::DragFloat2("Position", glm::value_ptr(node->pos));
+			ImGui::DragFloat("Heading", &node->heading);
 		}
 	}
 	else
@@ -182,6 +182,7 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 					seg->controlPointsCount++;
 				}
 			}
+			ImGui::SameLine();
 			if (ImGui::Button("-"))
 			{
 				if (seg->controlPointsCount > 2)
@@ -196,7 +197,7 @@ void drawTrajectoryEditorPedro(PedroPathing::TrajectoryPedro* grid)
 				for (int i = 1; i < seg->controlPointsCount - 1; i++)
 				{
 					ImGui::PushID(i);
-					ImGui::InputFloat2("", glm::value_ptr(ctrlPts[i]));
+					ImGui::DragFloat2("", glm::value_ptr(ctrlPts[i]));
 					ImGui::PopID();
 				}
 			}

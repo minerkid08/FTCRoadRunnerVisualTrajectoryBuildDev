@@ -24,6 +24,14 @@ static void applyCustomFields(bool force = false);
 static std::string usedAction;
 
 static int trajectoryType;
+
+extern bool logOpen;
+extern bool viewportOpen;
+extern bool actionEditorOpen;
+extern bool actionListOpen;
+extern bool settingsOpen;
+extern bool previewOpen;
+
 void drawSettingsMenu(bool* open)
 {
 	if (*open)
@@ -116,6 +124,7 @@ void drawSettingsMenu(bool* open)
 					ImGui::Text("Are you sure you want to continue.");
 					if (ImGui::Button("Confirm"))
 					{
+						resetPreview();
 						for (Action* action : global.actions)
 						{
 							if (action->type == ACTION_TRAJECTORY)
@@ -179,9 +188,11 @@ void drawSettingsMenu(bool* open)
 				ImGui::InputText("Save path", settings.savePath, 512);
 				ImGui::InputText("Export path", settings.exportPath, 512);
 				ImGui::Combo("Export language", &settings.language, global.languageStr);
+
 				ImGui::SeparatorText("Trajectories");
-				ImGui::EndTabItem();
 				ImGui::SliderFloat("Trajectory alpha", &settings.trajectoryOpac, 0.0f, 1.0f);
+
+				ImGui::EndTabItem();
 			}
 			ImGui::EndTabBar();
 		}

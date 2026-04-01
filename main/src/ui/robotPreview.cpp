@@ -13,9 +13,18 @@ void drawPreviewWindow(bool* open)
 	if (*open)
 	{
 		ImGui::Begin("Robot Preview", open);
+		if(ImGui::Checkbox("active", &preview.active))
+		{
+			if(!preview.active)
+				preview.playing = false;
+		}
+		
+		ImGui::BeginDisabled(!preview.active);
+		ImGui::DragFloat2("robot postiion", glm::value_ptr(preview.curPos));
 		float deg = glm::degrees(preview.curPos.z);
 		if (ImGui::DragFloat("robot heading", &deg))
 			preview.curPos.z = glm::radians(deg);
+		ImGui::Separator();
 		if (preview.trajectory.pedro == nullptr)
 			ImGui::Button("Trajectory: None");
 		else
@@ -79,9 +88,8 @@ void drawPreviewWindow(bool* open)
 					preview.trajectory.rr = nullptr;
 			}
 		}
+		ImGui::EndDisabled();
 		ImGui::BeginDisabled(!(preview.active && preview.trajectory.pedro != nullptr));
-		ImGui::Checkbox("active", &preview.active);
-		ImGui::DragFloat2("robot postiion", glm::value_ptr(preview.curPos));
 		if (ImGui::Button("generate"))
 		{
 			if (projectSettings.pathType == PathType_Pedro)

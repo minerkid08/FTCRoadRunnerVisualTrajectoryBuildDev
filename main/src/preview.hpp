@@ -47,4 +47,5 @@ extern RobotPreview preview;
 void generatePathPedro(PedroPathing::TrajectoryPedro* trajectory);
 void generatePathRR(RoadRunner::TrajectoryRR* trajectory);
 void updatePreview();
+void resetPreview();
 void drawPreview(Renderer& renderer);
