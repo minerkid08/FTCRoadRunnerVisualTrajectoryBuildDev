@@ -1,0 +1,5 @@
+{
+  "name": "glfw",
+  "type": "header",
+  "export": ["export"]
+}
