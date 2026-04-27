@@ -99,7 +99,7 @@ int explorerUpdate(const char* ext)
 	ImGui::EndDisabled();
 	ImGui::SameLine();
 	int rm = -1;
-	if (ImGui::Button(curPath.c_str()))
+	if (ImGui::Button(curPath.string().c_str()))
 		rm = 0;
 
 	for (int i = 0; i < dirs.size(); i++)
