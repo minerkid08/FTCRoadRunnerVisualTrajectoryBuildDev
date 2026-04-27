@@ -1,3 +1,4 @@
+#include "actions/Action.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "renderer/Renderer.hpp"
 #include "trajectories/TrajectoryPedro.hpp"
@@ -35,6 +36,9 @@ struct RobotPreview
 
   bool useSingleSegment;
   int singleSegmentId;
+
+  Action* action;
+  char labelBuf[64];
 
   Traj<RoadRunner::PathSegment*,PedroPathing::PathSegment*> singleSegment;
 
