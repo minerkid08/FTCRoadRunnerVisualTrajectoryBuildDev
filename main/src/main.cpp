@@ -81,11 +81,11 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
-	// Without these 2 hints, nothing above OpenGL 2.1 is supported
+	// Without these 2 hints, nothing above OpenGL 2.1 is supported on mac
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(winSize * 2, winSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
+	window = glfwCreateWindow(winSize * 2, winSize, "FTC Visual Trajectory Builder", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);

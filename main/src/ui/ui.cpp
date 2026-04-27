@@ -264,16 +264,19 @@ void drawViewport(FrameBuffer& framebuffer)
 	ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 	glm::vec2 glmSize = {viewportPanelSize.x, viewportPanelSize.y};
 	int framebufferSize = glmSize.x > glmSize.y ? glmSize.y : glmSize.x;
+	bool drawImage = true;
 	if (framebuffer.spec.width != framebufferSize)
 	{
+		drawImage = false;
 		framebuffer.resize(framebufferSize, framebufferSize);
 	}
 	ImVec2 screenPos = ImGui::GetCursorScreenPos();
 	global.mouseOffsetX = screenPos.x;
 	global.mouseOffsetY = screenPos.y;
 
-	ImGui::Image((void*)(intptr_t)framebuffer.getColor(), ImVec2{(float)framebufferSize, (float)framebufferSize},
-				 ImVec2{0, 1}, ImVec2{1, 0});
+	if (drawImage)
+		ImGui::Image((void*)(intptr_t)framebuffer.getColor(), ImVec2{(float)framebufferSize, (float)framebufferSize},
+					 ImVec2{0, 1}, ImVec2{1, 0});
 	ImGui::End();
 }
 

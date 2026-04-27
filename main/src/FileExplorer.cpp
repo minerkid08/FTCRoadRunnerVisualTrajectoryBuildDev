@@ -104,7 +104,7 @@ int explorerUpdate(const char* ext)
 
 	for (int i = 0; i < dirs.size(); i++)
 	{
-		const std::string& dir = dirs[i];
+		const std::string& dir = dirs[i].string();
 		ImGui::SameLine();
 		ImGui::Text("/");
 		ImGui::SameLine();
@@ -132,7 +132,7 @@ int explorerUpdate(const char* ext)
 			ImGui::PushID(i++);
 			if (!(flags & FileExplorerFlags_DontShowFolders))
 			{
-				if (ImGui::Selectable(p.c_str()))
+				if (ImGui::Selectable(p.string().c_str()))
 				{
 					dirs.emplace_back(p);
 					readDir();
@@ -148,8 +148,8 @@ int explorerUpdate(const char* ext)
 			{
 				if (p.extension() == ext)
 				{
-					if (ImGui::Selectable(p.c_str()))
-						strncpy(filename, p.c_str(), sizeof(filename));
+					if (ImGui::Selectable(p.string().c_str()))
+						strncpy(filename, p.string().c_str(), sizeof(filename));
 				}
 			}
 			ImGui::PopID();
