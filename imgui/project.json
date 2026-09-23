@@ -1,0 +1,9 @@
+{
+  "name": "imgui",
+  "type": "static",
+  "out": "imgui.a",
+  "build": [],
+  "export": ["export"],
+  "libs": ["glfw", "glad"],
+  "autoBuild": false
+}

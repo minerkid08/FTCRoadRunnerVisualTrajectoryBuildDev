@@ -1,0 +1,5 @@
+{
+  "name": "glm",
+  "type": "header",
+  "export": ["export"]
+}

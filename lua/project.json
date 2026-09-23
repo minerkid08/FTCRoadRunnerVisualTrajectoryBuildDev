@@ -1,0 +1,10 @@
+{
+  "name": "lua",
+  "type": "static",
+  "out": "lua.a",
+  "export": "export",
+  "include": ["export/lua"],
+  "build": [],
+  "lang": "c",
+  "autoBuild": false
+}

@@ -3,3 +3,6 @@ save/*
 export/*
 .vscode/*
 TrajectoryBuilder.lnk
+settings.json
+
+compile_flags.txt

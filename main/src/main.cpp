@@ -1,46 +1,50 @@
+#include <cstring>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <iostream>
 
-#include "ImGui.hpp"
-#include "Renderer.hpp"
-#include "Shader.hpp"
-
-#include "NodeGrid.hpp"
-#include "Save.hpp"
-#include "Upload.hpp"
+#include "actions/Action.hpp"
+#include "global.hpp"
+#include "imgui/imgui.h"
+#include "preview.hpp"
+#include "projectSettings.hpp"
+#include "renderer/FrameBuffer.hpp"
+#include "renderer/Renderer.hpp"
+#include "renderer/Shader.hpp"
+#include "settings.hpp"
+#include "trajectories/Trajectory.hpp"
+#include "ui/ui.hpp"
 
 #include <math.h>
 
-#include <filesystem>
+Globals global;
+Settings settings;
+ProjectSettings projectSettings;
 
 GLFWwindow* window;
-NodeGrid* grid;
 
 GLFWwindow* getWindow()
 {
 	return window;
 }
 
-int windowSize = 800;
+static bool close = false;
 
 int mouseX = 0;
 int mouseY = 0;
 
 int mods = 0;
 
+struct WindowData
+{
+	FrameBuffer* framebuffer;
+	bool running;
+};
+
+WindowData windowData;
+
 int main(int argc, char** argv)
 {
-
-	if (!std::filesystem::exists("save"))
-	{
-		std::filesystem::create_directory("save");
-	}
-
-	if (!std::filesystem::exists("export"))
-	{
-		std::filesystem::create_directory("export");
-	}
 
 	glfwInit();
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
@@ -50,25 +54,39 @@ int main(int argc, char** argv)
 	int width;
 	int height;
 	glfwGetMonitorWorkarea(monitor, &x, &y, &width, &height);
+	int winSize = 800;
+
 	if (width > 3000)
 	{
-		windowSize = 1700;
+		global.uiScale = 2.0;
+		winSize = 1700;
+	}
+	else
+	{
+		global.uiScale = 1.0;
 	}
 
 	if (argc > 2)
 	{
 		if (strcmp(argv[2], "4k") == 0)
 		{
-			windowSize = 1700;
+			winSize = 1700;
 		}
 	}
 
-	bool running = true;
+	loadSettings();
 
-	window = glfwCreateWindow(windowSize * 2, windowSize, "FTC Roadrunner Visual Trajectory Builder", nullptr, nullptr);
+	generateActionNames();
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+
+	// Without these 2 hints, nothing above OpenGL 2.1 is supported on mac
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	window = glfwCreateWindow(winSize * 2, winSize, "FTC Visual Trajectory Builder", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
-	glfwSetWindowUserPointer(window, &running);
-	glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
 
 	int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
@@ -78,29 +96,37 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
+	windowData.running = true;
+
+	FrameBuffer framebuffer({});
+	windowData.framebuffer = &framebuffer;
+
+	glfwSetWindowUserPointer(window, &windowData);
+	glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_TRUE);
+
 	glfwSetWindowCloseCallback(window, [](GLFWwindow* window) {
-		bool* running = (bool*)glfwGetWindowUserPointer(window);
-		*running = false;
-    Upload::closeSock();
+		WindowData* data = (WindowData*)glfwGetWindowUserPointer(window);
+		data->running = false;
 	});
 
 	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int btn, int action, int _mods) {
 		if (btn == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 		{
-			if (mouseX <= windowSize && mouseY <= windowSize)
+			WindowData* data = (WindowData*)glfwGetWindowUserPointer(window);
+			if (mouseX <= data->framebuffer->spec.width && mouseY <= data->framebuffer->spec.width)
 			{
-				ImGuiIO& io = ImGui::GetIO();
-				if (!io.WantCaptureMouse)
+				if (global.onViewport && global.currentAction)
 				{
-					grid->mouseClick(mouseX, mouseY, windowSize, mods);
+					if (global.currentAction->type == ACTION_TRAJECTORY)
+						global.currentAction->traj->mouseClick(mouseX, mouseY, data->framebuffer->spec.width, mods);
 				}
 			}
 		}
 	});
 
 	glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y) {
-		mouseX = floor(x);
-		mouseY = floor(y);
+		mouseX = floor(x) - global.mouseOffsetX;
+		mouseY = floor(y) - global.mouseOffsetY;
 	});
 
 	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int _mods) {
@@ -160,53 +186,100 @@ int main(int argc, char** argv)
 	glm::vec4 verts[]{{1, 1, 0, 1}, {1, -1, 0, 1}, {-1, 1, 0, 1}, {-1, -1, 0, 1}};
 
 	Texture tex("field.png");
+	Texture nodeTex("node.png");
+	Texture segTex("seg.png");
+	Texture ctrlPtTex("ctrlPt.png");
+	Texture robotTex("robot.png");
+	renderer.shader = &shader;
+	renderer.nodeTex = &nodeTex;
+	renderer.segmentTex = &segTex;
+	renderer.ctrlPointTex = &ctrlPtTex;
+	renderer.robotTex = &robotTex;
 
-	ImGuiClass imGui(windowSize);
+	initUi();
 
-	grid = new NodeGrid(&shader);
+	ImGuiStyle& style = ImGui::GetStyle();
 
-	if (argc > 1)
+	style.TabBarOverlineSize = 0;
+	if (width > 3000)
 	{
-		if (strcmp(argv[1], "new"))
-		{
-			int len = strlen(argv[1]);
-			char* str = new char[len];
-			memcpy(str, argv[1], len);
-			for (int i = 0; i < len; i++)
-			{
-				if (str[i] == '/')
-				{
-					str[i] = '\\';
-				}
-			}
-			Save::load(grid, str);
-		}
+		style.WindowRounding = 12;
+		style.FrameRounding = 12;
+		style.PopupRounding = 12;
+		style.GrabRounding = 12;
+		style.TabRounding = 12;
+	}
+	else
+	{
+		style.WindowRounding = 9;
+		style.FrameRounding = 4;
+		style.PopupRounding = 4;
+		style.GrabRounding = 4;
+		style.TabRounding = 9;
 	}
 
-	
-  Upload::init(grid);
+	double lastFrameTime = 0;
 
-	while (running)
+	glfwSwapInterval(1);
+
+	while (!close)
 	{
+		double now = glfwGetTime();
+		double dt = now - lastFrameTime;
+		framebuffer.bind();
 		glClearColor(0.1, 0.1, 0.1, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.use();
-
 		renderer.draw(verts, &tex, &shader, glm::vec4(1, 1, 1, 1));
 
-		grid->update(renderer, mouseX, mouseY, windowSize, mods);
+		for (Action* action : global.actions)
+		{
+			if (action == global.currentAction)
+				continue;
+			if (action->type == ACTION_TRAJECTORY && action->traj != nullptr)
+			{
+				if (action->traj->visible)
+					action->traj->render(renderer, settings.trajectoryOpac, 0, false);
+			}
+		}
 
-		imGui.begin();
-		imGui.nodeList(grid);
-		imGui.end();
+		if (global.currentAction != nullptr)
+		{
+			if (global.currentAction->type == ACTION_TRAJECTORY)
+				global.currentAction->traj->update(renderer, mouseX, mouseY, framebuffer.spec.width, mods, dt);
+		}
+		drawPreview(renderer);
+		framebuffer.unbind();
+
+		renderUi(framebuffer, !windowData.running);
+		windowData.running = true;
 
 		glfwSwapBuffers(window);
+
+		lastFrameTime = now;
+
 		glfwPollEvents();
 	}
 
+	closeUi();
+
+	shader.del();
+	renderer.del();
+	tex.del();
+	nodeTex.del();
+	segTex.del();
+	ctrlPtTex.del();
+	robotTex.del();
+	framebuffer.del();
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
 	return 0;
+}
+
+void quit()
+{
+	saveSettings();
+	close = true;
 }
